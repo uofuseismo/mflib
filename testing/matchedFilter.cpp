@@ -33,32 +33,41 @@ TEST(matchedFilter, basicTest)
     double f0 = 4.0/Tmax; // 4 cycles in desired output 
     double amp = 2;
     std::vector<double> x(signalSize);
+    std::vector<double> x2(signalSize);
     for (int i=0; i<signalSize; ++i)
     {
         auto t = i*dt;
         auto y = amp*std::exp(-0.1*t)*std::sin(2*M_PI*f0*t);
         x[i] = y;
+        x2[i] = amp*std::exp(-0.15*t)*std::cos(2*M_PI*f0*t);
     }
-    // Make a template
+    // Make a template - have a sine/cosine wave look for the sine/cosine
+    // wave in an exponentially damped wave.  This works because of the 
+    // scaling in the .
     double Twin = 2;
     int nb = static_cast<int> (Twin/dt + 0.5) + 1;
     std::vector<double> b(nb);
+    std::vector<double> b2(nb);
     for (int i=0; i<nb; ++i)
     {
         auto t = i*dt;
         auto y = std::sin(2*M_PI*f0*t);
         b[i] = y;
+        b2[i] = std::cos(2*M_PI*f0*t);
     }
     // Create a reference
-    std::vector<double> yRef(signalSize, 0);
+    std::vector<double> yRef(signalSize, 0), yRef2(signalSize, 0);
     //matchedFilter(nb, b.data(), signalSize, x.data(), yRef.data());
-    dumbXC(nb, b.data(), signalSize, x.data(), yRef.data()); 
+    dumbXC(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
+    dumbXC(nb, b2.data(), signalSize, x2.data(), yRef2.data());
+/*
     FILE *filterRef = fopen("filterRef.txt", "w");
     for (int i=0; i<yRef.size(); ++i)
     {
         fprintf(filterRef, "%lf, %lf\n", i*dt, yRef[i]);
     }
     fclose(filterRef);
+*/
     // Set the templates
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);
@@ -70,30 +79,52 @@ TEST(matchedFilter, basicTest)
     auto templateSpectra = mf.getSpectraOfTemplate(0);
     EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
     EXPECT_FALSE(mf.haveMatchedFilteredSignals());
-/*
-    for (int i=0; i<static_cast<int> (templateSpectra.size()); ++i)
-    {
-        printf("%lf, %lf\n", templateSpectra[i].real(), templateSpectra[i].imag());
-    }
-*/
+
     EXPECT_NO_THROW(mf.apply());
     EXPECT_TRUE(mf.haveMatchedFilteredSignals());
     std::vector<double> result;
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     double error;
     ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-2);
-/*
-FILE *filterCheck = fopen("filterCheck.txt", "w");
-    for (int i=0; i<result.size(); ++i)
-    {
-    //    error = std::max(error, std::abs(yRef[i] - result[i]));
-        fprintf(filterCheck, "%d, %lf, %lf, %lf\n", i, yRef[i], result[i], yRef[i] - result[i]);
-    }
-    printf("%e\n", error);
-fclose(filterCheck);
-*/
+    EXPECT_LT(error, 5.e-3);
+printf("%e\n", error);
+
+    // Try again with four templates
+    options.clearTemplates();
+    options.addTemplate(b.size(),  b.data());
+    options.addTemplate(b2.size(), b2.data());
+    options.addTemplate(b.size(),  b.data());
+    options.addTemplate(b2.size(), b2.data());
+    EXPECT_EQ(options.getNumberOfTemplates(), 4);
+    EXPECT_NO_THROW(mf.initialize(options));
+    EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
+    EXPECT_NO_THROW(mf.setSignal(1, signalSize, x2.data()));
+    EXPECT_NO_THROW(mf.setSignal(2, signalSize, x.data()));
+    EXPECT_NO_THROW(mf.setSignal(3, signalSize, x2.data()));
+    EXPECT_EQ(mf.getNumberOfTemplates(), 4);
+    EXPECT_NO_THROW(mf.apply());
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
+    ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 5.e-3);
+    //printf("%e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
+    ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 5.e-3);
+    //printf("%e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
+    ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 5.e-3);
+    //printf("%e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
+    ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 5.e-3);
+    //printf("%e\n", error);
 }
+
+
 
 void matchedFilter(const int nb, const double b[], // Template
                    const int nx, const double x[], // Signal

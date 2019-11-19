@@ -186,7 +186,7 @@ public:
         /// Set everything else to 0
         mSpectraLength = 0;
         mFFTLength = 0;
-        mCorrelogramLeadingDimension = 0;
+        mConvolutionLeadingDimension = 0;
         mSpectraLeadingDimension = 0;
         mSamplesLeadingDimension = 0;
         mSamplesExtra = 0;
@@ -235,8 +235,8 @@ public:
     /// The FFT length.  This is the number of zero-padded points in the input
     /// time domain signals and output correlograms.
     int mFFTLength = 0;
-    /// The leading dimension of the output correlograms.
-    size_t mCorrelogramLeadingDimension = 0;
+    /// The leading dimension of the output convolutions in the window.
+    size_t mConvolutionLeadingDimension = 0;
     /// The leading dimension of the spectra.
     size_t mSpectraLeadingDimension = 0;
     /// The leading dimension of the numerator/denominator/filtered signals.
@@ -317,9 +317,9 @@ void MatchedFilter<double>::initialize(
     // Our goal is to correlate.  However, we are performing convolutions.
     // Hence, we have to reverse our templates.
     pImpl->mTemplates = options.getNumberOfTemplates();
-    pImpl->mCorrelogramLeadingDimension = padLength(pImpl->mFFTLength,
+    pImpl->mConvolutionLeadingDimension = padLength(pImpl->mFFTLength,
                                                     sizeof(double));
-    auto len = pImpl->mCorrelogramLeadingDimension
+    auto len = pImpl->mConvolutionLeadingDimension
               *static_cast<size_t> (pImpl->mTemplates)
               *sizeof(double);
     pImpl->mSignalSegment = static_cast<double *> (MKL_calloc(len, 1, 64));
@@ -328,7 +328,7 @@ void MatchedFilter<double>::initialize(
     {
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
-                     *pImpl->mCorrelogramLeadingDimension;
+                     *pImpl->mConvolutionLeadingDimension;
         demeanNormalizeAndReverseTemplate(t.size(), t.data(), &b[offset]);
     }
     // Transform
@@ -353,7 +353,7 @@ void MatchedFilter<double>::initialize(
     pImpl->mForwardPlan
         = fftw_plan_many_dft_r2c(rank, nf, pImpl->mTemplates,
                                  pImpl->mSignalSegment, inembed,
-                                 istride, pImpl->mCorrelogramLeadingDimension,
+                                 istride, pImpl->mConvolutionLeadingDimension,
                                  pImpl->mSegmentSpectra, onembed,
                                  ostride, pImpl->mSpectraLeadingDimension,
                                  FFTW_PATIENT);
@@ -365,20 +365,13 @@ void MatchedFilter<double>::initialize(
                                  pImpl->mSegmentSpectra, inembed,
                                  istride, pImpl->mSpectraLeadingDimension,
                                  pImpl->mSignalSegment, onembed, 
-                                 ostride, pImpl->mCorrelogramLeadingDimension,
+                                 ostride, pImpl->mConvolutionLeadingDimension,
                                  FFTW_PATIENT);
     // We used the space for the input signals as b's workspace - zero it
-    len = pImpl->mCorrelogramLeadingDimension
+    len = pImpl->mConvolutionLeadingDimension
          *static_cast<size_t> (pImpl->mTemplates);
     std::fill(std::execution::unseq,
               pImpl->mSignalSegment, pImpl->mSignalSegment+len, 0);
-/*
-for (int i=0; i<len; ++i)
-{
- printf("%d %lf, %lf\n", i, std::real(pImpl->mBPtr[i]), std::imag(pImpl->mBPtr[i]));
-}
-getchar();
-*/
     // Allocate space for denominator signal and the filtered (numerator)
     // signal, and the filtered signal.
     pImpl->mSamplesLeadingDimension = padLength(pImpl->mSamplesExtra,
@@ -501,7 +494,7 @@ void MatchedFilter<double>::apply()
                        *static_cast<size_t> (pImpl->mSamplesLeadingDimension);
             const double *signalPtr = &pImpl->mInputSignals[ioff+istart];
             ioff = static_cast<size_t> (it)
-                  *static_cast<size_t> (pImpl->mCorrelogramLeadingDimension); 
+                  *static_cast<size_t> (pImpl->mConvolutionLeadingDimension); 
             double *__attribute__((aligned(64))) dest
                 = &pImpl->mSignalSegment[ioff];
             int iend = std::min(nx, istart + L); // Exclusive
@@ -510,13 +503,6 @@ void MatchedFilter<double>::apply()
             std::copy(std::execution::unseq, signalPtr, signalPtr+ncopy, dest);
             // Zero out signal until end
             std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
-/*
-for (int i=0; i<nfft; ++i)
-{
-printf("%lf,\n", dest[i]);
-}
-getchar();
-*/
         }
         // Fourier transform
         fftw_execute_dft_r2c(pImpl->mForwardPlan,
@@ -535,9 +521,6 @@ getchar();
             for (int w=0; w<pImpl->mSpectraLength; ++w)
             {
                 xcRow[w] = bRow[w]*xcRow[w];
-                //printf("%d, (%e, %e), (%e, %e)\n",
-                //        w, std::real(bRow[w]), std::imag(bRow[w]),
-                //        std::real(xcRow[w]), std::imag(xcRow[w]));
             }
         }
         // Inverse transform
@@ -547,7 +530,6 @@ getchar();
         // Apply overlap and add method
         int yend = std::min(nx, istart+nfft); // Exclusive
         int nupdate = yend - istart;
-printf("%d, %d\n", istart, yend);
         for (int it=0; it<nTemplates; ++it)
         {
             // Filtered signal destination
@@ -556,7 +538,7 @@ printf("%d, %d\n", istart, yend);
                       + static_cast<size_t> (istart);
             double *ydst = &pImpl->mFilteredSignals[idst];
             // Contribution from segment
-            auto isrc = pImpl->mCorrelogramLeadingDimension 
+            auto isrc = pImpl->mConvolutionLeadingDimension
                        *static_cast<size_t> (it);
             double *__attribute__((aligned(64))) ysrc
                 = &pImpl->mSignalSegment[isrc];
@@ -565,10 +547,8 @@ printf("%d, %d\n", istart, yend);
             {
                 ydst[i] = ydst[i] + ysrc[i]*xnorm;
             }
-//getchar();
         }
-//break;
-    }
+    } // Loop on windows
     // Compute the normalization 
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
     for (int it=0; it<pImpl->mTemplates; ++it)
@@ -580,7 +560,6 @@ printf("%d, %d\n", istart, yend);
         auto idst = isrc + static_cast<size_t> (nb) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
-printf("%d\n", nxUnpadded);
         normalizeSignal(nxUnpadded, nb, y, yNum, 1.e-12);
     }
     pImpl->mHaveMatchedFilters = true;
