@@ -9,12 +9,42 @@ using namespace MFLib;
 
 namespace
 {
+
+int nextPowerOfTwo(const int n)
+{
+    if (n < 0)
+    {   
+        throw std::invalid_argument("n = " + std::to_string(n)
+                                  + " must be positive\n"); 
+    }   
+    // Simple base cases
+    if (n == 0){return 1;} 
+    if (n == 1){return 1;} 
+    // General computation
+    double dn = static_cast<double> (n);
+    // Get log2 and round up
+    int itemp = static_cast<int> (std::ceil(std::log2(dn)));
+    // Compute next power of 2 greater than n
+    uint64_t n2t = static_cast<uint64_t> (std::pow(2, itemp));
+    int n2 = static_cast<int> (n2t);
+    // Catch any overflow problems associated with int32_t and uint64_t
+    if (n2t != static_cast<uint64_t> (n2))
+    {   
+        throw std::runtime_error("Overflow error");
+    }   
+    return n2; 
+}
+
 /// @brief Computes sizes.
 /// @param[in] nb   The filter length.
 /// @param[in] nx   The signal length.
 /// @result result.first is the FFT size and result.second is the window length.
 std::pair<int, int> computeWindowLength(const int nb, const int nx) 
 {
+    if (nb > nx)
+    {
+        throw std::invalid_argument("nb cannot exceed nx\n");
+    }
     /// Matlab computed floating operation counts for each transform length
     const std::array<double, 21> fftFlops = {
         18, 59, 138, 303, 660, 1441, 3150, 6875, 14952, 32373, 69762,
@@ -38,27 +68,34 @@ std::pair<int, int> computeWindowLength(const int nb, const int nx)
     }
     if (validSetStart ==-1)
     {
-        throw std::runtime_error("Could not find appropriate padding length\n");
+        // throw std::runtime_error("Could not find appropriate padding length\n");
+        auto nfft = nextPowerOfTwo(nx);
+        auto L =  nfft - (nb - 1); 
+        auto result = std::pair(nfft, L); 
+        return result;
     }
-    //std::vector<int> Nvec(fftLengths.begin() + validSetStart, fftLengths.end());
-    // Minimize the (number of blocks) x (number of flops per fft) 
-    //std::vector<int> Lvec(Nvec.size(), 0);
-    auto objMin = std::numeric_limits<double>::max();
-    int nfft = 0;
-    int L = 0;
-    for (int i=validSetStart; i<static_cast<int> (fftFlops.size()); ++i)
+    else
     {
-        auto lTemp = fftLengths[i] - (nb - 1); // This is positive
-        auto dL = static_cast<double> (lTemp);
-        auto obj = std::ceil(nx/dL)*fftFlops[i];
-        if (obj < objMin)
+        //std::vector<int> Nvec(fftLengths.begin() + validSetStart, fftLengths.end());
+        // Minimize the (number of blocks) x (number of flops per fft) 
+        //std::vector<int> Lvec(Nvec.size(), 0);
+        auto objMin = std::numeric_limits<double>::max();
+        int nfft = 0;
+        int L = 0;
+        for (int i=validSetStart; i<static_cast<int> (fftFlops.size()); ++i)
         {
-            objMin = obj;
-            nfft = fftLengths[i];
-            L = lTemp;
+            auto lTemp = fftLengths[i] - (nb - 1); // This is positive
+            auto dL = static_cast<double> (lTemp);
+            auto obj = std::ceil(nx/dL)*fftFlops[i];
+            if (obj < objMin)
+            {
+                objMin = obj;
+                nfft = fftLengths[i];
+                L = lTemp;
+            }
         }
+        return std::pair(nfft, L); 
     }
-    return std::pair(nfft, L); 
 }
 }
 

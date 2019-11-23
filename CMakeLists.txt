@@ -13,8 +13,8 @@ endif()
 
 find_package(GTest REQUIRED)
 find_package(CUDA
-             COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES CUDA_CUBLAS_LIBRARIES)
-if (CUDA_FOUND)
+             COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES)
+if (${CUDA_FOUND})
    message("CUDA was found")
    string(APPEND CMAKE_CXX_FLAGS " -DUSE_CUDA")
 endif()
@@ -31,9 +31,12 @@ include_directories(
 set(SRC
     src/matchedFilterOptions.cpp
     src/matchedFilter.cpp)
+if (${CUDA_FOUND})
+   set(CUDA_SRC src/cudaMatchedFilter.cpp)
+endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
-add_library(matchedFilter ${SRC})
+add_library(matchedFilter ${SRC} ${CUDA_SRC})
 
 ################################################################################
 #                                  Unit Tests                                  #
@@ -44,7 +47,7 @@ add_executable(unitTests
                testing/matchedFilterOptions.cpp
                testing/matchedFilter.cpp)
 target_link_libraries(unitTests
-                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY})
+                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 
 add_test(NAME unitTests
