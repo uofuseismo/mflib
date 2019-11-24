@@ -21,6 +21,15 @@ endif()
 set(FindIPP_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 find_package(FindIPP REQUIRED)
 
+if (MFLIB_WRAP_PYTHON)
+   find_package(PythonInterp 3)
+   find_package(PythonLibs 3 REQUIRED)
+   message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+   message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+   message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+   find_package(pybind11 REQUIRED)
+endif()
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${MKL_INCLUDE_DIR}
@@ -30,7 +39,8 @@ include_directories(
 
 set(SRC
     src/matchedFilterOptions.cpp
-    src/matchedFilter.cpp)
+    src/matchedFilter.cpp
+    src/waveformTemplate.cpp)
 if (${CUDA_FOUND})
    set(CUDA_SRC src/cudaMatchedFilter.cpp)
 endif()
@@ -46,6 +56,7 @@ add_executable(unitTests
                testing/main.cpp
                testing/matchedFilterOptions.cpp
                testing/matchedFilter.cpp)
+target_link_libraries(matchedFilter ${IPP_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
