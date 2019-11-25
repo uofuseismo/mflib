@@ -156,6 +156,7 @@ public:
      *         or the sampling rate was not set.
      * @throws std::invalid_argument if the onset time is not in the trace.
      * @sa \c haveSignal(), \c haveSamplingRate().
+     * @note This is invalidated whenever the sampling period or signal is set.
      */ 
     void setOnsetTime(double onsetTime);
     /*!
@@ -187,7 +188,7 @@ public:
      * @note The trace commences travelTime - onsetTime seconds after the origin
      *       time.
      */
-    double setTravelTime(double travelTime);
+    void setTravelTime(double travelTime);
     /*!
      * @brief Gets the observed travel time for the pick.
      * @result The observed travel time for this pick in seconds.

@@ -21,6 +21,8 @@ public:
     {
         mShiftAndStackWeight = tplate.mShiftAndStackWeight;
         mSamplingRate = tplate.mSamplingRate;
+        mOnsetTime = tplate.mOnsetTime;
+        mTravelTime = tplate.mTravelTime;
         // Copy the waveform
         mSignalLength = tplate.mSignalLength;
         if (mSignalLength > 0)
@@ -42,6 +44,8 @@ public:
         mSignal = nullptr;
         mSamplingRate = 0;
         mShiftAndStackWeight = 1;
+        mOnsetTime =-1;
+        mTravelTime =-1;
         mSignalLength = 0;
     }
     
@@ -52,6 +56,10 @@ public:
     double mSamplingRate = 0;
     /// The shift and stack weight.
     double mShiftAndStackWeight = 1;
+    /// The waveform onset time
+    double mOnsetTime =-1;
+    /// The travel time
+    double mTravelTime =-1;
     /// The number of samples in the template waveform signal.
     int mSignalLength = 0;
 };
@@ -109,6 +117,7 @@ void WaveformTemplate::setSamplingRate(const double samplingRate)
                                   + std::to_string(samplingRate)
                                   + " must be positive\n");
     }
+    pImpl->mOnsetTime =-1;
     pImpl->mSamplingRate = samplingRate;
 }
 
@@ -155,6 +164,7 @@ void WaveformTemplate::setSignal(const int npts,
         if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
         throw std::invalid_argument("x is NULL");
     }
+    pImpl->mOnsetTime =-1;
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
@@ -169,6 +179,7 @@ void WaveformTemplate::setSignal(const int npts,
         if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
         throw std::invalid_argument("x is NULL");
     }
+    pImpl->mOnsetTime =-1;
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
@@ -219,4 +230,69 @@ bool WaveformTemplate::haveSignal() const noexcept
     return false; 
 }
 
+/// Sets the onset time
+void WaveformTemplate::setOnsetTime(const double onsetTime)
+{
+    if (onsetTime < 0)
+    {
+        throw std::invalid_argument("onsetTime = " 
+                                  + std::to_string(onsetTime)
+                                  + " must be positive\n");
+    }
+    double df = getSamplingRate(); // Throws
+    int npts = getSignalLength(); // Throws
+    double maxOnsetTime = static_cast<double> (npts - 1)*df;
+    int index = static_cast<int> (onsetTime*df + 0.5);
+    if (onsetTime > maxOnsetTime)
+    {
+        throw std::invalid_argument("onsetTime = " 
+                                  + std::to_string(onsetTime)
+                                  + " cannot exceed maxOnsetTime = "
+                                  + std::to_string(maxOnsetTime) + "\n");
+    }
+    pImpl->mOnsetTime = onsetTime;
+}
 
+/// Gets the onset time
+double WaveformTemplate::getOnsetTime() const
+{
+    if (!haveOnsetTime())
+    {
+        throw std::runtime_error("Onset time not set\n");
+    }
+    return pImpl->mOnsetTime;
+}
+
+/// Do I have the onset time?
+bool WaveformTemplate::haveOnsetTime() const noexcept
+{
+    if (pImpl->mOnsetTime < 0){return false;}
+    return true;
+}
+
+/// Sets the travel time
+void WaveformTemplate::setTravelTime(const double travelTime)
+{
+    if (travelTime < 0)
+    {
+        throw std::invalid_argument("Travel time cannot be negative\n");
+    }
+    pImpl->mTravelTime = travelTime;
+}
+
+/// Gets the travel time
+double WaveformTemplate::getTravelTime() const
+{
+    if (!haveTravelTime())
+    {
+        throw std::invalid_argument("Travel time not yet set\n");
+    }
+    return pImpl->mTravelTime;
+}
+
+/// Do I have the travel time?
+bool WaveformTemplate::haveTravelTime() const noexcept
+{
+    if (pImpl->mTravelTime < 0){return false;}
+    return true;
+}
