@@ -6,6 +6,7 @@
 #include <chrono>
 #include <ctime>
 #include <ipps.h>
+#include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterOptions.hpp"
 #include "mflib/matchedFilter.hpp"
 #include <gtest/gtest.h>
@@ -24,7 +25,7 @@ void dumbXC(const int nb, const double b[],
 
 TEST(matchedFilter, basicTest)
 {
-    MatchedFilterOptions<double> options;
+    MatchedFilterOptions options;
     MatchedFilter<double> mf;
 
     int signalSize = 1000;
@@ -72,7 +73,10 @@ TEST(matchedFilter, basicTest)
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);
     options.setSignalSize(signalSize);
-    options.addTemplate(b.size(), b.data());
+    WaveformTemplate bt, bt2;
+    bt.setSignal(b.size(), b.data());
+    bt2.setSignal(b2.size(), b2.data());
+    options.addTemplate(bt); //b.size(), b.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 1);
     // Initialize the matched filter
     mf.initialize(options);
@@ -91,10 +95,10 @@ TEST(matchedFilter, basicTest)
 
     // Try again with four templates
     options.clearTemplates();
-    options.addTemplate(b.size(),  b.data());
-    options.addTemplate(b2.size(), b2.data());
-    options.addTemplate(b.size(),  b.data());
-    options.addTemplate(b2.size(), b2.data());
+    options.addTemplate(bt); //b.size(),  b.data());
+    options.addTemplate(bt2); //b2.size(), b2.data());
+    options.addTemplate(bt); //b.size(),  b.data());
+    options.addTemplate(bt2); //b2.size(), b2.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 4);
     EXPECT_NO_THROW(mf.initialize(options));
     EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
@@ -122,6 +126,9 @@ TEST(matchedFilter, basicTest)
     ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 5.e-3);
     //printf("%e\n", error);
+
+    // Put this in a loop
+
 }
 
 /*
@@ -130,7 +137,8 @@ TEST(matchedFilter, stressTest)
     MatchedFilterOptions<double> options;
     MatchedFilter<double> mf;
 
-    int signalSize = 86400*100; //8640000; //360000; //1000;
+    //int signalSize = 86400*100; //8640000; //360000; //1000;
+    int signalSize = 372000;
     double Tmax = 8;
     double dt = Tmax/(signalSize - 1);
     double f0 = 4.0/Tmax; // 4 cycles in desired output 
@@ -160,6 +168,58 @@ TEST(matchedFilter, stressTest)
         b[i] = y;
         b2[i] = std::cos(2*M_PI*f0*t);
     }
+    // Set the templates
+    options.setMatchedFilterImplementation(
+        MatchedFilterImplementation::AUTO);
+    options.setSignalSize(signalSize);
+    options.addTemplate(b.size(), b.data());
+    options.setFFTLength(8640004);
+    EXPECT_EQ(options.getNumberOfTemplates(), 1); 
+    // Initialize the matched filter
+    mf.initialize(options);
+    auto templateSpectra = mf.getSpectraOfTemplate(0);
+printf("setting signal\n");
+    EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
+    EXPECT_FALSE(mf.haveMatchedFilteredSignals());
+printf("working...\n");
+    EXPECT_NO_THROW(mf.apply());
+}
+
+TEST(matchedFilter, stressTestFloat)
+{
+    MatchedFilterOptions<float> options;
+    MatchedFilter<float> mf; 
+
+    int signalSize = 86400*100; //8640000; //360000; //1000;
+    double Tmax = 8;
+    double dt = Tmax/(signalSize - 1); 
+    double f0 = 4.0/Tmax; // 4 cycles in desired output 
+    double amp = 2;
+    std::vector<float> x(signalSize);
+    std::vector<float> x2(signalSize);
+    #pragma omp simd
+    for (int i=0; i<signalSize; ++i)
+    {   
+        auto t = i*dt;
+        auto y = amp*std::exp(-0.1*t)*std::sin(2*M_PI*f0*t);
+        x[i] = y;
+        x2[i] = amp*std::exp(-0.15*t)*std::cos(2*M_PI*f0*t);
+    }   
+    // Make a template - have a sine/cosine wave look for the sine/cosine
+    // wave in an exponentially damped wave.  This works because of the 
+    // scaling in the .
+    double Twin = 2;
+    int nb = static_cast<int> (Twin/dt + 0.5) + 1;
+    std::vector<float> b(nb);
+    std::vector<float> b2(nb);
+    #pragma omp simd
+    for (int i=0; i<nb; ++i)
+    {   
+        auto t = i*dt;
+        auto y = std::sin(2*M_PI*f0*t);
+        b[i] = y;
+        b2[i] = std::cos(2*M_PI*f0*t);
+    }   
     // Set the templates
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);

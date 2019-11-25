@@ -17,6 +17,7 @@
 #ifdef USE_CUDA
 #include <cufft.h>
 #endif
+#include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilter.hpp"
 #include "mflib/matchedFilterOptions.hpp"
 
@@ -200,7 +201,7 @@ public:
     }
 //private:
     /// Holds the options
-    MatchedFilterOptions<double> mOptions;
+    MatchedFilterOptions mOptions;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftw_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -313,7 +314,7 @@ public:
     }
 //private:
     /// Holds the options
-    MatchedFilterOptions<float> mOptions;
+    MatchedFilterOptions mOptions;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftwf_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -396,7 +397,7 @@ template<class T> void MatchedFilter<T>::clear() noexcept
 /// Initializes the FFTs for the double precision matched filtering
 template<>
 void MatchedFilter<double>::initialize(
-    const MatchedFilterOptions<double> &options)
+    const MatchedFilterOptions &options)
 {
     clear();
     // Set the templates
@@ -406,7 +407,7 @@ void MatchedFilter<double>::initialize(
     }
     // Figure out the window length
     pImpl->mSamples = options.getSignalSize();
-    pImpl->mFilterLength = options.getTemplateLength();
+    pImpl->mFilterLength = options.getMaxTemplateLength();
     pImpl->mSamplesExtra = pImpl->mSamples + pImpl->mFilterLength - 1;
     auto result = computeOptimalFFTAndBlockLength(pImpl->mFilterLength,
                                                   pImpl->mSamplesExtra);
@@ -438,14 +439,19 @@ void MatchedFilter<double>::initialize(
     auto len = pImpl->mConvolutionLeadingDimension
               *static_cast<size_t> (pImpl->mTemplates)
               *sizeof(double);
+    // Calloc is important for signal padding
     pImpl->mSignalSegment = static_cast<double *> (MKL_calloc(len, 1, 64));
     auto b = pImpl->mSignalSegment;
+    std::vector<double> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
-        demeanNormalizeAndReverseTemplate(t.size(), t.data(), &b[offset]);
+        double *tPtr = tData.data();
+        int ntlen = t.getSignalLength();
+        t.getSignal(pImpl->mFilterLength, &tPtr);
+        demeanNormalizeAndReverseTemplate(ntlen, tPtr, &b[offset]);
     }
     // Transform
     constexpr int rank = 1;
@@ -510,7 +516,7 @@ void MatchedFilter<double>::initialize(
 /// Initializes the FFTs for the float precision matched filtering
 template<>
 void MatchedFilter<float>::initialize(
-    const MatchedFilterOptions<float> &options)
+    const MatchedFilterOptions &options)
 {
     clear();
     // Set the templates
@@ -520,7 +526,7 @@ void MatchedFilter<float>::initialize(
     }   
     // Figure out the window length
     pImpl->mSamples = options.getSignalSize();
-    pImpl->mFilterLength = options.getTemplateLength();
+    pImpl->mFilterLength = options.getMaxTemplateLength();
     pImpl->mSamplesExtra = pImpl->mSamples + pImpl->mFilterLength - 1;
     auto result = computeOptimalFFTAndBlockLength(pImpl->mFilterLength,
                                                   pImpl->mSamplesExtra);
@@ -533,14 +539,19 @@ void MatchedFilter<float>::initialize(
     auto len = pImpl->mConvolutionLeadingDimension
               *static_cast<size_t> (pImpl->mTemplates)
               *sizeof(float);
+    // Calloc is important for padding
     pImpl->mSignalSegment = static_cast<float *> (MKL_calloc(len, 1, 64));
     auto b = pImpl->mSignalSegment;
+    std::vector<float> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
-        demeanNormalizeAndReverseTemplate(t.size(), t.data(), &b[offset]);
+        float *tPtr = tData.data();
+        int ntlen = t.getSignalLength();
+        t.getSignal(pImpl->mFilterLength, &tPtr);
+        demeanNormalizeAndReverseTemplate(ntlen, tPtr, &b[offset]);
     }
     // Transform
     constexpr int rank = 1;

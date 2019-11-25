@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mflib VERSION 0.1.1 LANGUAGES CXX)
+project(mflib VERSION 0.1.2 LANGUAGES CXX)
 enable_testing()
 
 include(CheckCXXCompilerFlag)
@@ -12,6 +12,10 @@ if (OPENMP_FOUND)
 endif()
 
 find_package(GTest REQUIRED)
+find_package(MPI)
+if (MPI_FOUND)
+   message("MPI was found")
+endif()
 find_package(CUDA
              COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES)
 if (${CUDA_FOUND})
@@ -34,6 +38,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${MKL_INCLUDE_DIR}
     ${IPP_INCLUDE_DIR}
+    ${MPI_CXX_INCLUDE_PATH}
     ${CUDA_INCLUDE_DIRS}
 )
 
@@ -41,12 +46,14 @@ set(SRC
     src/matchedFilterOptions.cpp
     src/matchedFilter.cpp
     src/waveformTemplate.cpp)
+set(MPI_SRC
+    src/mpi.cpp)
 if (${CUDA_FOUND})
    set(CUDA_SRC src/cudaMatchedFilter.cpp)
 endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
-add_library(matchedFilter ${SRC} ${CUDA_SRC})
+add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
 
 ################################################################################
 #                                  Unit Tests                                  #
@@ -54,11 +61,12 @@ add_library(matchedFilter ${SRC} ${CUDA_SRC})
 
 add_executable(unitTests
                testing/main.cpp
+               testing/waveformTemplate.cpp
                testing/matchedFilterOptions.cpp
                testing/matchedFilter.cpp)
-target_link_libraries(matchedFilter ${IPP_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
+target_link_libraries(matchedFilter ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
 target_link_libraries(unitTests
-                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
+                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 
 add_test(NAME unitTests

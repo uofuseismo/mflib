@@ -2,14 +2,15 @@
 #define MFLIB_MATCHEDFILTEROPTIONS_HPP
 #include <memory>
 #include <vector>
+#include "waveformTemplate.hpp"
 #include "enums.hpp"
 namespace MFLib
 {
+class WaveformTemplate;
 /*!
  * @brief Defines the options for the matched filtering.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-template<class T = double>
 class MatchedFilterOptions
 {
 public:
@@ -66,15 +67,13 @@ public:
     /*! @} */
 
     /*!
-     * @brief Adds a template.
-     * @param[in] nSamples        The number of samples in the template.
-     * @param[in] signalTemplate  The signal template.  This is an array whose
-     *                            dimension is [nSamples].
+     * @brief Adds a waveform template signal.
+     * @param[in] waveformTemplate  The waveform signal template.
      * @throws std::invalid_argument if nSamples is not positive or
      *         signalTemplate is NULL.
      * @note This will invalidate the FFT length and the block size.
      */
-    void addTemplate(int nSamples, const T signalTemplate[]);
+    void addTemplate(const WaveformTemplate &waveformTemplate);
     /*!
      * @brief Clears all templates but leaves other variables untouched.
      */
@@ -82,26 +81,25 @@ public:
     /*!
      * @brief Gets the it'th template.
      * @param[in] it   The it'th template to return.
-     * @result The it'th template waveform.  Note, that this will be zero
-     *         padded to \c getTemplateLength().
+     * @result The it'th template waveform.
      * @throws std::invalid_argument if it is less than 0 or greater than or
      *         equal to the number of templates.
      * @sa \c getNumberOfTemplates()
      */
-    std::vector<T> getTemplate(int it) const;
+    WaveformTemplate getTemplate(int it) const;
     /*!
      * @brief Gets the number of signal templates.
      * @result The number of signal templates in the class.
      */
     int getNumberOfTemplates() const noexcept;
     /*!
-     * @brief Gets the template length.  Note, if given a template of length,
-     *        say, 300 samples, and 400 samples, the the template length
-     *        will be 400.  Hence, the 300 length signal will be zero-padded.
-     * @result The length of the output template signals.
+     * @brief Gets the longest template length.  For example, if given a
+     *        template length 300 samples and 400 samples, this will return
+     *        400.
+     * @result The maximum length of the output template signals.
      * @throws std::runtime_error if no templates were set.
      */
-    int getTemplateLength() const;
+    int getMaxTemplateLength() const;
 
     /*!
      * @brief Determines the size of the input signal chunk to process.

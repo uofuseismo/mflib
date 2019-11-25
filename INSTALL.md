@@ -8,17 +8,18 @@ This library targets x86\_64 chips and, in particular, Intel chips.  The library
 
 The following packages are required:
 
-    1.  A C++17 compliant compiler with the PSTL extensions.
-    2.  [CMake](https://cmake.org/) v.3.10 or greater.
-    3.  [Intel Math Kernel Library](https://software.intel.com/en-us/mkl)
-    4.  [Intel Performance Primitives](https://software.intel.com/en-us/ipp)
-    5.  Message Passing Interface v3, e.g., [MPICH](https://www.mpich.org/) or [OpenMPI](https://www.open-mpi.org/).
-    6.  [Google Test](https://github.com/google/googletest)
+   1.  A C++17 compliant compiler with the PSTL extensions.
+   2.  [CMake](https://cmake.org/) v.3.10 or greater.
+   3.  [Intel Math Kernel Library](https://software.intel.com/en-us/mkl)
+   4.  [Intel Performance Primitives](https://software.intel.com/en-us/ipp)
+   5.  Message Passing Interface v3, e.g., [MPICH](https://www.mpich.org/) or [OpenMPI](https://www.open-mpi.org/).
+   6.  [Google Test](https://github.com/google/googletest)
 
 The following packages are optional:
 
-    1.  [CUDA 10.1](https://developer.nvidia.com/cuda-downloads).  I may relax this and rewrite this in OpenCL.
-    2.  [OpenMP](https://www.openmp.org/).  This probably ships with your compiler.
+   1.  [CUDA 10.1](https://developer.nvidia.com/cuda-downloads) for a GPU-based matched filtered implementation.  I may relax this and rewrite this in OpenCL.
+   2.  [OpenMP](https://www.openmp.org/).  This probably ships with your compiler.
+   3.  [pybind11](https://github.com/pybind/pybind11) to generate Python bindings.
  
 # Downloading the Software
 

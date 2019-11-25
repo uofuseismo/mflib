@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
+#include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterOptions.hpp"
 #include "mflib/enums.hpp"
 
@@ -100,12 +101,12 @@ std::pair<int, int> computeWindowLength(const int nb, const int nx)
 }
 
 
-template<class T>
-class MatchedFilterOptions<T>::MatchedFilterOptionsImpl
+class MatchedFilterOptions::MatchedFilterOptionsImpl
 {
 public:
     /// Collection of templates
-    std::vector<std::vector<T>> mTemplates;
+    //std::vector<std::vector<T>> mTemplates;
+    std::vector<WaveformTemplate> mTemplates;
     /// Matched filter implementation
     MatchedFilterImplementation mImplementation
         = MatchedFilterImplementation::DIRECT;
@@ -119,31 +120,27 @@ public:
 };
 
 /// Constructor
-template<class T>
-MatchedFilterOptions<T>::MatchedFilterOptions() :
+MatchedFilterOptions::MatchedFilterOptions() :
     pImpl(std::make_unique<MatchedFilterOptionsImpl> ())
 {
 }
 
 /// Copy constructor
-template<class T>
-MatchedFilterOptions<T>::MatchedFilterOptions(
+MatchedFilterOptions::MatchedFilterOptions(
     const MatchedFilterOptions &options)
 {
     *this = options;
 }
 
 /// Move constructor
-template<class T>
-MatchedFilterOptions<T>::MatchedFilterOptions(
+MatchedFilterOptions::MatchedFilterOptions(
     MatchedFilterOptions &&options) noexcept
 {
     *this = std::move(options);
 }
 
 /// Copy assignment
-template<class T>
-MatchedFilterOptions<T>& MatchedFilterOptions<T>::operator=(
+MatchedFilterOptions& MatchedFilterOptions::operator=(
     const MatchedFilterOptions &options)
 {
     if (&options == this){return *this;}
@@ -152,8 +149,7 @@ MatchedFilterOptions<T>& MatchedFilterOptions<T>::operator=(
 }
 
 /// Move assignment
-template<class T>
-MatchedFilterOptions<T>& MatchedFilterOptions<T>::operator=(
+MatchedFilterOptions& MatchedFilterOptions::operator=(
     MatchedFilterOptions &&options) noexcept
 {
     if (&options == this){return *this;}
@@ -162,12 +158,10 @@ MatchedFilterOptions<T>& MatchedFilterOptions<T>::operator=(
 }
 
 /// Destructor
-template<class T>
-MatchedFilterOptions<T>::~MatchedFilterOptions() = default;
+MatchedFilterOptions::~MatchedFilterOptions() = default;
 
 /// Clears the memory and resets the class
-template<class T>
-void MatchedFilterOptions<T>::clear() noexcept
+void MatchedFilterOptions::clear() noexcept
 {
     pImpl->mTemplates.clear();
     pImpl->mImplementation = MatchedFilterImplementation::DIRECT;
@@ -175,22 +169,31 @@ void MatchedFilterOptions<T>::clear() noexcept
 }
 
 /// Get the number of templates
-template<class T>
-int MatchedFilterOptions<T>::getNumberOfTemplates() const noexcept
+int MatchedFilterOptions::getNumberOfTemplates() const noexcept
 {
     return static_cast<int> (pImpl->mTemplates.size());
 }
 
 /// Clears all the templates
-template<class T>
-void MatchedFilterOptions<T>::clearTemplates() noexcept
+void MatchedFilterOptions::clearTemplates() noexcept
 {
     pImpl->mTemplates.clear();
 }
 
+void MatchedFilterOptions::addTemplate(const WaveformTemplate &tplate)
+{
+    pImpl->mFFTLength = 0;
+    pImpl->mBlockLength = 0;
+    if (!tplate.haveSignal())
+    {
+        throw std::invalid_argument("Waveform not yet set on template\n");
+    }
+    pImpl->mTemplates.push_back(tplate); 
+}
+
 /// Adds a template
-template<class T>
-void MatchedFilterOptions<T>::addTemplate(
+/*
+void MatchedFilterOptions::addTemplate(
     const int nSamples, const T templateSignal[])
 {
     pImpl->mFFTLength = 0;
@@ -204,27 +207,40 @@ void MatchedFilterOptions<T>::addTemplate(
         throw std::invalid_argument("templateSignal is NULL\n");
     }
     std::vector<T> work(nSamples);
-    std::copy(templateSignal, templateSignal+nSamples, work.begin());
-    pImpl->mTemplates.push_back(work);
+    //std::copy(templateSignal, templateSignal+nSamples, work.begin());
+    //pImpl->mTemplates.push_back(work);
 } 
+*/
 
 /// Gets the template length
-template<class T>
-int MatchedFilterOptions<T>::getTemplateLength() const
+int MatchedFilterOptions::getMaxTemplateLength() const
 {
     if (getNumberOfTemplates() < 1)
     {
         throw std::runtime_error("No templates set\n");
     }
-    size_t len = 0;
+    int len = 0;
     for (auto &t : pImpl->mTemplates)
     {
-        len = std::max(len, t.size());
+        len = std::max(len, t.getSignalLength());
     }
-    return static_cast<int> (len); 
+    return len;
 }
 
 /// Gets the it'th template
+WaveformTemplate MatchedFilterOptions::getTemplate(const int it) const
+{
+    auto nt = getNumberOfTemplates();
+    if (it < 0 || it >= nt)
+    {
+        throw std::invalid_argument("Template " + std::to_string(it)
+                                  + " must be in range [0,"
+                                  + std::to_string(nt) + "]\n");
+    }
+    return pImpl->mTemplates[it];
+}
+
+/*
 template<class T>
 std::vector<T> MatchedFilterOptions<T>::getTemplate(
     const int it) const
@@ -239,20 +255,20 @@ std::vector<T> MatchedFilterOptions<T>::getTemplate(
     // Pad out the it'the template
     auto len = getTemplateLength();
     std::vector<T> work(len, 0);
-    std::copy(pImpl->mTemplates[it].begin(), pImpl->mTemplates[it].end(),
-              work.begin());
+    //std::copy(pImpl->mTemplates[it].begin(), pImpl->mTemplates[it].end(),
+    //          work.begin());
     return work;
 }
+*/
 
 /// Sets the FFT length
-template<class T>
-void MatchedFilterOptions<T>::setFFTLength(const int fftLength)
+void MatchedFilterOptions::setFFTLength(const int fftLength)
 {
     if (getNumberOfTemplates() < 1)
     {
         throw std::runtime_error("No templates set\n");
     }
-    int nb = getTemplateLength();
+    int nb = getMaxTemplateLength();
     if (fftLength < nb)
     {
         throw std::invalid_argument("fftLength = " + std::to_string(fftLength)
@@ -264,8 +280,7 @@ void MatchedFilterOptions<T>::setFFTLength(const int fftLength)
 }
 
 /// Gets the FFT length
-template<class T>
-int MatchedFilterOptions<T>::getFFTLength() const
+int MatchedFilterOptions::getFFTLength() const
 {
     if (getNumberOfTemplates() < 1)
     {
@@ -274,7 +289,7 @@ int MatchedFilterOptions<T>::getFFTLength() const
     if (pImpl->mFFTLength < 1)
     {
         auto nx = getSignalSize(); 
-        auto nb = getTemplateLength();
+        auto nb = getMaxTemplateLength();
         auto result = computeWindowLength(nb, nx);
         pImpl->mFFTLength = result.first;
         pImpl->mBlockLength = result.second;
@@ -284,8 +299,7 @@ int MatchedFilterOptions<T>::getFFTLength() const
 }
 
 /// Gets the block length
-template<class T>
-int MatchedFilterOptions<T>::getBlockLength() const
+int MatchedFilterOptions::getBlockLength() const
 {
     if (getNumberOfTemplates() < 1)
     {
@@ -294,7 +308,7 @@ int MatchedFilterOptions<T>::getBlockLength() const
     if (pImpl->mFFTLength < 1)
     {
         auto nx = getSignalSize();
-        auto nb = getTemplateLength();
+        auto nb = getMaxTemplateLength();
         auto result = computeWindowLength(nb, nx);
         pImpl->mFFTLength = result.first;
         pImpl->mBlockLength = result.second;
@@ -303,23 +317,20 @@ int MatchedFilterOptions<T>::getBlockLength() const
 }
 
 /// Sets the matched filter implementation
-template<class T>
-void MatchedFilterOptions<T>::setMatchedFilterImplementation(
+void MatchedFilterOptions::setMatchedFilterImplementation(
     const MatchedFilterImplementation implementation) noexcept
 {
     pImpl->mImplementation = implementation;
 }
 
 /// Gets the matched filter implementation
-template<class T>
 MatchedFilterImplementation 
-MatchedFilterOptions<T>::getMatchedFilterImplementation() const noexcept
+MatchedFilterOptions::getMatchedFilterImplementation() const noexcept
 {
     return pImpl->mImplementation;
 }
 
-template<class T>
-void MatchedFilterOptions<T>::setSignalSize(const int nx) 
+void MatchedFilterOptions::setSignalSize(const int nx) 
 {
     pImpl->mFFTLength = 0;
     pImpl->mBlockLength = 0;
@@ -330,8 +341,7 @@ void MatchedFilterOptions<T>::setSignalSize(const int nx)
     pImpl->mSignalSize = nx;
 }
 
-template<class T>
-int MatchedFilterOptions<T>::getSignalSize() const
+int MatchedFilterOptions::getSignalSize() const
 {
     if (pImpl->mSignalSize < 1)
     {
@@ -341,11 +351,10 @@ int MatchedFilterOptions<T>::getSignalSize() const
 }
 
 /// Checks if this is a valid set of template options
-template<class T>
-bool MatchedFilterOptions<T>::isValid() const noexcept
+bool MatchedFilterOptions::isValid() const noexcept
 {
     if (getNumberOfTemplates() < 1){return false;}
-    if (getTemplateLength() < 1){return false;}
+    if (getMaxTemplateLength() < 1){return false;}
     if (getSignalSize() < 1){return false;}
     return true;
 }
@@ -367,5 +376,5 @@ MFLib::computeOptimalFFTAndBlockLength(const int nb, const int nx)
 }
 
 /// Template class instantiation
-template class MatchedFilterOptions<double>;
-template class MatchedFilterOptions<float>;
+//template class MatchedFilterOptions<double>;
+//template class MatchedFilterOptions<float>;

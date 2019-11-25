@@ -10,6 +10,12 @@ using namespace MFLib;
 class WaveformTemplate::WaveformTemplateImpl
 {
 public:
+    WaveformTemplateImpl() = default;
+    /// Copy c'tor
+    WaveformTemplateImpl(const WaveformTemplateImpl &tplate)
+    {
+        *this = tplate;
+    }
     /// Deep copy of the template
     WaveformTemplateImpl& operator=(const WaveformTemplateImpl &tplate)
     {
@@ -17,11 +23,10 @@ public:
         mSamplingRate = tplate.mSamplingRate;
         // Copy the waveform
         mSignalLength = tplate.mSignalLength;
-        if (tplate.mSignalLength > 0)
+        if (mSignalLength > 0)
         {
-            auto len = static_cast<size_t> (mSignalLength);
-            mSignal = static_cast<double *> (calloc(len, sizeof(double)));
-            std::copy(tplate.mSignal, tplate.mSignal+len, mSignal);
+            mSignal = ippsMalloc_64f(mSignalLength);
+            ippsCopy_64f(tplate.mSignal, mSignal, mSignalLength);
         }
         return *this;
     }
@@ -33,7 +38,7 @@ public:
     /// Releases memory
     void clear() noexcept
     {
-        if (mSignal){free(mSignal);}
+        if (mSignal){ippsFree(mSignal);}
         mSignal = nullptr;
         mSamplingRate = 0;
         mShiftAndStackWeight = 1;
@@ -73,6 +78,7 @@ WaveformTemplate::WaveformTemplate(WaveformTemplate &&t) noexcept
 WaveformTemplate& WaveformTemplate::operator=(const WaveformTemplate &t)
 {
     if (&t == this){return *this;}
+    if (pImpl){pImpl->clear();}
     pImpl = std::make_unique<WaveformTemplateImpl> (*t.pImpl);
     return *this;
 }
@@ -140,4 +146,77 @@ double WaveformTemplate::getShiftAndStackWeight() const noexcept
     return pImpl->mShiftAndStackWeight;
 }
 
-/// 
+/// Sets the template signal
+void WaveformTemplate::setSignal(const int npts, 
+                                 const double x[])
+{
+    if (npts < 1 || x == nullptr)
+    {
+        if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
+        throw std::invalid_argument("x is NULL");
+    }
+    pImpl->mSignalLength = npts;
+    if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
+    pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
+    ippsCopy_64f(x, pImpl->mSignal, npts);
+}
+
+void WaveformTemplate::setSignal(const int npts,
+                                 const float x[])
+{
+    if (npts < 1 || x == nullptr)
+    {   
+        if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
+        throw std::invalid_argument("x is NULL");
+    }
+    pImpl->mSignalLength = npts;
+    if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
+    pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
+    ippsConvert_32f64f(x, pImpl->mSignal, npts);
+}
+
+/// Gets the signal
+void WaveformTemplate::getSignal(const int maxx, double *xIn[])
+{
+    auto npts = getSignalLength(); // Throws
+    if (maxx < npts)
+    {
+        throw std::invalid_argument("maxx = " + std::to_string(maxx)
+                                  + " must be at least = "
+                                  + std::to_string(npts) + "\n");
+    }
+    double *x = *xIn;
+    if (x == nullptr){throw std::invalid_argument("x is NULL\n");}
+    ippsCopy_64f(pImpl->mSignal, x, npts);
+}
+
+/// Gets the signal
+void WaveformTemplate::getSignal(const int maxx, float *xIn[])
+{
+    auto npts = getSignalLength(); // Throws
+    if (maxx < npts)
+    {   
+        throw std::invalid_argument("maxx = " + std::to_string(maxx)
+                                  + " must be at least = "
+                                  + std::to_string(npts) + "\n");
+    }   
+    float *x = *xIn;
+    if (x == nullptr){throw std::invalid_argument("x is NULL\n");}
+    ippsConvert_64f32f(pImpl->mSignal, x, npts);
+}
+
+/// Gets the signal length
+int WaveformTemplate::getSignalLength() const
+{
+    if (!haveSignal()){throw std::runtime_error("Signal not set\n");}
+    return pImpl->mSignalLength;
+}
+
+/// Check if I have the signal
+bool WaveformTemplate::haveSignal() const noexcept
+{
+    if (pImpl->mSignal && pImpl->mSignalLength > 0){return true;}
+    return false; 
+}
+
+

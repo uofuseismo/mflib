@@ -5,7 +5,7 @@
 #include <vector>
 namespace MFLib
 {
-template<class T> class MatchedFilterOptions;
+class MatchedFilterOptions;
 /*!
  * @brief The workhorse algorithm that applies the matched filters.
  * @copyright Ben Baker distributed under the MIT license.
@@ -40,7 +40,7 @@ public:
      * @brief Initializes the matched filter.
      * @throws std::invalid_argument if options is not valid.
      */
-    void initialize(const MatchedFilterOptions<T> &options);
+    void initialize(const MatchedFilterOptions &options);
 
     /*!
      * @brief Sets the signal corresponding to the it'th template.
