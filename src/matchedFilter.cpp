@@ -174,6 +174,7 @@ public:
         if (mInputSignals){MKL_free(mInputSignals);}
         if (mFilteredSignals){MKL_free(mFilteredSignals);}
         if (mDenominator){MKL_free(mDenominator);}
+        if (mSkipZeroSignal){MKL_free(mSkipZeroSignal);}
         mB = nullptr;
         mBPtr = nullptr;
         //mCorrelogramSpectra = nullptr;
@@ -184,6 +185,7 @@ public:
         mInputSignals = nullptr;
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
+        mSkipZeroSignal = nullptr;
         /// Set everything else to 0
         mSpectraLength = 0;
         mFFTLength = 0;
@@ -230,6 +232,9 @@ public:
     /// The time domain signal to Fourier transform.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     double *mSignalSegment = nullptr;
+    /// Determines if I should skip this signal because it is 0.
+    /// This has dimension [mTemplates].
+    bool *mSkipZeroSignal = nullptr;
     /// The length of the Fourier transforms.  This should equal 
     /// mFFTLength/2 + 1.
     int mSpectraLength = 0;
@@ -287,6 +292,7 @@ public:
         if (mInputSignals){MKL_free(mInputSignals);}
         if (mFilteredSignals){MKL_free(mFilteredSignals);}
         if (mDenominator){MKL_free(mDenominator);}
+        if (mSkipZeroSignal){MKL_free(mSkipZeroSignal);}
         mB = nullptr;
         mBPtr = nullptr;
         //mCorrelogramSpectra = nullptr;
@@ -297,6 +303,7 @@ public:
         mInputSignals = nullptr;
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
+        mSkipZeroSignal = nullptr;
         /// Set everything else to 0
         mSpectraLength = 0;
         mFFTLength = 0;
@@ -343,6 +350,9 @@ public:
     /// The time domain signal to Fourier transform.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     float *mSignalSegment = nullptr;
+    /// Determines if I should skip this signal because it is 0.
+    /// This has dimension [mTemplates].
+    bool *mSkipZeroSignal = nullptr;
     /// The length of the Fourier transforms.  This should equal 
     /// mFFTLength/2 + 1.
     int mSpectraLength = 0;
@@ -508,6 +518,8 @@ void MatchedFilter<double>::initialize(
     pImpl->mInputSignals = static_cast<double *> (MKL_calloc(len, 1, 64));
     pImpl->mFilteredSignals = static_cast<double *> (MKL_calloc(len, 1, 64));
     pImpl->mDenominator = static_cast<double *> (MKL_calloc(len, 1, 64));
+    len = static_cast<size_t> (pImpl->mTemplates)*sizeof(bool);
+    pImpl->mSkipZeroSignal = static_cast<bool *> (MKL_calloc(len, 1, 64));
     // Finish up initialization 
     pImpl->mHaveFFTwPlans = true;
     pImpl->mInitialized = true;
@@ -608,6 +620,8 @@ void MatchedFilter<float>::initialize(
     pImpl->mInputSignals = static_cast<float *> (MKL_calloc(len, 1, 64));
     pImpl->mFilteredSignals = static_cast<float *> (MKL_calloc(len, 1, 64));
     pImpl->mDenominator = static_cast<float *> (MKL_calloc(len, 1, 64));
+    len = static_cast<size_t> (pImpl->mTemplates)*sizeof(bool);
+    pImpl->mSkipZeroSignal = static_cast<bool *> (MKL_calloc(len, 1, 64));
     // Finish up initialization 
     pImpl->mHaveFFTwPlans = true;
     pImpl->mInitialized = true;
@@ -634,6 +648,7 @@ void MatchedFilter<T>::zeroSignal(const int it)
 #else
     std::fill(ptr, ptr+ns, 0);
 #endif
+    pImpl->mSkipZeroSignal[it] = true;
 }
 
 /// Sets the it'th signal
@@ -665,6 +680,7 @@ void MatchedFilter<T>::setSignal(const int it, const int nSamples,
 #else
     std::copy(signal, signal+nSamples, ptr);
 #endif
+    pImpl->mSkipZeroSignal[it] = false;
 }
 
 /// Gets it'th matched filtered signal
@@ -803,11 +819,19 @@ void MatchedFilter<double>::apply()
         // Signal index
         auto isrc = pImpl->mSamplesLeadingDimension
                    *static_cast<size_t> (it);
-        /// Skip the filter start-up
+        // Skip the filter start-up
         auto idst = isrc + static_cast<size_t> (nb) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
-        normalizeSignal(nxUnpadded, nb, y, yNum, tol);
+        // Avoid division by zero for obviously dead traces
+        if (!pImpl->mSkipZeroSignal[it])
+        {
+            normalizeSignal(nxUnpadded, nb, y, yNum, tol);
+        }
+        else
+        {
+            std::fill(std::execution::unseq, yNum, yNum+0, 0); 
+        }
     }
     } // End parallel
     pImpl->mHaveMatchedFilters = true;
