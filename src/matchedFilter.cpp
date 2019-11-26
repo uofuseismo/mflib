@@ -544,6 +544,7 @@ void MatchedFilter<float>::initialize(
                                                   pImpl->mSamplesExtra);
     pImpl->mFFTLength = result.first; //options.getFFTLength();
     pImpl->mL = result.second;
+    pImpl->mSpectraLength = pImpl->mFFTLength/2 + 1;
     // See double precision for explanation
     pImpl->mTemplates = options.getNumberOfTemplates();
     pImpl->mConvolutionLeadingDimension = padLength(pImpl->mFFTLength,
@@ -734,8 +735,6 @@ void MatchedFilter<double>::apply()
 
     std::complex<double> *B = pImpl->mBPtr;
     std::complex<double> *X = pImpl->mSegmentSpectraPtr;
-    std::complex<double> alpha(1, 0);
-    std::complex<double> beta(0, 0);
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
@@ -816,6 +815,9 @@ void MatchedFilter<double>::apply()
     #pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
+        // Avoid division by zero for obviously dead traces.
+        // Since the numerators were zero'd on entry simply skip it.
+        if (pImpl->mSkipZeroSignal[it]){continue;}
         // Signal index
         auto isrc = pImpl->mSamplesLeadingDimension
                    *static_cast<size_t> (it);
@@ -823,15 +825,7 @@ void MatchedFilter<double>::apply()
         auto idst = isrc + static_cast<size_t> (nb) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
-        // Avoid division by zero for obviously dead traces
-        if (!pImpl->mSkipZeroSignal[it])
-        {
-            normalizeSignal(nxUnpadded, nb, y, yNum, tol);
-        }
-        else
-        {
-            std::fill(std::execution::unseq, yNum, yNum+0, 0); 
-        }
+        normalizeSignal(nxUnpadded, nb, y, yNum, tol);
     }
     } // End parallel
     pImpl->mHaveMatchedFilters = true;
@@ -856,12 +850,10 @@ void MatchedFilter<float>::apply()
     auto nfft = pImpl->mFFTLength;
     auto nTemplates = pImpl->mTemplates;
     auto spectraLength = pImpl->mSpectraLength;
-    auto xnorm = 1/static_cast<float> (pImpl->mFFTLength);
+    auto xnorm = static_cast<float> (1/static_cast<double> (pImpl->mFFTLength));
 
     std::complex<float> *B = pImpl->mBPtr;
     std::complex<float> *X = pImpl->mSegmentSpectraPtr;
-    std::complex<float> alpha(1, 0);
-    std::complex<float> beta(0, 0);
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
@@ -939,8 +931,12 @@ void MatchedFilter<float>::apply()
     {
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
     constexpr float tol = 1.e-6;
+    #pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
+        // Avoid division by zero for obviously dead traces.
+        // Since the numerators were zero'd on entry simply skip it.
+        if (pImpl->mSkipZeroSignal[it]){continue;}
         // Signal index
         auto isrc = pImpl->mSamplesLeadingDimension
                    *static_cast<size_t> (it);

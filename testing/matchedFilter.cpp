@@ -22,8 +22,11 @@ void matchedFilter(const int nb, const double b[],
 void dumbXC(const int nb, const double b[],
             const int nx, const double x[],
             double xc[]);
+void dumbXC(const int nb, const float b[],
+            const int nx, const float x[],
+            float xc[]);
 
-TEST(matchedFilter, basicTest)
+TEST(matchedFilter, basicTestDouble)
 {
     MatchedFilterOptions options;
     MatchedFilter<double> mf;
@@ -128,7 +131,68 @@ TEST(matchedFilter, basicTest)
     //printf("%e\n", error);
 
     // Put this in a loop
+}
 
+TEST(matchedFilter, basicTestFloat)
+{
+    MatchedFilterOptions options;
+    MatchedFilter<float> mf; 
+
+    int signalSize = 1000;
+    double Tmax = 8;
+    double dt = Tmax/(signalSize - 1); 
+    double f0 = 4.0/Tmax; // 4 cycles in desired output 
+    double amp = 2;
+    std::vector<float> x(signalSize);
+    std::vector<float> x2(signalSize);
+    for (int i=0; i<signalSize; ++i)
+    {
+        auto t = i*dt;
+        auto y = amp*std::exp(-0.1*t)*std::sin(2*M_PI*f0*t);
+        x[i] = y;
+        x2[i] = amp*std::exp(-0.15*t)*std::cos(2*M_PI*f0*t);
+    }   
+    // Make a template - have a sine/cosine wave look for the sine/cosine
+    // wave in an exponentially damped wave.  This works because of the 
+    // scaling in the .
+    double Twin = 2;
+    int nb = static_cast<int> (Twin/dt + 0.5) + 1;
+    std::vector<float> b(nb);
+    std::vector<float> b2(nb);
+    for (int i=0; i<nb; ++i)
+    {
+        auto t = i*dt;
+        auto y = std::sin(2*M_PI*f0*t);
+        b[i] = y;
+        b2[i] = std::cos(2*M_PI*f0*t);
+    }   
+    // Create a reference
+    std::vector<float> yRef(signalSize, 0), yRef2(signalSize, 0); 
+    //matchedFilter(nb, b.data(), signalSize, x.data(), yRef.data());
+    dumbXC(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
+    dumbXC(nb, b2.data(), signalSize, x2.data(), yRef2.data());
+    // Set the templates
+    options.setMatchedFilterImplementation(
+        MatchedFilterImplementation::AUTO);
+    options.setSignalSize(signalSize);
+    WaveformTemplate bt, bt2;
+    bt.setSignal(b.size(), b.data());
+    bt2.setSignal(b2.size(), b2.data());
+    options.addTemplate(bt); //b.size(), b.data());
+    EXPECT_EQ(options.getNumberOfTemplates(), 1);
+    // Initialize the matched filter
+    mf.initialize(options);
+    auto templateSpectra = mf.getSpectraOfTemplate(0);
+    EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
+    EXPECT_FALSE(mf.haveMatchedFilteredSignals());
+
+    EXPECT_NO_THROW(mf.apply());
+    EXPECT_TRUE(mf.haveMatchedFilteredSignals());
+    std::vector<float> result;
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
+    float error;
+    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 5.e-3);
 }
 
 /*
@@ -281,6 +345,21 @@ void dumbXC(const int nb, const double b[],
         double Ex;
         ippsDotProd_64f(&x[i], &x[i], nb, &Ex);
         ippsDotProd_64f(b, &x[i], nb, &xc[i]); 
+        xc[i] = xc[i]/std::sqrt(Eb*Ex);
+    }
+}
+
+void dumbXC(const int nb, const float b[],
+            const int nx, const float x[],
+            float xc[])
+{
+    float Eb;
+    ippsDotProd_32f(b, b, nb, &Eb);
+    for (int i=0; i<nx-nb+1; ++i)
+    {
+        float Ex;
+        ippsDotProd_32f(&x[i], &x[i], nb, &Ex);
+        ippsDotProd_32f(b, &x[i], nb, &xc[i]);
         xc[i] = xc[i]/std::sqrt(Eb*Ex);
     }
 }
