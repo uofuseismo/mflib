@@ -47,7 +47,7 @@ TEST(matchedFilter, basicTestDouble)
     }
     // Make a template - have a sine/cosine wave look for the sine/cosine
     // wave in an exponentially damped wave.  This works because of the 
-    // scaling in the .
+    // scaling in the denominator.
     double Twin = 2;
     int nb = static_cast<int> (Twin/dt + 0.5) + 1;
     std::vector<double> b(nb);
@@ -79,6 +79,12 @@ TEST(matchedFilter, basicTestDouble)
     WaveformTemplate bt, bt2;
     bt.setSignal(b.size(), b.data());
     bt2.setSignal(b2.size(), b2.data());
+    bt.setSamplingRate(1);
+    bt2.setSamplingRate(1);
+    bt.setTravelTime(0);
+    bt2.setTravelTime(0);
+    bt.setOnsetTime(0);
+    bt2.setOnsetTime(0);
     options.addTemplate(bt); //b.size(), b.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 1);
     // Initialize the matched filter
@@ -93,7 +99,7 @@ TEST(matchedFilter, basicTestDouble)
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     double error;
     ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
+    EXPECT_LT(error, 1.e-13);
     //printf("%e\n", error);
 
     // Try again with four templates
@@ -112,26 +118,28 @@ TEST(matchedFilter, basicTestDouble)
     EXPECT_NO_THROW(mf.apply());
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
-    //printf("%e\n", error);
+    EXPECT_LT(error, 1.e-13);
+    //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
     ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
-    //printf("%e\n", error);
+    EXPECT_LT(error, 1.e-13);
+    //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
     ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
-    //printf("%e\n", error);
+    EXPECT_LT(error, 1.e-13);
+    //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
     ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
-    //printf("%e\n", error);
+    EXPECT_LT(error, 1.e-13);
+    //printf("e %e\n", error);
 
     // Put this in a loop
 }
+
+//----------------------------------------------------------------------------//
 
 TEST(matchedFilter, basicTestFloat)
 {
@@ -154,7 +162,7 @@ TEST(matchedFilter, basicTestFloat)
     }   
     // Make a template - have a sine/cosine wave look for the sine/cosine
     // wave in an exponentially damped wave.  This works because of the 
-    // scaling in the .
+    // scaling in the denominator.
     double Twin = 2;
     int nb = static_cast<int> (Twin/dt + 0.5) + 1;
     std::vector<float> b(nb);
@@ -178,6 +186,12 @@ TEST(matchedFilter, basicTestFloat)
     WaveformTemplate bt, bt2;
     bt.setSignal(b.size(), b.data());
     bt2.setSignal(b2.size(), b2.data());
+    bt.setSamplingRate(1);
+    bt2.setSamplingRate(1);
+    bt.setTravelTime(0);
+    bt2.setTravelTime(0);
+    bt.setOnsetTime(0);
+    bt2.setOnsetTime(0);
     options.addTemplate(bt); //b.size(), b.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 1);
     // Initialize the matched filter
@@ -192,8 +206,160 @@ TEST(matchedFilter, basicTestFloat)
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     float error;
     ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 5.e-3);
+    EXPECT_LT(error, 1.e-6);
+
+    // Try again with four templates
+    options.clearTemplates();
+    options.addTemplate(bt); //b.size(),  b.data());
+    options.addTemplate(bt2); //b2.size(), b2.data());
+    options.addTemplate(bt); //b.size(),  b.data());
+    options.addTemplate(bt2); //b2.size(), b2.data());
+    EXPECT_EQ(options.getNumberOfTemplates(), 4); 
+    EXPECT_NO_THROW(mf.initialize(options));
+    EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
+    EXPECT_NO_THROW(mf.setSignal(1, signalSize, x2.data()));
+    EXPECT_NO_THROW(mf.setSignal(2, signalSize, x.data()));
+    EXPECT_NO_THROW(mf.setSignal(3, signalSize, x2.data()));
+    EXPECT_EQ(mf.getNumberOfTemplates(), 4); 
+    EXPECT_NO_THROW(mf.apply());
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
+    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 1.e-6);
+    //printf("e %e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
+    ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 1.e-6);
+    //printf("e %e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
+    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 1.e-6);
+    //printf("e %e\n", error);
+
+    EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
+    ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
+    EXPECT_LT(error, 1.e-6);
 }
+
+//----------------------------------------------------------------------------//
+
+TEST(matchedFilter, shiftAndStack)
+{
+    double Tmax = 120;
+    double df = 100;
+    auto dt = 1/df;
+    int signalSize = static_cast<int> (Tmax/dt + 0.5) + 1;
+    EXPECT_NEAR(Tmax, (signalSize-1)*dt, 1.e-14);
+    double templateDuration = 4; // + 2;
+    int templateSize = static_cast<int> (templateDuration/dt + 0.5) + 1;
+    EXPECT_NEAR(templateDuration, (templateSize-1)*dt, 1.e-14);
+    double toff1 = 0; // Arrival offset into template: 1 s 
+    double toff2 = 0;//2;
+    double toff3 = 0;//2.5;
+    int nextra1 = static_cast<int> (toff1/dt + 0.5);
+    int nextra2 = static_cast<int> (toff2/dt + 0.5);
+    int nextra3 = static_cast<int> (toff3/dt + 0.5);
+    std::vector<double> t1(templateSize+nextra1, 0); // + 1 s
+    std::vector<double> t2(templateSize+nextra2, 0); // + 2 s
+    std::vector<double> t3(templateSize+nextra3, 0); // + 2.5 s
+    std::vector<double> signal1(signalSize, 0); 
+    std::vector<double> signal2(signalSize, 0);
+    std::vector<double> signal3(signalSize, 0);
+    double originTime = 8;
+    double tt1 = 20; // Travel time 20 s
+    double tt2 = 40;
+    double tt3 = 80;
+    int id1 = static_cast<int> ((originTime + tt1)/dt + 0.5);
+    int id2 = static_cast<int> ((originTime + tt2)/dt + 0.5);
+    int id3 = static_cast<int> ((originTime + tt3)/dt + 0.5);
+    for (int i=0; i<signal1.size(); ++i)
+    {
+        double s1 = 0.001;
+        if (i%2 == 0){s1 =-s1;}
+        signal1[i] = s1;
+        signal2[i] = s1;
+        signal3[i] = s1;
+    }
+    for (int i=0; i<templateSize; ++i)
+    {
+        auto t = i*dt;
+        auto s1 = 2.0*std::exp(-t)*std::sin(2*M_PI*t/templateDuration);
+        auto s2 = 1.5*std::exp(-1.5*t)*std::sin(2*M_PI*t/templateDuration);
+        auto s3 = 1.2*std::exp(-2.5*t)*std::sin(2*M_PI*t/templateDuration);
+        if (i == 0 || i == templateSize - 1)
+        {
+            s1 = 0;
+            s2 = 0;
+            s3 = 0;
+        }
+        t1[i+nextra1] = s1;
+        t2[i+nextra2] = s2;
+        t3[i+nextra3] = s3;
+        signal1[id1+i] = s1;
+        signal2[id2+i] = s2;
+        signal3[id3+i] = s3;
+    }
+    // Set the matched filter
+    MatchedFilterOptions options;
+    MatchedFilter<double> mf; 
+    WaveformTemplate bt1, bt2, bt3;
+
+    bt1.setSignal(t1.size(), t1.data());
+    bt2.setSignal(t2.size(), t2.data());
+    bt3.setSignal(t3.size(), t3.data());
+    bt1.setSamplingRate(df);
+    bt2.setSamplingRate(df);
+    bt3.setSamplingRate(df);
+    bt1.setTravelTime(tt1);
+    bt2.setTravelTime(tt2);
+    bt3.setTravelTime(tt3);
+    bt1.setOnsetTime(toff1);
+    bt2.setOnsetTime(toff2);
+    bt3.setOnsetTime(toff3);
+
+    options.setMatchedFilterImplementation(MatchedFilterImplementation::AUTO);
+    options.setSignalSize(signalSize);
+    options.addTemplate(bt1);
+    options.addTemplate(bt2);
+    options.addTemplate(bt3);
+    
+    mf.initialize(options);
+    mf.setSignal(0, signal1.size(), signal1.data());
+    mf.setSignal(1, signal2.size(), signal2.data());
+    mf.setSignal(2, signal3.size(), signal3.data());
+    mf.apply();
+
+    auto pc1 = mf.getMatchedFilteredSignal(0);
+    auto pc2 = mf.getMatchedFilteredSignal(1);
+    auto pc3 = mf.getMatchedFilteredSignal(2);
+    // Compute a reference solution
+    std::vector<double> yRef1(signalSize, 0);
+    std::vector<double> yRef2(signalSize, 0);
+    std::vector<double> yRef3(signalSize, 0);
+    dumbXC(t1.size(), t1.data(), signalSize, signal1.data(), yRef1.data());
+    dumbXC(t2.size(), t2.data(), signalSize, signal2.data(), yRef2.data());
+    dumbXC(t3.size(), t3.data(), signalSize, signal3.data(), yRef3.data());
+
+    double error = 0;
+    ippsNormDiff_Inf_64f(yRef1.data(), pc1.data(), pc1.size(), &error);
+printf("%e\n", error);
+    ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
+printf("%e\n", error);
+    ippsNormDiff_Inf_64f(yRef3.data(), pc3.data(), pc3.size(), &error);
+printf("%e\n", error);
+
+FILE *ofl1 = fopen("testShift.ref.txt", "w");
+FILE *ofl2 = fopen("testShift.txt", "w");
+for (int i=0; i<signal1.size(); ++i)
+{
+fprintf(ofl1, "%lf, %lf, %lf, %lf\n", i*dt-tt1+1, yRef1[i], yRef2[i], yRef3[i]);
+fprintf(ofl2, "%lf, %lf, %lf, %lf\n", i*dt-tt1+1, pc1[i], pc2[i], pc3[i]);
+}
+fclose(ofl1);
+fclose(ofl2);
+}
+
 
 /*
 TEST(matchedFilter, stressTest)
@@ -338,30 +504,50 @@ void dumbXC(const int nb, const double b[],
             const int nx, const double x[],
             double xc[])
 {
+    double *btemp = ippsMalloc_64f(nb);
+    double *xtemp = ippsMalloc_64f(nb);
+    double mean = 0;
+    ippsMean_64f(b, nb, &mean);
+    ippsSubC_64f(b, mean, btemp, nb);
     double Eb;
-    ippsDotProd_64f(b, b, nb, &Eb);
+    ippsNorm_L2_64f(btemp, nb, &Eb);
     for (int i=0; i<nx-nb+1; ++i)
     {
         double Ex;
-        ippsDotProd_64f(&x[i], &x[i], nb, &Ex);
-        ippsDotProd_64f(b, &x[i], nb, &xc[i]); 
-        xc[i] = xc[i]/std::sqrt(Eb*Ex);
+        ippsMean_64f(&x[i], nb, &mean);
+        ippsSubC_64f(&x[i], mean, xtemp, nb);
+        ippsNorm_L2_64f(xtemp, nb, &Ex);
+        Ex = std::max(std::numeric_limits<double>::epsilon(), Ex);
+        ippsDotProd_64f(btemp, xtemp, nb, &xc[i]);
+        xc[i] = xc[i]/(Eb*Ex);
     }
+    ippsFree(btemp);
+    ippsFree(xtemp);
 }
 
 void dumbXC(const int nb, const float b[],
             const int nx, const float x[],
             float xc[])
 {
-    float Eb;
-    ippsDotProd_32f(b, b, nb, &Eb);
+    float *btemp = ippsMalloc_32f(nb);
+    float *xtemp = ippsMalloc_32f(nb);
+    float mean = 0;
+    ippsMean_32f(b, nb, &mean, ippAlgHintAccurate);
+    ippsSubC_32f(b, mean, btemp, nb);
+    float Eb; 
+    ippsNorm_L2_32f(btemp, nb, &Eb);
     for (int i=0; i<nx-nb+1; ++i)
-    {
-        float Ex;
-        ippsDotProd_32f(&x[i], &x[i], nb, &Ex);
-        ippsDotProd_32f(b, &x[i], nb, &xc[i]);
-        xc[i] = xc[i]/std::sqrt(Eb*Ex);
-    }
+    {   
+        float Ex; 
+        ippsMean_32f(&x[i], nb, &mean, ippAlgHintAccurate);
+        ippsSubC_32f(&x[i], mean, xtemp, nb);
+        ippsNorm_L2_32f(xtemp, nb, &Ex);
+        Ex = std::max(std::numeric_limits<float>::epsilon(), Ex);
+        ippsDotProd_32f(btemp, xtemp, nb, &xc[i]);
+        xc[i] = xc[i]/(Eb*Ex);
+    }   
+    ippsFree(btemp);
+    ippsFree(xtemp);
 }
 
 /*
