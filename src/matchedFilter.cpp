@@ -97,6 +97,7 @@ void normalizeSignal(const int n, const int lent,
      firstprivate(tol) \
      default(none)
     {
+    const T zero = 0;
     auto s  = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
     auto s2 = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
     T xnorm = 1/static_cast<T> (lent);
@@ -141,7 +142,9 @@ void normalizeSignal(const int n, const int lent,
         #pragma omp simd aligned(s, s2: 64)
         for (int j=0; j<lent; ++j)
         {
-            T den = std::sqrt(scalDen*s2[j] - s[j]*s[j]);
+            T arg = std::max(zero, scalDen*s2[j] - s[j]*s[j]);
+            //if (arg < 0){printf("problem, %lf\n",arg);} 
+            T den = std::sqrt(arg); //scalDen*s2[j] - s[j]*s[j]);
             T newNum = scalNum*yn[j];
             yn[j] = newNum/den;
             // This prevents a divide by zero from blinding us.
@@ -941,15 +944,10 @@ void MatchedFilter<double>::apply()
         // Avoid division by zero for obviously dead traces.
         // Since the numerators were zero'd on entry simply skip it.
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        // Signal index.  Note, padding introduces a wrinkle.  
-        // Let's say we had a 150 sample delay from padding.  However, this
-        // template has length 100 samples.  Hence, without a correction the 
-        // normalization would start 50 samples too early.  So we need a delay
-        // otherwise we'll divide by the wrong part of the input signal.
-        int delay = nb - pImpl->mTemplateLengths[it];
-        auto isrc = ldm*it + static_cast<size_t> (delay);
-        // Skip the filter start-up.  Keep this consistent for all signals.
-        auto idst = ldm*it + static_cast<size_t> (nb) - 1;
+        auto isrc = ldm*it;
+        // Skip the filter start-up - will be different for each signal.
+        auto idst = ldm*it
+                  + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
         normalizeSignal(nxUnpadded, pImpl->mTemplateLengths[it],
@@ -1067,13 +1065,22 @@ void MatchedFilter<float>::apply()
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        int delay = nb - pImpl->mTemplateLengths[it];
-        auto isrc = ldm*it + static_cast<size_t> (delay);
-        auto idst = isrc + static_cast<size_t> (nb) - 1;
+        auto isrc = ldm*it;
+        auto idst = ldm*it
+                  + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
         const float *y = &pImpl->mInputSignals[isrc];
         float *yNum = &pImpl->mFilteredSignals[idst];
         normalizeSignal(nxUnpadded, pImpl->mTemplateLengths[it],
                         y, yNum, tol);
+        /*
+        auto isrc = ldm*it;
+        auto idst = ldm*it
+                  + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
+        const float *y = &pImpl->mInputSignals[isrc];
+        float *yNum = &pImpl->mFilteredSignals[idst];
+        normalizeSignal(nxUnpadded, pImpl->mTemplateLengths[it],
+                        y, yNum, tol);
+        */
     }
     } // End parallel
     pImpl->mHaveMatchedFilters = true;

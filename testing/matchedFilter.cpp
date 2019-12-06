@@ -380,12 +380,20 @@ printf("%e\n", error);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef3.data()+50, pc3.data(), pc3.size(), &error);
 printf("%e\n", error);
+for (int i=pc1.size()-50; i<pc1.size(); ++i)
+{
+printf("%d %lf, %lf, %lf\n", i, yRef1[i], pc1[i], yRef1[i] - pc1[i]);
+}
 */
+
     ippsNormDiff_Inf_64f(yRef1.data(), pc1.data(), pc1.size(), &error);
+    EXPECT_LE(error, 5.e-12);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
+    EXPECT_LE(error, 5.e-12);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef3.data(), pc3.data(), pc3.size(), &error);
+    EXPECT_LE(error, 5.e-12);
 printf("%e\n", error);
 //getchar();
 
