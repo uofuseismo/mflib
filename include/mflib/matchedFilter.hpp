@@ -89,6 +89,13 @@ public:
      * @sa \c isInitialized()
      */
     void apply();
+    /*!
+     * @brief Performs the shfit and stack operation of the correlograms
+     *        in the group.
+     * @throws std::runtime_error if the matched filtered signals are not
+     *         yet computed.
+     */
+    std::vector<T> shiftAndStack();
 
     /*!
      * @brief Gets the matched filtered signal corresponding to the it'th

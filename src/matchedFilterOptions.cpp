@@ -110,6 +110,8 @@ public:
     /// Matched filter implementation
     MatchedFilterImplementation mImplementation
         = MatchedFilterImplementation::DIRECT;
+    /// Sampling rate of templates
+    double mSamplingRate =-1;
     /// Signal size
     int mSignalSize = 0;
     /// FFT length
@@ -117,6 +119,8 @@ public:
     /// The block length.  Given a filter length, nb, and FFT length,
     /// the optimal length is  L = mFFTLength - nb - 1.
     int mBlockLength = 0;
+    /// Stack absolute value
+    bool mStackAbs = true;
 };
 
 /// Constructor
@@ -165,7 +169,11 @@ void MatchedFilterOptions::clear() noexcept
 {
     pImpl->mTemplates.clear();
     pImpl->mImplementation = MatchedFilterImplementation::DIRECT;
+    pImpl->mSamplingRate =-1;
     pImpl->mSignalSize = 0;
+    pImpl->mFFTLength = 0;
+    pImpl->mBlockLength = 0;
+    pImpl->mStackAbs = true;
 }
 
 /// Get the number of templates
@@ -177,6 +185,7 @@ int MatchedFilterOptions::getNumberOfTemplates() const noexcept
 /// Clears all the templates
 void MatchedFilterOptions::clearTemplates() noexcept
 {
+    pImpl->mSamplingRate =-1;
     pImpl->mTemplates.clear();
 }
 
@@ -188,6 +197,17 @@ void MatchedFilterOptions::addTemplate(const WaveformTemplate &tplate)
     {
         throw std::invalid_argument("Waveform not yet set on template\n");
     }
+    // Verify the sampling rates are consistent otherwise Fourier transform
+    // will be meaningless.
+    double df = tplate.getSamplingRate(); // Throws
+    if (pImpl->mSamplingRate < 0){pImpl->mSamplingRate = df;}
+    if (std::abs(df - pImpl->mSamplingRate) > 1.e-4)
+    {
+        throw std::invalid_argument("Template sampling rate = "
+                                 + std::to_string(df) + " must equal "
+                                 + std::to_string(pImpl->mSamplingRate) + "\n");
+    }
+    // Check the sampling rate
     pImpl->mTemplates.push_back(tplate); 
 }
 
@@ -349,6 +369,18 @@ int MatchedFilterOptions::getSignalSize() const
     } 
     return pImpl->mSignalSize;
 }
+
+/// Toggles using the absolute value of the stack
+void MatchedFilterOptions::setStackAbsoluteValues(const bool labs) noexcept
+{
+    pImpl->mStackAbs = labs;
+}
+
+bool MatchedFilterOptions::getStackAbsoluteValues() const noexcept
+{
+    return pImpl->mStackAbs;
+}
+
 
 /// Checks if this is a valid set of template options
 bool MatchedFilterOptions::isValid() const noexcept

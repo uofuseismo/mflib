@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mflib VERSION 0.1.2 LANGUAGES CXX)
+project(mflib VERSION 0.1.3 LANGUAGES CXX)
 enable_testing()
 
 include(CheckCXXCompilerFlag)
@@ -20,6 +20,7 @@ find_package(CUDA
              COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES)
 if (${CUDA_FOUND})
    message("CUDA was found")
+   enable_language(CUDA)
    string(APPEND CMAKE_CXX_FLAGS " -DUSE_CUDA")
 endif()
 set(FindIPP_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
@@ -45,15 +46,24 @@ include_directories(
 set(SRC
     src/matchedFilterOptions.cpp
     src/matchedFilter.cpp
-    src/waveformTemplate.cpp)
+    src/waveformTemplate.cpp
+    src/shiftAndStack.cpp)
 set(MPI_SRC
     src/mpi.cpp)
 if (${CUDA_FOUND})
-   set(CUDA_SRC src/cudaMatchedFilter.cpp)
+   string(APPEND CUDA_NVCC_FLAGS " -ccbin ${CMAKE_CXX_COMPILER}")
+   set(CUDA_SRC src/cudaMatchedFilter.cu)
 endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
+#if(OpenMP_CXX_FOUND)
+#   message("yes")
+#   #target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
+#   set(OPENMP_CXX_LIB OpenMP::OpenMP_CXX)
+#   #message(${OPENMP_CXX_LIB})
+#   target_include_directories(matchedFilter PRIVATE OpenMP::OpenMP_CXX)
+#endif()
 
 ################################################################################
 #                                  Unit Tests                                  #
@@ -64,7 +74,8 @@ add_executable(unitTests
                testing/waveformTemplate.cpp
                testing/matchedFilterOptions.cpp
                testing/matchedFilter.cpp)
-target_link_libraries(matchedFilter ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+target_link_libraries(matchedFilter ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
+                      ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})

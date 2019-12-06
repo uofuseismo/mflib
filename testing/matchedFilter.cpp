@@ -64,14 +64,6 @@ TEST(matchedFilter, basicTestDouble)
     //matchedFilter(nb, b.data(), signalSize, x.data(), yRef.data());
     dumbXC(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
     dumbXC(nb, b2.data(), signalSize, x2.data(), yRef2.data());
-/*
-    FILE *filterRef = fopen("filterRef.txt", "w");
-    for (int i=0; i<yRef.size(); ++i)
-    {
-        fprintf(filterRef, "%lf, %lf\n", i*dt, yRef[i]);
-    }
-    fclose(filterRef);
-*/
     // Set the templates
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);
@@ -254,15 +246,24 @@ TEST(matchedFilter, shiftAndStack)
     double templateDuration = 4; // + 2;
     int templateSize = static_cast<int> (templateDuration/dt + 0.5) + 1;
     EXPECT_NEAR(templateDuration, (templateSize-1)*dt, 1.e-14);
-    double toff1 = 0; // Arrival offset into template: 1 s 
-    double toff2 = 0;//2;
-    double toff3 = 0;//2.5;
-    int nextra1 = static_cast<int> (toff1/dt + 0.5);
-    int nextra2 = static_cast<int> (toff2/dt + 0.5);
-    int nextra3 = static_cast<int> (toff3/dt + 0.5);
+    double toff1 = 1; // Arrival offset into template: 1 s 
+    double toff2 = 2; //2; // 2;
+    double toff3 = 1.5; //1.5; // 2.5;
+    int nextra1 = static_cast<int> (toff1/dt + 0.5);// - 10;
+    int nextra2 = static_cast<int> (toff2/dt + 0.5);// + 10;
+    int nextra3 = static_cast<int> (toff3/dt + 0.5);// + 20;
+    // Templates of different lengths are padded to same size.
+    int nalloc = std::max(templateSize+nextra1, templateSize+nextra2);
+    nalloc = std::max(nalloc, templateSize+nextra3);
+    std::vector<double> t1(nalloc, 0); // + 1 s
+    std::vector<double> t2(nalloc, 0); // + 2 s
+    std::vector<double> t3(nalloc, 0); // + 2.5 s
+/*
     std::vector<double> t1(templateSize+nextra1, 0); // + 1 s
     std::vector<double> t2(templateSize+nextra2, 0); // + 2 s
     std::vector<double> t3(templateSize+nextra3, 0); // + 2.5 s
+*/
+
     std::vector<double> signal1(signalSize, 0); 
     std::vector<double> signal2(signalSize, 0);
     std::vector<double> signal3(signalSize, 0);
@@ -305,9 +306,15 @@ TEST(matchedFilter, shiftAndStack)
     MatchedFilter<double> mf; 
     WaveformTemplate bt1, bt2, bt3;
 
+/*
     bt1.setSignal(t1.size(), t1.data());
     bt2.setSignal(t2.size(), t2.data());
     bt3.setSignal(t3.size(), t3.data());
+*/
+    bt1.setSignal(templateSize+nextra1, t1.data());
+    bt2.setSignal(templateSize+nextra2, t2.data());
+    bt3.setSignal(templateSize+nextra3, t3.data());
+
     bt1.setSamplingRate(df);
     bt2.setSamplingRate(df);
     bt3.setSamplingRate(df);
@@ -333,31 +340,84 @@ TEST(matchedFilter, shiftAndStack)
     auto pc1 = mf.getMatchedFilteredSignal(0);
     auto pc2 = mf.getMatchedFilteredSignal(1);
     auto pc3 = mf.getMatchedFilteredSignal(2);
+/*
+FILE *xcFile = fopen("mfs.est.txt", "w");
+for (int i=0; i<pc1.size(); ++i)
+{
+fprintf(xcFile, "%lf, %lf, %lf, %lf\n", i*dt, pc1[i], pc2[i], pc3[i]); 
+}
+fclose(xcFile);
+*/
     // Compute a reference solution
     std::vector<double> yRef1(signalSize, 0);
     std::vector<double> yRef2(signalSize, 0);
     std::vector<double> yRef3(signalSize, 0);
+//printf("%ld, %ld, %ld\n", t1.size(), t2.size(), t3.size());
+printf("%d, %d, %d\n", templateSize+nextra1, templateSize+nextra2, templateSize+nextra3);
+ 
+/*
     dumbXC(t1.size(), t1.data(), signalSize, signal1.data(), yRef1.data());
     dumbXC(t2.size(), t2.data(), signalSize, signal2.data(), yRef2.data());
     dumbXC(t3.size(), t3.data(), signalSize, signal3.data(), yRef3.data());
+*/
+    dumbXC(templateSize+nextra1, t1.data(), signalSize, signal1.data(), yRef1.data());
+    dumbXC(templateSize+nextra2, t2.data(), signalSize, signal2.data(), yRef2.data());
+    dumbXC(templateSize+nextra3, t3.data(), signalSize, signal3.data(), yRef3.data());
+/*
+xcFile = fopen("mfs.txt", "w");
+for (int i=0; i<pc1.size(); ++i)
+{
+fprintf(xcFile, "%lf, %lf, %lf, %lf\n", i*dt, yRef1[i], yRef2[i], yRef3[i]); 
+}
+fclose(xcFile);
+*/
 
     double error = 0;
+/*
+    ippsNormDiff_Inf_64f(yRef1.data()+100, pc1.data(), pc1.size(), &error);
+printf("%e\n", error);
+    ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
+printf("%e\n", error);
+    ippsNormDiff_Inf_64f(yRef3.data()+50, pc3.data(), pc3.size(), &error);
+printf("%e\n", error);
+*/
     ippsNormDiff_Inf_64f(yRef1.data(), pc1.data(), pc1.size(), &error);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef3.data(), pc3.data(), pc3.size(), &error);
 printf("%e\n", error);
+//getchar();
 
+    // Should migrate to the origin time
+    auto stack = mf.shiftAndStack();
+    double xmax;
+    int imax = 0;
+    ippsMaxIndx_64f(stack.data(), stack.size(), &xmax, &imax);
+    auto tori = imax/df;
+    EXPECT_NEAR(xmax, 1.0, 1.e-3); // With weighting 3 perfect stacks sum to 1
+    EXPECT_NEAR(tori, originTime, 1/df/2);  // Within a sample
+    //printf("%lf, %lf\n", tori, xmax);
+/*
 FILE *ofl1 = fopen("testShift.ref.txt", "w");
 FILE *ofl2 = fopen("testShift.txt", "w");
 for (int i=0; i<signal1.size(); ++i)
 {
-fprintf(ofl1, "%lf, %lf, %lf, %lf\n", i*dt-tt1+1, yRef1[i], yRef2[i], yRef3[i]);
-fprintf(ofl2, "%lf, %lf, %lf, %lf\n", i*dt-tt1+1, pc1[i], pc2[i], pc3[i]);
+fprintf(ofl1, "%lf, %lf, %lf, %lf\n", i*dt, yRef1[i], yRef2[i], yRef3[i]);
+fprintf(ofl2, "%lf, %lf, %lf, %lf\n", i*dt, pc1[i], pc2[i], pc3[i]);
 }
 fclose(ofl1);
 fclose(ofl2);
+*/
+/*
+FILE *ofl3 = fopen("stack.txt", "w");
+    for (int i=0; i<stack.size(); ++i)
+    {
+fprintf(ofl3, "%lf, %lf\n", i*dt, stack[i]); 
+    }
+fclose(ofl3);
+*/
+
 }
 
 

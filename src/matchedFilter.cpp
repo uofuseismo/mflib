@@ -43,10 +43,37 @@ inline int padLength(const int n,
     return nptsPadded;
 }
 
+/// @brief Computes the denominator signal.
+template<class T>
+void slowSignalNormalization(const int n, const int nb,
+                             const T *__restrict__ y,
+                             T *__restrict__ yNum)
+{
+    const T zero = 0;
+    const T xnorm = 1/static_cast<T> (nb);
+    int nend = n - nb + 1;
+    const T ymax = std::numeric_limits<T>::max();
+    for (int i=0; i<nend; ++i)
+    {
+        T s = zero;
+        T s2 = zero; 
+        #pragma omp simd reduction(+:s,s2)
+        for (int j=i; j<i+nb; ++j)
+        {
+            s  = s  + y[j];
+            s2 = s2 + y[j]*y[j];
+        }
+        auto yden = ymax;
+        if (std::abs(s) > 1.e-12){yden = std::sqrt(s2 - (s*s)*xnorm);}
+        //yNum[i] = yden;
+        yNum[i] = yNum[i]/yden;
+//if (std::abs(yNum[i]) > 1){yNum[i] = 0;}
+    }
+}
 /// @brief Applies the sliding mean and sliding standard deviation to the
 ///        filtered signal.
 /// @param[in] n         The length of the input signal.
-/// @param[in] nWin      The window length.
+/// @param[in] lent      The template length.
 /// @param[in] y         The signal from which to compute the sliding mean
 ///                      and standard deviation.  This is an array with
 ///                      dimension [n].
@@ -60,22 +87,24 @@ inline int padLength(const int n,
 ///       https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
 ///       to get a greater speedup.
 template<typename T>
-void normalizeSignal(const int n, const int nWin,
+void normalizeSignal(const int n, const int lent,
                      const T *__restrict__ y,
                      T *__restrict__ yNum,
                      const T tol = 1.e-12)
 {
     #pragma omp parallel \
-     shared(n, nWin, y, yNum) \
+     shared(lent, n, y, yNum) \
      firstprivate(tol) \
      default(none)
     {
-    auto s  = static_cast<T *> (std::aligned_alloc(64, nWin*sizeof(T)));
-    auto s2 = static_cast<T *> (std::aligned_alloc(64, nWin*sizeof(T)));
-    T nWinInv = 1/static_cast<T> (nWin);
+    auto s  = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
+    auto s2 = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
+    T xnorm = 1/static_cast<T> (lent);
+    T scalNum = static_cast<T> (std::sqrt(static_cast<double> (lent)));
+    int scalDen = lent;
     // Parallel loop on the waveform chunks
     #pragma omp for schedule(static)
-    for (int i=0; i<n-nWin; i=i+nWin)
+    for (int i=0; i<n-lent; i=i+lent)
     {
         const T *yp = &y[i];
         T *yn = &yNum[i];
@@ -83,7 +112,7 @@ void normalizeSignal(const int n, const int nWin,
         T sum  = 0;
         T sum2 = 0;
         #pragma omp simd reduction(+:sum, sum2)
-        for (int j=0; j<nWin; ++j)
+        for (int j=0; j<lent; ++j)
         {
             sum  = sum  + yp[j];
             sum2 = sum2 + yp[j]*yp[j];
@@ -95,10 +124,10 @@ void normalizeSignal(const int n, const int nWin,
         //     = S_0 + y_{N+1} - y_1
         s[0] = sum;
         s2[0] = sum2;
-        for (int j=1; j<nWin; ++j)
+        for (int j=1; j<lent; ++j)
         {
-            auto yn_m_y0 = yp[nWin-1+j] - yp[j-1];
-            auto yn_p_y0  = yp[nWin-1+j] + yp[j-1];
+            auto yn_m_y0 = yp[lent-1+j] - yp[j-1];
+            auto yn_p_y0  = yp[lent-1+j] + yp[j-1];
             // Update sum
             s[j] = s[j-1] + yn_m_y0;
             // Update sum^2.  Note:
@@ -110,11 +139,14 @@ void normalizeSignal(const int n, const int nWin,
         }
         // Compute the denominator
         #pragma omp simd aligned(s, s2: 64)
-        for (int j=0; j<nWin; ++j)
+        for (int j=0; j<lent; ++j)
         {
-            T den = std::max(tol, std::sqrt(s2[j] - (s[j]*s[j])*nWinInv));
-            yn[j] = yn[j]/den;
-            if (den < tol){yn[j] = 0;}
+            T den = std::sqrt(scalDen*s2[j] - s[j]*s[j]);
+            T newNum = scalNum*yn[j];
+            yn[j] = newNum/den;
+            // This prevents a divide by zero from blinding us.
+            // As programmed the XC can go slightly over 1.
+            if (den < std::abs(newNum) + tol){yn[j] = 0;}
         }
     } // End loop
     // Release space on all processes
@@ -186,6 +218,8 @@ public:
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
         mSkipZeroSignal = nullptr;
+        mShiftAndWeight.clear();
+        mTemplateLengths.clear();
         /// Set everything else to 0
         mSpectraLength = 0;
         mFFTLength = 0;
@@ -235,6 +269,10 @@ public:
     /// Determines if I should skip this signal because it is 0.
     /// This has dimension [mTemplates].
     bool *mSkipZeroSignal = nullptr;
+    /// Tracks the shifts and weights for shift and stack operation.
+    std::vector<std::pair<int, double>> mShiftAndWeight;
+    /// The length of each unpadded templates.
+    std::vector<int> mTemplateLengths;
     /// The length of the Fourier transforms.  This should equal 
     /// mFFTLength/2 + 1.
     int mSpectraLength = 0;
@@ -252,7 +290,7 @@ public:
     int mSamplesExtra = 0;
     /// The length of the input signals.
     int mSamples = 0;
-    /// The length of the templates (filters).
+    /// The (padded) length of the templates (filters).
     int mFilterLength = 0;
     /// The number of templates.
     int mTemplates = 0;
@@ -304,6 +342,8 @@ public:
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
         mSkipZeroSignal = nullptr;
+        mShiftAndWeight.clear();
+        mTemplateLengths.clear();
         /// Set everything else to 0
         mSpectraLength = 0;
         mFFTLength = 0;
@@ -353,6 +393,10 @@ public:
     /// Determines if I should skip this signal because it is 0.
     /// This has dimension [mTemplates].
     bool *mSkipZeroSignal = nullptr;
+    /// Tracks the shifts and weights for shift and stack operation.
+    std::vector<std::pair<int, float>> mShiftAndWeight;
+    /// The length of each unpadded templates.
+    std::vector<int> mTemplateLengths;
     /// The length of the Fourier transforms.  This should equal 
     /// mFFTLength/2 + 1.
     int mSpectraLength = 0;
@@ -370,7 +414,7 @@ public:
     int mSamplesExtra = 0;
     /// The length of the input signals.
     int mSamples = 0;
-    /// The length of the templates (filters).
+    /// The (padded) length of the templates (filters).
     int mFilterLength = 0;
     /// The number of templates.
     int mTemplates = 0;
@@ -451,6 +495,10 @@ void MatchedFilter<double>::initialize(
               *sizeof(double);
     // Calloc is important for signal padding
     pImpl->mSignalSegment = static_cast<double *> (MKL_calloc(len, 1, 64));
+    pImpl->mShiftAndWeight.resize(0);
+    pImpl->mShiftAndWeight.reserve(pImpl->mTemplates);
+    pImpl->mTemplateLengths.resize(pImpl->mTemplates);
+    bool lCanStack = true;
     auto b = pImpl->mSignalSegment;
     std::vector<double> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
@@ -458,10 +506,30 @@ void MatchedFilter<double>::initialize(
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
+        std::fill(std::execution::unseq, tData.begin(), tData.end(), 0);
         double *tPtr = tData.data();
-        int ntlen = t.getSignalLength();
+        pImpl->mTemplateLengths[it] = t.getSignalLength();
         t.getSignal(pImpl->mFilterLength, &tPtr);
-        demeanNormalizeAndReverseTemplate(ntlen, tPtr, &b[offset]);
+        // Technically zero-padding effects the window length and by
+        // extension the mean (i.e., normalize by number of samples).
+        demeanNormalizeAndReverseTemplate(pImpl->mTemplateLengths[it], //pImpl->mFilterLength,
+                                          tPtr, &b[offset]);
+        // If possible do shifting and stacking
+        double df = t.getSamplingRate(); 
+        if (lCanStack)
+        {
+            if (t.haveOnsetTime() && t.haveTravelTime())
+            {
+                auto tdiff = t.getTravelTime() - t.getOnsetTime();
+                auto nshift = static_cast<int> (tdiff*df + 0.5);
+                double wt = t.getShiftAndStackWeight();
+                pImpl->mShiftAndWeight.push_back(std::pair(nshift, wt));
+            }
+            else
+            {
+                lCanStack = false;
+            }
+        }
     }
     // Transform
     constexpr int rank = 1;
@@ -554,6 +622,10 @@ void MatchedFilter<float>::initialize(
               *sizeof(float);
     // Calloc is important for padding
     pImpl->mSignalSegment = static_cast<float *> (MKL_calloc(len, 1, 64));
+    pImpl->mShiftAndWeight.resize(0);
+    pImpl->mShiftAndWeight.reserve(pImpl->mTemplates);
+    pImpl->mTemplateLengths.resize(pImpl->mTemplates);
+    bool lCanStack = true;
     auto b = pImpl->mSignalSegment;
     std::vector<float> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
@@ -561,10 +633,28 @@ void MatchedFilter<float>::initialize(
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
+        std::fill(std::execution::unseq, tData.begin(), tData.end(), 0);
         float *tPtr = tData.data();
-        int ntlen = t.getSignalLength();
+        pImpl->mTemplateLengths[it] = t.getSignalLength();
         t.getSignal(pImpl->mFilterLength, &tPtr);
-        demeanNormalizeAndReverseTemplate(ntlen, tPtr, &b[offset]);
+        demeanNormalizeAndReverseTemplate(pImpl->mFilterLength,
+                                          tPtr, &b[offset]);
+        // If possible do shifting and stacking
+        double df = t.getSamplingRate();
+        if (lCanStack)
+        {
+            if (t.haveOnsetTime() && t.haveTravelTime())
+            {
+                auto tdiff = t.getTravelTime() - t.getOnsetTime();
+                auto nshift = static_cast<int> (tdiff*df + 0.5);
+                double wt = t.getShiftAndStackWeight();
+                pImpl->mShiftAndWeight.push_back(std::pair(nshift, wt));
+            }
+            else
+            {
+                lCanStack = false;
+            }
+        }
     }
     // Transform
     constexpr int rank = 1;
@@ -672,6 +762,20 @@ void MatchedFilter<T>::setSignal(const int it, const int nSamples,
                                   + std::to_string(nSamples)
                                   + " must equal" + std::to_string(ns) + "\n");
     }
+    // If the signal min equals the signal max then this is a dead trace.
+    // For example, even if a signal of all 1's were given the denominator
+    // would blow up.  And while I try to catch divisions by zero it's just
+    // easier to avoid the problem altogether if possible.
+#ifdef USE_PSTL
+    const auto [smin, smax] = std::minmax_element(std::execution::unseq,
+                                                  signal, signal+nSamples);
+#else
+    const auto [smin, smax] = std::minmax_element(signal, signal+nSamples);
+#endif
+    // Flag a dead signal
+    bool ldead = false;
+    if (std::abs(*smin) == std::abs(*smax)){ldead = true;}
+    // Copy regardless incase user tries to pull this signal back out
     auto offset = pImpl->mSamplesLeadingDimension
                  *static_cast<size_t> (it);
     T *__attribute__((aligned(64))) ptr = &pImpl->mInputSignals[offset];
@@ -681,7 +785,22 @@ void MatchedFilter<T>::setSignal(const int it, const int nSamples,
 #else
     std::copy(signal, signal+nSamples, ptr);
 #endif
-    pImpl->mSkipZeroSignal[it] = false;
+/*
+    // For numerical stability add some noise at the nyquist
+    const T nyquistNoise = std::numeric_limits<T>::epsilon()
+                          *std::max(std::abs(*smin), std::abs(*smax));
+    #pragma omp simd
+    for (int i=0; i<nSamples; i=i+2)
+    {
+        ptr[i] = ptr[i] + nyquistNoise;
+    }
+    #pragma omp simd
+    for (int i=1; i<nSamples; i=i+2)
+    {
+        ptr[i] = ptr[i] - nyquistNoise;
+    }
+*/
+    pImpl->mSkipZeroSignal[it] = ldead;
 }
 
 /// Gets it'th matched filtered signal
@@ -705,9 +824,12 @@ const T* MatchedFilter<T>::getMatchedFilterSignalPointer(const int it) const
                                   + " must be in the range [0,"
                                   + std::to_string(nt-1) + "]\n");
     }
+    //auto offset = pImpl->mSamplesLeadingDimension
+    //             *static_cast<size_t> (it)
+    //            + static_cast<size_t> (pImpl->mFilterLength) - 1;
     auto offset = pImpl->mSamplesLeadingDimension
                  *static_cast<size_t> (it)
-                + static_cast<size_t> (pImpl->mFilterLength) - 1;
+                + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
     const T* ptr = &pImpl->mFilteredSignals[offset];
     return ptr;
 }
@@ -810,22 +932,31 @@ void MatchedFilter<double>::apply()
      firstprivate(nb) \
      default(none)
     {
+    auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
-    constexpr double tol = 1.e-14;
+    constexpr double tol = 1.e-12;
     #pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         // Avoid division by zero for obviously dead traces.
         // Since the numerators were zero'd on entry simply skip it.
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        // Signal index
-        auto isrc = pImpl->mSamplesLeadingDimension
-                   *static_cast<size_t> (it);
-        // Skip the filter start-up
-        auto idst = isrc + static_cast<size_t> (nb) - 1;
+        // Signal index.  Note, padding introduces a wrinkle.  
+        // Let's say we had a 150 sample delay from padding.  However, this
+        // template has length 100 samples.  Hence, without a correction the 
+        // normalization would start 50 samples too early.  So we need a delay
+        // otherwise we'll divide by the wrong part of the input signal.
+        int delay = nb - pImpl->mTemplateLengths[it];
+        auto isrc = ldm*it + static_cast<size_t> (delay);
+        // Skip the filter start-up.  Keep this consistent for all signals.
+        auto idst = ldm*it + static_cast<size_t> (nb) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
-        normalizeSignal(nxUnpadded, nb, y, yNum, tol);
+        normalizeSignal(nxUnpadded, pImpl->mTemplateLengths[it],
+                        y, yNum, tol);
+        //slowSignalNormalization(nxUnpadded, pImpl->mTemplateLengths[it],
+        //                        y, yNum);
+
     }
     } // End parallel
     pImpl->mHaveMatchedFilters = true;
@@ -944,10 +1075,59 @@ void MatchedFilter<float>::apply()
         auto idst = isrc + static_cast<size_t> (nb) - 1;
         const float *y = &pImpl->mInputSignals[isrc];
         float *yNum = &pImpl->mFilteredSignals[idst];
-        normalizeSignal(nxUnpadded, nb, y, yNum, tol);
+        normalizeSignal(nxUnpadded, pImpl->mTemplateLengths[it],
+                        y, yNum, tol);
     }
     } // End parallel
     pImpl->mHaveMatchedFilters = true;
+}
+
+/// Applies the shift and stack operation
+template<class T>
+std::vector<T> MatchedFilter<T>::shiftAndStack()
+{
+    if (!haveMatchedFilteredSignals())
+    {
+        throw std::runtime_error("Matched filtered signals not yet computed\n");
+    }
+    if (pImpl->mTemplates != static_cast<int> (pImpl->mShiftAndWeight.size()))
+    {
+        throw std::runtime_error("Templates missing info - can't shift\n");
+    }
+    int nptsFiltered = getFilteredSignalLength();
+    auto nShiftMax = pImpl->mShiftAndWeight[0].first;
+    T xnorm = 0;
+    for (auto &saw : pImpl->mShiftAndWeight)
+    {
+         nShiftMax = std::max(nShiftMax, saw.first);
+         xnorm = xnorm + saw.second;
+    }
+    if (xnorm > 0){xnorm = 1/xnorm;}
+    auto outputLength = nptsFiltered - nShiftMax;
+    std::vector<T> result(outputLength, 0);
+    for (int it=0; it<pImpl->mTemplates; ++it)
+    {
+        int nshift = pImpl->mShiftAndWeight[it].first;
+        auto weight = xnorm*pImpl->mShiftAndWeight[it].second;
+        auto *ptr = getMatchedFilterSignalPointer(it);
+        if (pImpl->mOptions.getStackAbsoluteValues())
+        {
+            #pragma omp simd
+            for (int k=0; k<outputLength; ++k)
+            {
+                result[k] = result[k] + weight*std::abs(ptr[k+nshift]);
+            }
+        }
+        else
+        {
+            #pragma omp simd
+            for (int k=0; k<outputLength; ++k) 
+            {
+                result[k] = result[k] + weight*ptr[k+nshift];
+            }
+        }
+    }
+    return result;
 }
 
 /// Determine if the class is initialized

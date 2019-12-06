@@ -69,8 +69,10 @@ public:
     /*!
      * @brief Adds a waveform template signal.
      * @param[in] waveformTemplate  The waveform signal template.
-     * @throws std::invalid_argument if nSamples is not positive or
-     *         signalTemplate is NULL.
+     * @throws std::invalid_argument if nSamples is not positive,
+     *         signalTemplate is NULL, or the waveform template's 
+     *         sampling rate differs from other first waveform template's
+     *         sampling rate.
      * @note This will invalidate the FFT length and the block size.
      */
     void addTemplate(const WaveformTemplate &waveformTemplate);
@@ -151,6 +153,21 @@ public:
      * @result The matched filter implementation.
      */
     MatchedFilterImplementation getMatchedFilterImplementation() const noexcept;
+
+    /*!
+     * @brief When stacking - stack the absolute value of the matched filters
+     *        or the raw values.
+     * @param[in] labs   If true then stack the absolute values of the matched
+     *                   filtered signals.
+     */
+    void setStackAbsoluteValues(bool labs) noexcept;
+    /*!
+     * @brief Determines whether or not to stack the absolute values or raw
+     *        values of the matched filtered signals.
+     * @result True indicates the absolute values of the matched filtered
+     *         signals are to be stacked.
+     */
+    bool getStackAbsoluteValues() const noexcept;
 
     /*!
      * @brief Determines if the matched filtering options are well-defined.

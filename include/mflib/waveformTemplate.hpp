@@ -59,7 +59,7 @@ public:
     void clear() noexcept;
     /*! @} */
 
-    /*! @name Signal
+    /*! @name Signal (Required)
      * @{
      */
     /*!
@@ -99,7 +99,7 @@ public:
     bool haveSignal() const noexcept; 
     /*! @} */
 
-    /*! @name Sampling Rate 
+    /*! @name Sampling Rate (Required)
      * @{
      */
     /*!
@@ -142,7 +142,7 @@ public:
     double getShiftAndStackWeight() const noexcept;
     /*! @} */
 
-    /*! @name Onset Time
+    /*! @name Onset Time (Required for Shifting)
      * @{
      */
     /*!
@@ -175,7 +175,7 @@ public:
     bool haveOnsetTime() const noexcept;
     /*!@ } */
 
-    /*! @brief Travel Time
+    /*! @brief Travel Time (Required for Shifting)
      * @{
      */
     /*!

@@ -51,12 +51,17 @@ TEST(MatchedFilter, options)
     }
     tplate1.setSignal(tp1.size(), tp1.data());
     tplate2.setSignal(tp2.size(), tp2.data());
+    tplate1.setSamplingRate(1);
+    tplate2.setSamplingRate(1);
     options.setMatchedFilterImplementation(
        MatchedFilterImplementation::AUTO);
     EXPECT_EQ(options.getMatchedFilterImplementation(),
               MatchedFilterImplementation::AUTO);
     options.setSignalSize(signalSize);
     EXPECT_EQ(options.getSignalSize(), signalSize);
+
+    options.setStackAbsoluteValues(false);
+    EXPECT_FALSE(options.getStackAbsoluteValues());
  
     EXPECT_FALSE(options.isValid());
     EXPECT_NO_THROW(options.addTemplate(tplate1)); //tp1.size(), tp1.data()));
@@ -104,6 +109,7 @@ TEST(MatchedFilter, options)
     MatchedFilterOptions optionsCopy(options); 
     EXPECT_EQ(optionsCopy.getMatchedFilterImplementation(),
               MatchedFilterImplementation::AUTO);
+    EXPECT_FALSE(optionsCopy.getStackAbsoluteValues());
     EXPECT_EQ(optionsCopy.getSignalSize(), signalSize);
     EXPECT_TRUE(optionsCopy.isValid());
     EXPECT_NO_THROW(tplateOut = optionsCopy.getTemplate(0));
