@@ -41,7 +41,9 @@ If things are installed in a sensible place then the following configuration scr
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=${CXX} \
-    -DCMAKE_CXX_FLAGS="-g -Wall -std=c++17 -mkl=sequential -xCORE-AVX512"
+    -DCMAKE_CXX_FLAGS="-g -Wall -std=c++17 -mkl=sequential -xCORE-AVX512" \
+    -DMPI_CXX_INCLUDE_PATH=${MPI_ROOT_DIR}/intel64/include \
+    -DMPI_CXX_LIBRARIES="/opt/intel/impi/2019.5.281/intel64/lib/release/libmpi.so;/opt/intel/compilers_and_libraries_2019.5.281/linux/mpi/intel64/libfabric//lib/libfabric.so"
     cd ../
 
 Provided this is successful then descend into the build directory and type
