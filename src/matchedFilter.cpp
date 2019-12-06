@@ -1060,18 +1060,15 @@ void MatchedFilter<float>::apply()
      firstprivate(nb) \
      default(none)
     {
+    auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
     constexpr float tol = 1.e-6;
     #pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
-        // Avoid division by zero for obviously dead traces.
-        // Since the numerators were zero'd on entry simply skip it.
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        // Signal index
-        auto isrc = pImpl->mSamplesLeadingDimension
-                   *static_cast<size_t> (it);
-        /// Skip the filter start-up
+        int delay = nb - pImpl->mTemplateLengths[it];
+        auto isrc = ldm*it + static_cast<size_t> (delay);
         auto idst = isrc + static_cast<size_t> (nb) - 1;
         const float *y = &pImpl->mInputSignals[isrc];
         float *yNum = &pImpl->mFilteredSignals[idst];
