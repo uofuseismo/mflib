@@ -16,9 +16,11 @@ namespace
 
 using namespace MFLib;
 
+/*
 void matchedFilter(const int nb, const double b[],
                    const int nx, const double x[],
                    double y[]);
+*/
 void dumbXC(const int nb, const double b[],
             const int nx, const double x[],
             double xc[]);
@@ -198,7 +200,7 @@ TEST(matchedFilter, basicTestFloat)
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     float error;
     ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-6);
+    EXPECT_LT(error, 2.e-6);
 
     // Try again with four templates
     options.clearTemplates();
@@ -216,22 +218,22 @@ TEST(matchedFilter, basicTestFloat)
     EXPECT_NO_THROW(mf.apply());
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-6);
+    EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
     ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-6);
+    EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
     ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-6);
+    EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
     ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
-    EXPECT_LT(error, 1.e-6);
+    EXPECT_LT(error, 2.e-6);
 }
 
 //----------------------------------------------------------------------------//
@@ -274,7 +276,7 @@ TEST(matchedFilter, shiftAndStack)
     int id1 = static_cast<int> ((originTime + tt1)/dt + 0.5);
     int id2 = static_cast<int> ((originTime + tt2)/dt + 0.5);
     int id3 = static_cast<int> ((originTime + tt3)/dt + 0.5);
-    for (int i=0; i<signal1.size(); ++i)
+    for (int i=0; i<static_cast<int> (signal1.size()); ++i)
     {
         double s1 = 0.001;
         if (i%2 == 0){s1 =-s1;}
@@ -387,13 +389,13 @@ printf("%d %lf, %lf, %lf\n", i, yRef1[i], pc1[i], yRef1[i] - pc1[i]);
 */
 
     ippsNormDiff_Inf_64f(yRef1.data(), pc1.data(), pc1.size(), &error);
-    EXPECT_LE(error, 5.e-12);
+    EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
-    EXPECT_LE(error, 5.e-12);
+    EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
     ippsNormDiff_Inf_64f(yRef3.data(), pc3.data(), pc3.size(), &error);
-    EXPECT_LE(error, 5.e-12);
+    EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
 //getchar();
 
@@ -536,6 +538,7 @@ printf("working...\n");
 }
 */
 
+/*
 void matchedFilter(const int nb, const double b[], // Template
                    const int nx, const double x[], // Signal
                    double y[])
@@ -566,6 +569,7 @@ void matchedFilter(const int nb, const double b[], // Template
     ippsFree(xwork);
     ippsFree(ywork);
 }
+*/
 
 /// Implementation
 void dumbXC(const int nb, const double b[],

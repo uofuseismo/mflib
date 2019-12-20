@@ -34,7 +34,7 @@ TEST(waveformTemplate, basic)
     std::fill(x8.begin(), x8.end(), 0);
     double *x8Ptr = x8.data();
     EXPECT_NO_THROW(tplate.getSignal(npts, &x8Ptr));
-    for (int i=0; i<x8.size(); ++i)
+    for (int i=0; i<static_cast<int> (x8.size()); ++i)
     {
         EXPECT_NEAR(x8[i], i+1, 1.e-14);
     }
@@ -47,7 +47,7 @@ TEST(waveformTemplate, basic)
     std::fill(x4.begin(), x4.end(), 0);
     float *x4Ptr = x4.data();
     EXPECT_NO_THROW(tplate.getSignal(npts, &x4Ptr));
-    for (int i=0; i<x4.size(); ++i)
+    for (int i=0; i<static_cast<int> (x4.size()); ++i)
     {
         EXPECT_NEAR(x4[i], -(i+1), 1.e-7);
     }
@@ -60,7 +60,7 @@ TEST(waveformTemplate, basic)
     EXPECT_EQ(tplateCopy.getOnsetTime(), onsetTime);
     EXPECT_EQ(tplateCopy.getSignalLength(), npts);
     EXPECT_NO_THROW(tplateCopy.getSignal(npts, &x8Ptr)); 
-    for (int i=0; i<x8.size(); ++i)
+    for (int i=0; i<static_cast<int> (x8.size()); ++i)
     {   
         EXPECT_NEAR(x8[i], -(i+1), 1.e-14);
     }

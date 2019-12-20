@@ -30,6 +30,21 @@ The following packages are optional:
 If things are installed in a sensible place then the following configuration script may be enough to get CMake off the ground
 
     #!/bin/bash
+    export GTEST_ROOT=/usr/local
+    export BUILD_DIR=gcc_build
+    if [ -d ${BUILD_DIR} ]; then
+       rm -rf ${BUILD_DIR}
+    fi
+    mkdir ${BUILD_DIR}
+    cd ${BUILD_DIR}
+    cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="-g -Wall -std=c++17" \
+    cd ../
+
+For the Intel C++ compiler you might use something like
+
+    #!/bin/bash
     export CXX=/opt/intel/bin/icpc
     export GTEST_ROOT=/usr/local
     export BUILD_DIR=intel_build

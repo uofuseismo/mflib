@@ -93,14 +93,13 @@ void normalizeSignal(const int n, const int lent,
                      const T tol = 1.e-12)
 {
     #pragma omp parallel \
-     shared(lent, n, y, yNum) \
+     shared(y, yNum) \
      firstprivate(tol) \
      default(none)
     {
     const T zero = 0;
     auto s  = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
     auto s2 = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
-    T xnorm = 1/static_cast<T> (lent);
     T scalNum = static_cast<T> (std::sqrt(static_cast<double> (lent)));
     int scalDen = lent;
     // Parallel loop on the waveform chunks
@@ -509,7 +508,11 @@ void MatchedFilter<double>::initialize(
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
+#ifdef USE_PSTL 
         std::fill(std::execution::unseq, tData.begin(), tData.end(), 0);
+#else
+        std::fill(tData.begin(), tData.end(), 0);
+#endif
         double *tPtr = tData.data();
         pImpl->mTemplateLengths[it] = t.getSignalLength();
         t.getSignal(pImpl->mFilterLength, &tPtr);
@@ -636,7 +639,11 @@ void MatchedFilter<float>::initialize(
         auto t = options.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
+#ifdef USE_PSTL
         std::fill(std::execution::unseq, tData.begin(), tData.end(), 0);
+#else
+        std::fill(tData.begin(), tData.end(), 0);
+#endif
         float *tPtr = tData.data();
         pImpl->mTemplateLengths[it] = t.getSignalLength();
         t.getSignal(pImpl->mFilterLength, &tPtr);
@@ -851,11 +858,9 @@ void MatchedFilter<double>::apply()
     std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, 0);
     // Get the sizes 
     auto L = pImpl->mL; 
-    auto nb = pImpl->mFilterLength;
     auto nx = pImpl->mSamplesExtra;
     auto nfft = pImpl->mFFTLength;
     auto nTemplates = pImpl->mTemplates;
-    auto spectraLength = pImpl->mSpectraLength;
     auto xnorm = 1/static_cast<double> (pImpl->mFFTLength);
 
     std::complex<double> *B = pImpl->mBPtr;
@@ -932,7 +937,6 @@ void MatchedFilter<double>::apply()
     } // Loop on windows
     // Compute the normalization 
     #pragma omp parallel \
-     firstprivate(nb) \
      default(none)
     {
     auto ldm = pImpl->mSamplesLeadingDimension;
@@ -974,11 +978,9 @@ void MatchedFilter<float>::apply()
     std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, 0);
     // Get the sizes 
     auto L = pImpl->mL;
-    auto nb = pImpl->mFilterLength;
     auto nx = pImpl->mSamplesExtra;
     auto nfft = pImpl->mFFTLength;
     auto nTemplates = pImpl->mTemplates;
-    auto spectraLength = pImpl->mSpectraLength;
     auto xnorm = static_cast<float> (1/static_cast<double> (pImpl->mFFTLength));
 
     std::complex<float> *B = pImpl->mBPtr;
@@ -1055,7 +1057,6 @@ void MatchedFilter<float>::apply()
     } // Loop on windows
     // Compute the normalization 
     #pragma omp parallel \
-     firstprivate(nb) \
      default(none)
     {
     auto ldm = pImpl->mSamplesLeadingDimension;
