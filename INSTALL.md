@@ -1,5 +1,7 @@
 # Prerequisites
 
+In this section, the library's hardware and software requirements are defined.
+
 ## Hardware Requirements
 
 This library targets x86\_64 chips and, in particular, Intel chips.  The library can additionally leverage high-end NVidia GPU's.
@@ -27,7 +29,7 @@ The following packages are optional:
 
 # Configure the Software
 
-If things are installed in a sensible place then the following configuration script may be enough to get CMake off the ground
+After the software is downloaded, CMake must be configured as to generate a Makefile for your system.  If things are installed in a sensible place then the following configuration script run in the root source directory may be enough to get CMake off the ground
 
     #!/bin/bash
     export GTEST_ROOT=/usr/local
@@ -65,7 +67,7 @@ Provided this is successful then descend into the build directory and type
 
     make
 
-Following a successful build you can type
+Following a successful build you should verify the software works as advertised by typing
 
     make test
  
