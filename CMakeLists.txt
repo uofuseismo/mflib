@@ -49,8 +49,8 @@ include_directories(
 set(SRC
     src/matchedFilterOptions.cpp
     src/matchedFilter.cpp
-    src/waveformTemplate.cpp
-    src/shiftAndStack.cpp)
+    src/waveformTemplate.cpp)
+#    src/shiftAndStack.cpp)
 # Use MPI?
 if (${MPI_FOUND})
     message("Building with MPI")
