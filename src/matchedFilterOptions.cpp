@@ -62,7 +62,7 @@ std::pair<int, int> computeWindowLength(const int nb, const int nx)
     int validSetStart =-1;
     for (int i=0; i<static_cast<int> (fftLengths.size()); ++i)
     {
-        if (fftLengths[i] > nb - 1)
+        if (fftLengths[i] > static_cast<uint64_t> (nb - 1))
         {
             validSetStart = i;
             break;

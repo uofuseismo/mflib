@@ -242,7 +242,6 @@ void WaveformTemplate::setOnsetTime(const double onsetTime)
     double df = getSamplingRate(); // Throws
     int npts = getSignalLength(); // Throws
     double maxOnsetTime = static_cast<double> (npts - 1)*df;
-    int index = static_cast<int> (onsetTime*df + 0.5);
     if (onsetTime > maxOnsetTime)
     {
         throw std::invalid_argument("onsetTime = " 
