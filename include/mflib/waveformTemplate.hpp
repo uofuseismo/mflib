@@ -83,9 +83,9 @@ public:
      * @throws std::invalid_argument if x is NULL or maxx is too small.
      * @throws std::runtime_error if the signal was not set.
      */
-    void getSignal(int maxx, double *x[]);
+    void getSignal(int maxx, double *x[]) const;
     /*! @copydoc getSignal */
-    void getSignal(int maxx, float *x[]);
+    void getSignal(int maxx, float *x[]) const;
     /*!
      * @result The length of the template waveform signal.
      * @throws std::runtime_error if the template waveform was not set.

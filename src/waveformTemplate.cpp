@@ -187,7 +187,7 @@ void WaveformTemplate::setSignal(const int npts,
 }
 
 /// Gets the signal
-void WaveformTemplate::getSignal(const int maxx, double *xIn[])
+void WaveformTemplate::getSignal(const int maxx, double *xIn[]) const
 {
     auto npts = getSignalLength(); // Throws
     if (maxx < npts)
@@ -202,7 +202,7 @@ void WaveformTemplate::getSignal(const int maxx, double *xIn[])
 }
 
 /// Gets the signal
-void WaveformTemplate::getSignal(const int maxx, float *xIn[])
+void WaveformTemplate::getSignal(const int maxx, float *xIn[]) const
 {
     auto npts = getSignalLength(); // Throws
     if (maxx < npts)
