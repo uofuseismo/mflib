@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
+#include <limits>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterOptions.hpp"
 #include "mflib/enums.hpp"

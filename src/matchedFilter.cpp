@@ -98,8 +98,9 @@ void normalizeSignal(const int n, const int lent,
      default(none)
     {
     const T zero = 0;
-    auto s  = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
-    auto s2 = static_cast<T *> (std::aligned_alloc(64, lent*sizeof(T)));
+    auto nbytes = static_cast<size_t> (lent)*sizeof(T);
+    auto s  = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
+    auto s2 = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     T scalNum = static_cast<T> (std::sqrt(static_cast<double> (lent)));
     int scalDen = lent;
     // Parallel loop on the waveform chunks
@@ -152,8 +153,8 @@ void normalizeSignal(const int n, const int lent,
         }
     } // End loop
     // Release space on all processes
-    free(s);
-    free(s2);
+    MKL_free(s);
+    MKL_free(s2);
     } // End parallel
 }
 
