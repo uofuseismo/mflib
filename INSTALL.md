@@ -24,7 +24,9 @@ The following packages are optional:
    4.  The Parallel Standard Template Library extensions.  This will be better defined in C++20.
    5.  [pybind11](https://github.com/pybind/pybind11) for generation of Python bindings.
  
-# Downloading the Software
+# Download the Software
+
+To get the software, navigate to the directory of your choosing and clone the repository
 
     git clone https://github.com/uofuseismo/mflib.git
 
@@ -44,7 +46,7 @@ The simplest example assumes all prerequisites are installed in a sensible place
     cd ${BUILD_DIR}
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_FLAGS="-g -Wall -std=c++17" \
+    -DCMAKE_CXX_FLAGS="-g -Wall" \
     cd ../
 
 When available, I prefer using the Intel C++ compiler 
@@ -61,7 +63,7 @@ When available, I prefer using the Intel C++ compiler
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=${CXX} \
-    -DCMAKE_CXX_FLAGS="-g -Wall -std=c++17 -mkl=sequential -xCORE-AVX512" \
+    -DCMAKE_CXX_FLAGS="-g -Wall -mkl=sequential -xCORE-AVX512" \
     -DMPI_CXX_INCLUDE_PATH=${MPI_ROOT_DIR}/intel64/include \
     -DMPI_CXX_LIBRARIES="/opt/intel/impi/2019.5.281/intel64/lib/release/libmpi.so;/opt/intel/compilers_and_libraries_2019.5.281/linux/mpi/intel64/libfabric//lib/libfabric.so"
     cd ../
