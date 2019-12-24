@@ -4,7 +4,7 @@
 #include "modules.hpp"
 #include "waveformTemplate.hpp"
 
-using namespace PBWaveformTemplate;
+using namespace PBMFLib;
 
 /// Constructor
 WaveformTemplate::WaveformTemplate() :
@@ -23,6 +23,12 @@ WaveformTemplate& WaveformTemplate::operator=(const WaveformTemplate &wt)
     mWaveformTemplate
         = std::make_unique<MFLib::WaveformTemplate> (*wt.mWaveformTemplate);
     return *this; 
+}
+
+MFLib::WaveformTemplate WaveformTemplate::getNativeClass() const
+{
+    MFLib::WaveformTemplate t(*mWaveformTemplate);
+    return t;
 }
 
 /// Destructor

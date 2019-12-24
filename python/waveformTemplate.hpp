@@ -9,7 +9,7 @@ namespace MFLib
 class WaveformTemplate;
 }
 
-namespace PBWaveformTemplate
+namespace PBMFLib
 {
 class WaveformTemplate
 {
@@ -40,6 +40,8 @@ public:
     /// Shift and stack weight
     void setShiftAndStackWeight(double weight);
     double getShiftAndStackWeight() const; 
+    /// Creates 
+    MFLib::WaveformTemplate getNativeClass() const;
 private:
     std::unique_ptr<MFLib::WaveformTemplate> mWaveformTemplate;
 };

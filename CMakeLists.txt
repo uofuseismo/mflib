@@ -75,6 +75,7 @@ SET_PROPERTY(TARGET matchedFilter PROPERTY CXX_STANDARD 17)
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
+               python/matchedFilterOptions.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)

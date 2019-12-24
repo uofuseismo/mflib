@@ -4,6 +4,9 @@ import pymflib
 import numpy as np
 
 def test_waveform_template():
+    """
+    Tests the waveform template.  This is the basic unit of currency in this library.  
+    """
     # Some values to set then recover
     template_signal = np.arange(1, 400, 1) # 4 seconds of signal
     sampling_rate = 100
@@ -29,7 +32,7 @@ def test_waveform_template():
     wt.phase_travel_time = travel_time
     assert wt.phase_travel_time == travel_time, "Travel time failed"
 
-    # Test the onse ttime
+    # Test the onset time
     wt.onset_time_in_signal = onset_time
     assert wt.onset_time_in_signal == onset_time, "Onset time failed"
 
@@ -43,5 +46,15 @@ def test_waveform_template():
 
     # Clear the module
     wt.clear()
-    assert wt.shift_and_stack_weight == 1, "Clear failed"
+    assert wt.shift_and_stack_weight == 1, "Clear failed" # Should reset to default weight
 
+##########################################################################################################
+
+def test_matched_filter_options():
+    """
+    Performs some basic matched filtering testings.
+    """
+    wf = pymflib.WaveformTemplate()
+    mfOPtions = pymflib.MatchedFilterOptions()
+
+    
