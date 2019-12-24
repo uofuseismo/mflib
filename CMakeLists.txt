@@ -77,7 +77,8 @@ if (MFLIB_WRAP_PYTHON)
                python/waveformTemplate.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter)
-   SET_PROPERTY(TARGET pymflib PROPERTY CXX_STD_14)
+   set_property(TARGET pymflib PROPERTY CXX_STD_14)
+   set_property(TARGET pymflib PROPERTY PREFIX "")
    #target_include_directories(pymflib PRIVATE pybind11)
 endif()
 
@@ -96,5 +97,6 @@ target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 
+file(COPY ${CMAKE_SOURCE_DIR}/python/unit_tests.py DESTINATION .)
 add_test(NAME unitTests
          COMMAND unitTests)

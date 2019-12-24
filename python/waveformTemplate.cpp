@@ -12,8 +12,27 @@ WaveformTemplate::WaveformTemplate() :
 {
 }
 
+WaveformTemplate::WaveformTemplate(const WaveformTemplate &wt)
+{
+    *this = wt;
+}
+
+WaveformTemplate& WaveformTemplate::operator=(const WaveformTemplate &wt)
+{
+    if (&wt == this){return *this;}
+    mWaveformTemplate
+        = std::make_unique<MFLib::WaveformTemplate> (*wt.mWaveformTemplate);
+    return *this; 
+}
+
 /// Destructor
 WaveformTemplate::~WaveformTemplate() = default;
+
+/// Clears the module
+void WaveformTemplate::clear() noexcept
+{
+    mWaveformTemplate->clear();
+}
 
 /// Setters/getters for signal
 void WaveformTemplate::setSignal(
@@ -74,7 +93,44 @@ double WaveformTemplate::getShiftAndStackWeight() const
     return mWaveformTemplate->getShiftAndStackWeight();
 }
 
+/// Setters/getters for onset time
+void WaveformTemplate::setOnsetTime(const double onsetTime)
+{
+    if (onsetTime < 0)
+    {
+        throw std::invalid_argument("onset_time = " 
+                                  + std::to_string(onsetTime)
+                                  + " must be positive\n");
+    }
+    mWaveformTemplate->setOnsetTime(onsetTime);
+}
+
+double WaveformTemplate::getOnsetTime() const
+{
+    return mWaveformTemplate->getOnsetTime();
+}
+
+/// Setters/getters for travel time
+void WaveformTemplate::setTravelTime(const double travelTime)
+{
+    if (travelTime < 0)
+    {
+        throw std::invalid_argument("onset_time = " 
+                                  + std::to_string(travelTime)
+                                  + " must be positive\n");
+    }
+    mWaveformTemplate->setTravelTime(travelTime);
+}
+
+
+double WaveformTemplate::getTravelTime() const
+{
+    return mWaveformTemplate->getTravelTime();
+}
+
+/*
 void initializeWaveformTemplate(pybind11::module &m)
+//PYBIND11_MODULE(pymflib, m)
 {
     m.doc() = "Defines the waveform template";
 
@@ -97,7 +153,5 @@ void initializeWaveformTemplate(pybind11::module &m)
                     &PBWaveformTemplate::WaveformTemplate::getShiftAndStackWeight,
                     &PBWaveformTemplate::WaveformTemplate::setShiftAndStackWeight,
                     "Weight used when shifting and stacking correlations.  This must be in the range of [0,1].");
-
-
-
 }
+*/
