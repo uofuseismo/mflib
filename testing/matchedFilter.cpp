@@ -7,7 +7,7 @@
 #include <ctime>
 #include <ipps.h>
 #include "mflib/waveformTemplate.hpp"
-#include "mflib/matchedFilterOptions.hpp"
+#include "mflib/matchedFilterParameters.hpp"
 #include "mflib/matchedFilter.hpp"
 #include <gtest/gtest.h>
 
@@ -30,7 +30,7 @@ void dumbXC(const int nb, const float b[],
 
 TEST(matchedFilter, basicTestDouble)
 {
-    MatchedFilterOptions options;
+    MatchedFilterParameters options;
     MatchedFilter<double> mf;
 
     int signalSize = 1000;
@@ -137,7 +137,7 @@ TEST(matchedFilter, basicTestDouble)
 
 TEST(matchedFilter, basicTestFloat)
 {
-    MatchedFilterOptions options;
+    MatchedFilterParameters options;
     MatchedFilter<float> mf; 
 
     int signalSize = 1000;
@@ -304,7 +304,7 @@ TEST(matchedFilter, shiftAndStack)
         signal3[id3+i] = s3;
     }
     // Set the matched filter
-    MatchedFilterOptions options;
+    MatchedFilterParameters options;
     MatchedFilter<double> mf; 
     WaveformTemplate bt1, bt2, bt3;
 
@@ -434,7 +434,7 @@ fclose(ofl3);
 /*
 TEST(matchedFilter, stressTest)
 {
-    MatchedFilterOptions<double> options;
+    MatchedFilterParameters<double> options;
     MatchedFilter<double> mf;
 
     //int signalSize = 86400*100; //8640000; //360000; //1000;
@@ -487,7 +487,7 @@ printf("working...\n");
 
 TEST(matchedFilter, stressTestFloat)
 {
-    MatchedFilterOptions<float> options;
+    MatchedFilterParameters<float> options;
     MatchedFilter<float> mf; 
 
     int signalSize = 86400*100; //8640000; //360000; //1000;

@@ -109,7 +109,7 @@ public:
      * @throws std::invalid_argument if this is not positive.
      * @note This will invalidate the onset time.
      */
-    void setSamplingRate(double samplingRate); 
+    void setSamplingRate(double samplingRate);
     /*!
      * @brief Gets the sampling rate.
      * @result The template's sampling rate.

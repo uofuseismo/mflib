@@ -1,5 +1,5 @@
-#ifndef MFLIB_MATCHEDFILTEROPTIONS_HPP
-#define MFLIB_MATCHEDFILTEROPTIONS_HPP
+#ifndef MFLIB_MATCHEDFILTERPARAMETERS_HPP
+#define MFLIB_MATCHEDFILTERPARAMETERS_HPP
 #include <memory>
 #include <vector>
 #include "waveformTemplate.hpp"
@@ -8,10 +8,10 @@ namespace MFLib
 {
 class WaveformTemplate;
 /*!
- * @brief Defines the options for the matched filtering.
+ * @brief Defines the parameters required to perform the matched filtering.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-class MatchedFilterOptions
+class MatchedFilterParameters
 {
 public:
     /*! @name Constructors
@@ -20,18 +20,20 @@ public:
     /*!
      * @brief Constructor
      */
-    MatchedFilterOptions();
+    MatchedFilterParameters();
     /*!
      * @brief Copy constructor.
-     * @param[in] options  The options from which to initialize this class.
+     * @param[in] parameters  The parameters from which to initialize this
+     *                        class.
      */
-    MatchedFilterOptions(const MatchedFilterOptions &options);
+    MatchedFilterParameters(const MatchedFilterParameters &parameters);
     /*!
      * @brief Move constructor.
-     * @param[in,out] options  The options from which to initialize this class.
-     *                         On exit, options' behavior is undefined.
+     * @param[in,out] parameters  The parameters from which to initialize this
+     *                            class.  On exit, parameters' behavior is
+     *                            undefined.
      */
-    MatchedFilterOptions(MatchedFilterOptions &&options) noexcept;
+    MatchedFilterParameters(MatchedFilterParameters &&parameters) noexcept;
     /*! @} */
 
     /*! @name Operators
@@ -39,18 +41,20 @@ public:
      */
     /*!
      * @brief Copy assignment operator.
-     * @param[in] options  The options class to copy.
-     * @result A deep copy of the options.
+     * @param[in] parameters  The parameters class to copy.
+     * @result A deep copy of the parameters.
      */ 
-    MatchedFilterOptions& operator=(const MatchedFilterOptions &options);
+    MatchedFilterParameters&
+        operator=(const MatchedFilterParameters &parameters);
     /*!
      * @brief Move assignment operator.
-     * @param[in,out] options  The options class whose memory will be moved 
-     *                         to this.  On exit, options' behavior is
-     *                         undefined.
-     * @result The memory from options moved to this.
+     * @param[in,out] parameters  The parameters class whose memory will be
+     *                            moved to this.  On exit, parameters' behavior
+     *                            is undefined.
+     * @result The memory from parameters moved to this.
      */
-    MatchedFilterOptions& operator=(MatchedFilterOptions &&options) noexcept;
+    MatchedFilterParameters&
+        operator=(MatchedFilterParameters &&parameters) noexcept;
     /*! @} */
 
     /*! @name Destructors
@@ -59,7 +63,7 @@ public:
     /*!
      * @brief Destructor
      */
-    ~MatchedFilterOptions();
+    ~MatchedFilterParameters();
     /*!
      * @brief Clears all memory and resets the class.
      */
@@ -170,14 +174,14 @@ public:
     bool getStackAbsoluteValues() const noexcept;
 
     /*!
-     * @brief Determines if the matched filtering options are well-defined.
-     * @result True indicates that this is a valid matched filtering options
+     * @brief Determines if the matched filtering parameters are well-defined.
+     * @result True indicates that this is a valid matched filtering parameters
      *         class.
      */    
     bool isValid() const noexcept;   
 private:
-    class MatchedFilterOptionsImpl;
-    std::unique_ptr<MatchedFilterOptionsImpl> pImpl;
+    class MatchedFilterParametersImpl;
+    std::unique_ptr<MatchedFilterParametersImpl> pImpl;
 };
 
 /*!

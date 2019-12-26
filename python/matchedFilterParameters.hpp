@@ -1,5 +1,5 @@
-#ifndef PYMFLIB_MATCHEDFILTEROPTIONS_HPP
-#define PYMFLIB_MATCHEDFILTEROPTIONS_HPP
+#ifndef PYMFLIB_MATCHEDFILTERPARAMETERS_HPP
+#define PYMFLIB_MATCHEDFILTERPARAMETERS_HPP
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -7,19 +7,19 @@
 namespace MFLib
 {
 class WaveformTemplate;
-class MatchedFilterOptions;
+class MatchedFilterParameters;
 }
 
 namespace PBMFLib
 {
 class WaveformTemplate;
-class MatchedFilterOptions
+class MatchedFilterParameters
 {
 public:
     /// Constructor
-    MatchedFilterOptions();
+    MatchedFilterParameters();
     /// Destructor
-    ~MatchedFilterOptions();
+    ~MatchedFilterParameters();
     /// Add template
     void addTemplate(const WaveformTemplate &wt);
     /// Clears templates
@@ -27,7 +27,7 @@ public:
     /// Clears the memory
     void clear() noexcept;
 private:
-    std::unique_ptr<MFLib::MatchedFilterOptions> mOptions;
+    std::unique_ptr<MFLib::MatchedFilterParameters> mOptions;
 };
 }
 #endif

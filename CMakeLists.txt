@@ -47,7 +47,7 @@ include_directories(
 )
 
 set(SRC
-    src/matchedFilterOptions.cpp
+    src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/waveformTemplate.cpp)
 #    src/shiftAndStack.cpp)
@@ -75,7 +75,7 @@ SET_PROPERTY(TARGET matchedFilter PROPERTY CXX_STANDARD 17)
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
-               python/matchedFilterOptions.cpp
+               python/matchedFilterParameters.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
@@ -90,7 +90,7 @@ endif()
 add_executable(unitTests
                testing/main.cpp
                testing/waveformTemplate.cpp
-               testing/matchedFilterOptions.cpp
+               testing/matchedFilterParameters.cpp
                testing/matchedFilter.cpp)
 target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
                       ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)

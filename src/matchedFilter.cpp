@@ -19,7 +19,7 @@
 #endif
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilter.hpp"
-#include "mflib/matchedFilterOptions.hpp"
+#include "mflib/matchedFilterParameters.hpp"
 
 using namespace MFLib;
 
@@ -240,7 +240,7 @@ public:
     }
 //private:
     /// Holds the options
-    MatchedFilterOptions mOptions;
+    MatchedFilterParameters mOptions;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftw_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -364,7 +364,7 @@ public:
     }
 //private:
     /// Holds the options
-    MatchedFilterOptions mOptions;
+    MatchedFilterParameters mOptions;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftwf_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -454,7 +454,7 @@ template<class T> void MatchedFilter<T>::clear() noexcept
 /// Initializes the FFTs for the double precision matched filtering
 template<>
 void MatchedFilter<double>::initialize(
-    const MatchedFilterOptions &options)
+    const MatchedFilterParameters &options)
 {
     clear();
     // Set the templates
@@ -603,7 +603,7 @@ void MatchedFilter<double>::initialize(
 /// Initializes the FFTs for the float precision matched filtering
 template<>
 void MatchedFilter<float>::initialize(
-    const MatchedFilterOptions &options)
+    const MatchedFilterParameters &options)
 {
     clear();
     // Set the templates

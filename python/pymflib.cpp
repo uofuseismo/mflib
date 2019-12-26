@@ -1,6 +1,6 @@
 #include "modules.hpp"
 #include "waveformTemplate.hpp"
-#include "matchedFilterOptions.hpp"
+#include "matchedFilterParameters.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
@@ -39,25 +39,25 @@ PYBIND11_MODULE(pymflib, m)
                     "This defines the phase's travel time in seconds from the origin time.  For example, if this is 9 then it took 9 seconds for the phase to travel from the source to the receiver.  This is only necessary if you are shifting and stacking waveforms.  Note - the signal and sampling rate should be set prior to setting this property.");
     /// Clears the class memory and resets
     wt.def("clear",
-            &PBMFLib::WaveformTemplate::clear,
+           &PBMFLib::WaveformTemplate::clear,
            "Clears the class's memory and resets the class.");
     //--------------------------------------------------------------------------------------------//
-    //                                  Matched Filter Options                                    //
+    //                                  Matched Filter Parameters                                 //
     //--------------------------------------------------------------------------------------------// 
-    pybind11::class_<PBMFLib::MatchedFilterOptions> mfOptions(m, "MatchedFilterOptions");
+    pybind11::class_<PBMFLib::MatchedFilterParameters> mfParameters(m, "MatchedFilterParameters");
     /// The default constructor:
-    mfOptions.def(pybind11::init<> ());
-    mfOptions.doc() = "Defines the options class for matched filtering.";
+    mfParameters.def(pybind11::init<> ());
+    mfParameters.doc() = "Defines the options class for matched filtering.";
     /// Adds a template to the class
-    mfOptions.def("add_template",
-                  &PBMFLib::MatchedFilterOptions::addTemplate,
+    mfParameters.def("add_template",
+                  &PBMFLib::MatchedFilterParameters::addTemplate,
                   "Adds a waveform template.  The waveform template must at minimum have a signal.");
     /// Clear the templates
-    mfOptions.def("clear_templates",
-                  &PBMFLib::MatchedFilterOptions::clearTemplates,
+    mfParameters.def("clear_templates",
+                  &PBMFLib::MatchedFilterParameters::clearTemplates,
                   "Clears the existing templates from class's memory.");
     /// Clears the class
-    mfOptions.def("clear",
-                  &PBMFLib::MatchedFilterOptions::clear,
+    mfParameters.def("clear",
+                  &PBMFLib::MatchedFilterParameters::clear,
                   "Clears the class's memory and resets the class.");
 }

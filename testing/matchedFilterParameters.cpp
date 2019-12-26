@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "mflib/waveformTemplate.hpp"
-#include "mflib/matchedFilterOptions.hpp"
+#include "mflib/matchedFilterParameters.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -33,7 +33,7 @@ TEST(MatchedFilter, blockAndFFTLength)
  
 TEST(MatchedFilter, options)
 {
-    MatchedFilterOptions options;
+    MatchedFilterParameters options;
     int signalSize = 1024;
     int nSamples = 100;
     double error = 0;
@@ -106,7 +106,7 @@ TEST(MatchedFilter, options)
     }
 
     // Test copy c'tor
-    MatchedFilterOptions optionsCopy(options); 
+    MatchedFilterParameters optionsCopy(options); 
     EXPECT_EQ(optionsCopy.getMatchedFilterImplementation(),
               MatchedFilterImplementation::AUTO);
     EXPECT_FALSE(optionsCopy.getStackAbsoluteValues());
