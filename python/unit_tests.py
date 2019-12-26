@@ -50,11 +50,24 @@ def test_waveform_template():
 
 ##########################################################################################################
 
-def test_matched_filter_options():
+def test_matched_filter_parameters():
     """
     Performs some basic matched filtering testings.
     """
-    wf = pymflib.WaveformTemplate()
-    mfOPtions = pymflib.MatchedFilterOptions()
+    wf1 = pymflib.WaveformTemplate()
+    wf2 = pymflib.WaveformTemplate()
+    mfOptions = pymflib.MatchedFilterParameters()
 
+    # Set some templates
+    signalSize = 1024
+    nSamples1 = 100
+    nSamples2 = 95
+    t1 = np.arange(1, nSamples1, 1)
+    t2 = np.arange(1, nSamples2, 1)
+
+    wf1.signal = t1
+    wf2.signal = t2
+
+    mfOptions.addTemplate(wf1)
+    mfOptions.addTemplate(wf2)
     

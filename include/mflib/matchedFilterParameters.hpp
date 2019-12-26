@@ -99,9 +99,9 @@ public:
      */
     int getNumberOfTemplates() const noexcept;
     /*!
-     * @brief Gets the longest template length.  For example, if given a
-     *        template length 300 samples and 400 samples, this will return
-     *        400.
+     * @brief Gets the longest template length.  For example, if given
+     *        template with length 300 samples and a second template with
+     *        length 400 samples, then this will return 400.
      * @result The maximum length of the output template signals.
      * @throws std::runtime_error if no templates were set.
      */
@@ -125,8 +125,8 @@ public:
      * @brief Sets the FFT length.
      * @param[in] fftLength   The FFT length.
      * @throws std::runtime_error if no templates are set.
-     * @throws std::invalid_argument if fftLength < \c getTemplateLength().
-     * @sa \c getTemplateLength(), \c getNumberOfTemplates()
+     * @throws std::invalid_argument if fftLength < \c getMaxTemplateLength().
+     * @sa \c getMaxTemplateLength(), \c getNumberOfTemplates()
      */
     void setFFTLength(int fftLength);
     /*!

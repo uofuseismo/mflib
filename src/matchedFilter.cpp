@@ -239,8 +239,8 @@ public:
         mHaveMatchedFilters = false;
     }
 //private:
-    /// Holds the options
-    MatchedFilterParameters mOptions;
+    /// Holds the parameters 
+    MatchedFilterParameters mParameters;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftw_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -363,8 +363,8 @@ public:
         mHaveMatchedFilters = false;
     }
 //private:
-    /// Holds the options
-    MatchedFilterParameters mOptions;
+    /// Holds the parameters 
+    MatchedFilterParameters mParameters;
     /// FFT forward plan - maps the input signal to the frequency domain.
     fftwf_plan mForwardPlan;
     /// FFT inverse plan - brings block of templates convolved with 
@@ -454,22 +454,23 @@ template<class T> void MatchedFilter<T>::clear() noexcept
 /// Initializes the FFTs for the double precision matched filtering
 template<>
 void MatchedFilter<double>::initialize(
-    const MatchedFilterParameters &options)
+    const MatchedFilterParameters &parms)
 {
     clear();
     // Set the templates
-    if (!options.isValid())
+    if (!parms.isValid())
     {
-        throw std::invalid_argument("Options is invalid\n");
+        throw std::invalid_argument("Parameters are not invalid\n");
     }
+    pImpl->mParameters = parms;
     // Figure out the window length
-    pImpl->mSamples = options.getSignalSize();
-    pImpl->mFilterLength = options.getMaxTemplateLength();
+    pImpl->mSamples = parms.getSignalSize();
+    pImpl->mFilterLength = parms.getMaxTemplateLength();
     pImpl->mSamplesExtra = pImpl->mSamples + pImpl->mFilterLength - 1;
     auto result = computeOptimalFFTAndBlockLength(pImpl->mFilterLength,
                                                   pImpl->mSamplesExtra);
-    pImpl->mFFTLength = result.first; //options.getFFTLength();
-    pImpl->mL = result.second; //options.getBlockLength();
+    pImpl->mFFTLength = result.first; //parms.getFFTLength();
+    pImpl->mL = result.second; //parms.getBlockLength();
     // Note that Matlab/Octave assume the signal can be complex.  Hence, they
     // use the FFT.  That's unecessary since our signals and templates are
     // real-valued.  Recall, for real signals the complex spectra 
@@ -490,7 +491,7 @@ void MatchedFilter<double>::initialize(
     pImpl->mSpectraLength = pImpl->mFFTLength/2 + 1;
     // Our goal is to correlate.  However, we are performing convolutions.
     // Hence, we have to reverse our templates.
-    pImpl->mTemplates = options.getNumberOfTemplates();
+    pImpl->mTemplates = parms.getNumberOfTemplates();
     pImpl->mConvolutionLeadingDimension = padLength(pImpl->mFFTLength,
                                                     sizeof(double));
     auto len = pImpl->mConvolutionLeadingDimension
@@ -506,7 +507,7 @@ void MatchedFilter<double>::initialize(
     std::vector<double> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
-        auto t = options.getTemplate(it);
+        auto t = parms.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
 #ifdef USE_PSTL 
@@ -603,25 +604,26 @@ void MatchedFilter<double>::initialize(
 /// Initializes the FFTs for the float precision matched filtering
 template<>
 void MatchedFilter<float>::initialize(
-    const MatchedFilterParameters &options)
+    const MatchedFilterParameters &parms)
 {
     clear();
     // Set the templates
-    if (!options.isValid())
+    if (!parms.isValid())
     {   
-        throw std::invalid_argument("Options is invalid\n");
-    }   
+        throw std::invalid_argument("Parameters are invalid\n");
+    }
+    pImpl->mParameters = parms; 
     // Figure out the window length
-    pImpl->mSamples = options.getSignalSize();
-    pImpl->mFilterLength = options.getMaxTemplateLength();
+    pImpl->mSamples = parms.getSignalSize();
+    pImpl->mFilterLength = parms.getMaxTemplateLength();
     pImpl->mSamplesExtra = pImpl->mSamples + pImpl->mFilterLength - 1;
     auto result = computeOptimalFFTAndBlockLength(pImpl->mFilterLength,
                                                   pImpl->mSamplesExtra);
-    pImpl->mFFTLength = result.first; //options.getFFTLength();
+    pImpl->mFFTLength = result.first; //parms.getFFTLength();
     pImpl->mL = result.second;
     pImpl->mSpectraLength = pImpl->mFFTLength/2 + 1;
     // See double precision for explanation
-    pImpl->mTemplates = options.getNumberOfTemplates();
+    pImpl->mTemplates = parms.getNumberOfTemplates();
     pImpl->mConvolutionLeadingDimension = padLength(pImpl->mFFTLength,
                                                     sizeof(float));
     auto len = pImpl->mConvolutionLeadingDimension
@@ -637,7 +639,7 @@ void MatchedFilter<float>::initialize(
     std::vector<float> tData(pImpl->mFilterLength);
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
-        auto t = options.getTemplate(it);
+        auto t = parms.getTemplate(it);
         auto offset = static_cast<size_t> (it)
                      *pImpl->mConvolutionLeadingDimension;
 #ifdef USE_PSTL
@@ -1116,7 +1118,7 @@ std::vector<T> MatchedFilter<T>::shiftAndStack()
         int nshift = pImpl->mShiftAndWeight[it].first;
         auto weight = xnorm*pImpl->mShiftAndWeight[it].second;
         auto *ptr = getMatchedFilterSignalPointer(it);
-        if (pImpl->mOptions.getStackAbsoluteValues())
+        if (pImpl->mParameters.getStackAbsoluteValues())
         {
             #pragma omp simd
             for (int k=0; k<outputLength; ++k)

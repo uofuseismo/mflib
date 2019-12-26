@@ -10,7 +10,7 @@ using namespace PBMFLib;
 
 /// Constructor
 MatchedFilterParameters::MatchedFilterParameters() :
-    mOptions(std::make_unique<MFLib::MatchedFilterParameters> ())
+    mParameters(std::make_unique<MFLib::MatchedFilterParameters> ())
 {
 }
 
@@ -21,21 +21,55 @@ MatchedFilterParameters::~MatchedFilterParameters() = default;
 void MatchedFilterParameters::addTemplate(const WaveformTemplate &wt)
 {
     auto t = wt.getNativeClass();
-    mOptions->addTemplate(t);
+    mParameters->addTemplate(t);
 }
 
-/// Gets a template
+int MatchedFilterParameters::getNumberOfTemplates() const
+{
+    return mParameters->getNumberOfTemplates();
+}
 
+/*
+WaveformTemplate MatchedFilterParameters::getTemplate(const int it)
+{
+    
+}
+*/
+
+/// FFT Length 
+void MatchedFilterParameters::setFFTLength(const int fftLength)
+{
+    auto nt = mParameters->getNumberOfTemplates();
+    if (nt < 1)
+    {
+        throw std::runtime_error("Templates must be set prior to calling this\n");
+    }
+    mParameters->setFFTLength(fftLength);
+}
+
+int MatchedFilterParameters::getFFTLength() const
+{
+    auto nt = getNumberOfTemplates(); //mParameters->getNumberOfTemplates();
+    if (nt < 1){return 0;}
+    return mParameters->getFFTLength();
+}
+
+int MatchedFilterParameters::getBlockLength() const
+{
+    auto nt = getNumberOfTemplates(); //mParameters->getNumberOfTemplates();
+    if (nt < 1){return 0;}
+    return mParameters->getBlockLength();
+}
 
 /// Clears the templates from the class
 void MatchedFilterParameters::clearTemplates() noexcept
 {
-    mOptions->clearTemplates();
+    mParameters->clearTemplates();
 }
 
 /// Clears the class
 void MatchedFilterParameters::clear() noexcept
 {
-    mOptions->clear();
+    mParameters->clear();
 }
 
