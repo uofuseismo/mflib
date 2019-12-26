@@ -1,4 +1,3 @@
-#include "modules.hpp"
 #include "waveformTemplate.hpp"
 #include "matchedFilterParameters.hpp"
 #include <pybind11/pybind11.h>
@@ -52,6 +51,9 @@ PYBIND11_MODULE(pymflib, m)
     mfParameters.def("add_template",
                      &PBMFLib::MatchedFilterParameters::addTemplate,
                      "Adds a waveform template.  The waveform template must at minimum have a signal.");
+    mfParameters.def("get_template",
+                     &PBMFLib::MatchedFilterParameters::getTemplate,
+                     "Gets the it'th waveform template.");
     mfParameters.def_property("signal_size",
                               &PBMFLib::MatchedFilterParameters::getSignalSize,
                               &PBMFLib::MatchedFilterParameters::setSignalSize,

@@ -3,6 +3,7 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include "waveformTemplate.hpp"
 
 namespace MFLib
 {
@@ -18,12 +19,14 @@ class MatchedFilterParameters
 public:
     /// Constructor
     MatchedFilterParameters();
+    MatchedFilterParameters(const MatchedFilterParameters &parms);
+    MatchedFilterParameters& operator=(const MatchedFilterParameters &parms);
     /// Destructor
     ~MatchedFilterParameters();
     /// Add template
     void addTemplate(const WaveformTemplate &wt);
     int getNumberOfTemplates() const; 
-    //WaveformTemplate getTemplate(int indx) const;
+    WaveformTemplate getTemplate(int indx) const;
     /// Clears templates
     void clearTemplates() noexcept;
     /// Sets/gets the signal size

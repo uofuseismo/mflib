@@ -16,10 +16,12 @@ class WaveformTemplate
 public:
     /// Constructor
     WaveformTemplate();
-    /// Copy constructor
+    /// Copy constructors
     WaveformTemplate(const WaveformTemplate &wt);
+    WaveformTemplate(const MFLib::WaveformTemplate &wt);
     /// Copy assignment operator
     WaveformTemplate& operator=(const WaveformTemplate &wt);
+    WaveformTemplate& operator=(const MFLib::WaveformTemplate &wt);
     /// Destructor
     ~WaveformTemplate();
     /// Clears the class

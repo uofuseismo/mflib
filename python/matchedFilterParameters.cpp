@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
-#include "modules.hpp"
 #include "waveformTemplate.hpp"
 #include "matchedFilterParameters.hpp"
 
@@ -12,6 +11,21 @@ using namespace PBMFLib;
 MatchedFilterParameters::MatchedFilterParameters() :
     mParameters(std::make_unique<MFLib::MatchedFilterParameters> ())
 {
+}
+
+MatchedFilterParameters::MatchedFilterParameters(
+    const MatchedFilterParameters &parms)
+{
+    *this = parms;
+}
+
+MatchedFilterParameters& 
+MatchedFilterParameters::operator=(const MatchedFilterParameters &parms)
+{
+    if (&parms == this){return *this;}
+    mParameters
+        = std::make_unique<MFLib::MatchedFilterParameters> (*parms.mParameters);
+    return *this;
 }
 
 /// Destructor
@@ -29,12 +43,20 @@ int MatchedFilterParameters::getNumberOfTemplates() const
     return mParameters->getNumberOfTemplates();
 }
 
-/*
-WaveformTemplate MatchedFilterParameters::getTemplate(const int it)
+WaveformTemplate MatchedFilterParameters::getTemplate(const int it) const
 {
-    
+    if (it < 0 || it >= getNumberOfTemplates())
+    {
+        throw std::invalid_argument("template index = "
+                                  + std::to_string(it)
+                                  + " must be in range [0,"
+                                  + std::to_string(getNumberOfTemplates())
+                                  + "]\n");
+    }
+    auto wt = mParameters->getTemplate(it);
+    WaveformTemplate wtOut(wt);
+    return wtOut;
 }
-*/
 
 /// FFT Length 
 void MatchedFilterParameters::setFFTLength(const int fftLength)
@@ -59,6 +81,22 @@ int MatchedFilterParameters::getBlockLength() const
     auto nt = getNumberOfTemplates(); //mParameters->getNumberOfTemplates();
     if (nt < 1){return 0;}
     return mParameters->getBlockLength();
+}
+
+/// Sets/gets the signals size
+void MatchedFilterParameters::setSignalSize(const int n)
+{
+    if (n < 1)
+    {
+        throw std::invalid_argument("Signal size must be positive\n");
+    }
+    mParameters->setSignalSize(n);     
+}
+
+int MatchedFilterParameters::getSignalSize() const
+{
+    if (getNumberOfTemplates() < 1){return 0;}
+    return mParameters->getSignalSize();
 }
 
 /// Clears the templates from the class

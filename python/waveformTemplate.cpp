@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 #include "mflib/waveformTemplate.hpp"
-#include "modules.hpp"
 #include "waveformTemplate.hpp"
 
 using namespace PBMFLib;
@@ -17,12 +17,23 @@ WaveformTemplate::WaveformTemplate(const WaveformTemplate &wt)
     *this = wt;
 }
 
+WaveformTemplate::WaveformTemplate(const MFLib::WaveformTemplate &wt)
+{
+    *this = wt;
+}
+
 WaveformTemplate& WaveformTemplate::operator=(const WaveformTemplate &wt)
 {
     if (&wt == this){return *this;}
     mWaveformTemplate
         = std::make_unique<MFLib::WaveformTemplate> (*wt.mWaveformTemplate);
     return *this; 
+}
+
+WaveformTemplate& WaveformTemplate::operator=(const MFLib::WaveformTemplate &wt)
+{
+    mWaveformTemplate = std::make_unique<MFLib::WaveformTemplate> (wt);
+    return *this;
 }
 
 MFLib::WaveformTemplate WaveformTemplate::getNativeClass() const

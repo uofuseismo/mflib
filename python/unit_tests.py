@@ -58,16 +58,43 @@ def test_matched_filter_parameters():
     wf2 = pymflib.WaveformTemplate()
     mfOptions = pymflib.MatchedFilterParameters()
 
-    # Set some templates
-    signalSize = 1024
-    nSamples1 = 100
-    nSamples2 = 95
-    t1 = np.arange(1, nSamples1, 1)
-    t2 = np.arange(1, nSamples2, 1)
+    signal_size = 1024  # Signal size
+    sampling_rate = 100 # Sampling rate of templates and signal
+    n_samples1 = 100    # Length of first template
+    n_samples2 = 95     # Length of second template
+    t1 = np.arange(1, n_samples1, 1)
+    t2 = np.arange(1, n_samples2, 1)
 
     wf1.signal = t1
     wf2.signal = t2
+    wf1.sampling_rate = sampling_rate
+    wf2.sampling_rate = sampling_rate
 
-    mfOptions.addTemplate(wf1)
-    mfOptions.addTemplate(wf2)
-    
+    mfOptions.add_template(wf1)
+    mfOptions.add_template(wf2)
+    mfOptions.signal_size = signal_size
+    assert mfOptions.number_of_templates() == 2, "n_templates failed"
+    # Should default to this
+    assert mfOptions.fft_length == 512, "fft length wrong"
+    # Can try changing it
+    mfOptions.fft_length = 550
+    assert mfOptions.fft_length == 550, "fft length change failed"
+    # Try to recover one of my templates
+    wt_back = mfOptions.get_template(1)
+    assert wt_back.sampling_rate == sampling_rate, "sampling rate copy failed"
+   
+
+    # Dump the templates
+    mfOptions.clear_templates()
+
+    assert mfOptions.number_of_templates() == 0, "clear templates failed"
+
+#############################################################################################################
+
+def test_matched_filtering():
+    wf1 = pymflib.WaveformTemplate()
+    wf2 = pymflib.WaveformTemplate()
+
+
+if __name__ == "__main__":
+    test_matched_filter_parameters()
