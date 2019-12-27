@@ -2,6 +2,11 @@
 #include <cstring>
 #include <string>
 #include <algorithm>
+#if __has_include(<pstl/algorithm>)
+#include <pstl/algorithm>
+#include <pstl/execution>
+#define USE_PSTL 1
+#endif
 #include <ipps.h>
 #include "mflib/waveformTemplate.hpp"
 
@@ -28,7 +33,12 @@ public:
         if (mSignalLength > 0)
         {
             mSignal = ippsMalloc_64f(mSignalLength);
-            ippsCopy_64f(tplate.mSignal, mSignal, mSignalLength);
+#ifdef USE_PSTL
+            std::copy(std::execution::unseq,
+                      tplate.mSignal, tplate.mSignal+mSignalLength, mSignal);
+#else
+            std::copy(tplate.mSignal, tplate.mSignal+mSignalLength, mSignal);
+#endif
         }
         return *this;
     }
@@ -168,7 +178,11 @@ void WaveformTemplate::setSignal(const int npts,
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
-    ippsCopy_64f(x, pImpl->mSignal, npts);
+#ifdef USE_PSTL
+    std::copy(std::execution::unseq, x, x+npts, pImpl->mSignal);
+#else
+    std::copy(x, x+npts, pImpl->mSignal);
+#endif
 }
 
 void WaveformTemplate::setSignal(const int npts,
@@ -183,7 +197,9 @@ void WaveformTemplate::setSignal(const int npts,
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
-    ippsConvert_32f64f(x, pImpl->mSignal, npts);
+    double *mSignal = pImpl->mSignal; 
+    #pragma omp simd aligned(mSignal: 64)
+    for (int i=0; i<npts; ++i){mSignal[i] = static_cast<double> (x[i]);}
 }
 
 /// Gets the signal
@@ -198,7 +214,12 @@ void WaveformTemplate::getSignal(const int maxx, double *xIn[]) const
     }
     double *x = *xIn;
     if (x == nullptr){throw std::invalid_argument("x is NULL\n");}
-    ippsCopy_64f(pImpl->mSignal, x, npts);
+    const double *__attribute__((aligned(64))) mSignal = pImpl->mSignal;
+#ifdef USE_PSTL
+    std::copy(std::execution::unseq, mSignal, mSignal+npts, x);
+#else
+    std::copy(mSignal, mSignal+npts, x);
+#endif
 }
 
 /// Gets the signal
@@ -213,7 +234,9 @@ void WaveformTemplate::getSignal(const int maxx, float *xIn[]) const
     }   
     float *x = *xIn;
     if (x == nullptr){throw std::invalid_argument("x is NULL\n");}
-    ippsConvert_64f32f(pImpl->mSignal, x, npts);
+    const double *mSignal = pImpl->mSignal;
+    #pragma omp simd aligned(mSignal: 64)
+    for (int i=0; i<npts; ++i){x[i] = static_cast<float> (mSignal[i]);}
 }
 
 /// Gets the signal length

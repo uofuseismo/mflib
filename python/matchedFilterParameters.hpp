@@ -38,6 +38,8 @@ public:
     int getBlockLength() const;
     /// Clears the memory
     void clear() noexcept;
+    /// Gets the native parameters class
+    MFLib::MatchedFilterParameters getNativeClass() const; 
 private:
     std::unique_ptr<MFLib::MatchedFilterParameters> mParameters;
 };

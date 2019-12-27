@@ -1,0 +1,51 @@
+#ifndef MFLIB_VERSION_HPP
+#define MFLIB_VERSION_HPP
+#include <string>
+#define MFLIB_MAJOR @mflib_VERSION_MAJOR@
+#define MFLIB_MINOR @mflib_VERSION_MINOR@
+#define MFLIB_PATCH @mflib_VERSION_PATCH@
+#define MFLIB_VERSION "@PROJECT_VERSION@"
+
+namespace MFLib
+{
+/*!
+ * @class Version version.hpp "mflib/version.hpp"
+ * @brief Defines the MFLib version information.
+ * @copyright Ben Baker (University of Utah) distributed under the MIT license.
+ */
+class Version
+{
+public:
+    /*! 
+     * @brief Returns the API major version number.
+     * @result The major version number.
+     */
+    static int getMajor() noexcept;
+    /*! 
+     * @brief Returns the API minor version number.
+     * @result The minor version number.
+     */
+    static int getMinor() noexcept;
+    /*! 
+     * @brief Returns the API patch version number.
+     * @result The patch version number.
+     */
+    static int getPatch() noexcept;
+    /*! 
+     * @brief Returns the full version number as a string.
+     * @result The full version number, e.g., "1.2.3".
+     */
+    static std::string getVersion() noexcept;
+    /*! 
+     * @brief Determines if the version is greater than or equal to
+     *        the current (major, minor, patch).
+     * @param[in] major  The major version number.
+     * @param[in] minor  The minor version number.
+     * @param[in] patch  The patch number.
+     * @result True indicates that the version is at least equal to the
+     *         given major, minor, patch.
+     */
+    static bool isAtLeast(int major, int minor, int patch) noexcept;
+};
+}
+#endif

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mflib VERSION 0.1.3 LANGUAGES CXX)
+project(mflib VERSION 0.1.4 LANGUAGES CXX)
 enable_testing()
 
 include(CheckCXXCompilerFlag)
@@ -46,7 +46,11 @@ include_directories(
     ${CUDA_INCLUDE_DIRS}
 )
 
+configure_file(${CMAKE_SOURCE_DIR}/include/mflib/version.hpp.in
+               ${CMAKE_SOURCE_DIR}/include/mflib/version.hpp)
+
 set(SRC
+    src/version.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/waveformTemplate.cpp)
@@ -76,6 +80,7 @@ if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
                python/matchedFilterParameters.cpp
+               python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)

@@ -111,3 +111,10 @@ void MatchedFilterParameters::clear() noexcept
     mParameters->clear();
 }
 
+/// Get the native class
+MFLib::MatchedFilterParameters
+MatchedFilterParameters::getNativeClass() const
+{
+    auto parmsOut(*mParameters);
+    return parmsOut;
+}

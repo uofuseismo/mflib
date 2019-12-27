@@ -1,5 +1,6 @@
 #include "waveformTemplate.hpp"
 #include "matchedFilterParameters.hpp"
+#include "multiChannelMatchedFilter.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
@@ -58,9 +59,9 @@ PYBIND11_MODULE(pymflib, m)
                               &PBMFLib::MatchedFilterParameters::getSignalSize,
                               &PBMFLib::MatchedFilterParameters::setSignalSize,
                               "Defines the size of the signals to which the templates will be applied.  This must be positive and should be called after setting all the templates.");
-    mfParameters.def("number_of_templates",
-                     &PBMFLib::MatchedFilterParameters::getNumberOfTemplates,
-                     "This is the number of templates that have been set in the class.");
+    mfParameters.def_property_readonly("number_of_templates",
+                                       &PBMFLib::MatchedFilterParameters::getNumberOfTemplates,
+                                       "This is the number of templates that have been set in the class.");
     /// Tuning parameters
     mfParameters.def_property("fft_length",
                               &PBMFLib::MatchedFilterParameters::getFFTLength,
@@ -77,4 +78,29 @@ PYBIND11_MODULE(pymflib, m)
     mfParameters.def("clear",
                      &PBMFLib::MatchedFilterParameters::clear,
                      "Clears the class's memory and resets the class.");
+    //--------------------------------------------------------------------------------------------//
+    //                                   Matched Filtering                                        //
+    //--------------------------------------------------------------------------------------------//
+    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> mcmf(m, "MultiChannelMatchedFilter");
+    //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> fmcmf(m, "MultiChannelMatchedFilter");    
+    //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> mcmf(m, "MultiChannelMatchedFilter");
+    //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> mcmf(m, "MultiChannelMatchedFilter");
+    /// The default constructor:
+    mcmf.def(pybind11::init<> ());
+    mcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
+    /// Initiailze
+    mcmf.def("initialize",
+             &PBMFLib::MultiChannelMatchedFilter<double>::initialize,
+             "Initializes the multi-channel matched filtering engine.  This is a high-overhead function.");
+    /// Sets signals
+    mcmf.def("set_signal",
+             &PBMFLib::MultiChannelMatchedFilter<double>::setSignal,
+             "Sets the signal corresponding to the it'th template.  This should be called after the class is initialized.  Moreover, the template index must in the range of [0, number_of_templates].");
+    mcmf.def("zero_signal",
+             &PBMFLib::MultiChannelMatchedFilter<double>::zeroSignal,
+             "Over a time period a station can be down.  This sets the signal corresponding to the it'th template to 0.  The template index must be in the range of [0, number_of_templates].");
+    mcmf.def_property_readonly("number_of_templates", 
+                               &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
+                               "The number of templates in the multi-channel cross-correlation.");
+
 }

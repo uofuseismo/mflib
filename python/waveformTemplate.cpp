@@ -53,8 +53,8 @@ void WaveformTemplate::clear() noexcept
 
 /// Setters/getters for signal
 void WaveformTemplate::setSignal(
-    pybind11::array_t<double, pybind11::array::c_style |
-                              pybind11::array::forcecast> &x)
+    const pybind11::array_t<double, pybind11::array::c_style |
+                                    pybind11::array::forcecast> &x)
 {
     // Use pointers
     pybind11::buffer_info xbuf = x.request();

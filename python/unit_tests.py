@@ -69,25 +69,47 @@ def test_matched_filter_parameters():
     wf2.signal = t2
     wf1.sampling_rate = sampling_rate
     wf2.sampling_rate = sampling_rate
+    # Set some other things for a subsequent test
+    travel_time = 4
+    onset_time = 0.05
+    sas_weight = 0.8
+    wf1.shift_and_stack_weight = sas_weight
+    wf1.onset_time_in_signal = onset_time
+    wf1.shift_and_stack_weight = sas_weight
+    wf1.phase_travel_time = travel_time
+
+    wf2.shift_and_stack_weight = sas_weight
+    wf2.onset_time_in_signal = onset_time
+    wf2.shift_and_stack_weight = sas_weight
+    wf2.phase_travel_time = travel_time
 
     mfOptions.add_template(wf1)
     mfOptions.add_template(wf2)
     mfOptions.signal_size = signal_size
-    assert mfOptions.number_of_templates() == 2, "n_templates failed"
+    assert mfOptions.number_of_templates == 2, "n_templates failed"
     # Should default to this
     assert mfOptions.fft_length == 512, "fft length wrong"
     # Can try changing it
     mfOptions.fft_length = 550
     assert mfOptions.fft_length == 550, "fft length change failed"
     # Try to recover one of my templates
-    wt_back = mfOptions.get_template(1)
-    assert wt_back.sampling_rate == sampling_rate, "sampling rate copy failed"
-   
+    for i in range(mfOptions.number_of_templates):
+        wt_back = mfOptions.get_template(i)
+        assert wt_back.sampling_rate == sampling_rate, "sampling rate copy failed"
+        assert wt_back.shift_and_stack_weight == sas_weight, "sas weight copy failed"
+        assert wt_back.onset_time_in_signal == onset_time, "onset time copy failed"
+        assert wt_back.phase_travel_time == travel_time, "ttime copy failed"
+        t_back = wt_back.signal
+        if (i == 0):
+            t = t1
+        else:
+            t = t2
+        assert np.max(np.abs(t_back - t)) == 0, 'failed to recover template'
 
     # Dump the templates
     mfOptions.clear_templates()
 
-    assert mfOptions.number_of_templates() == 0, "clear templates failed"
+    assert mfOptions.number_of_templates == 0, "clear templates failed"
 
 #############################################################################################################
 
