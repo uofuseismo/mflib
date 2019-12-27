@@ -1,3 +1,4 @@
+#include "mflib/version.hpp"
 #include "waveformTemplate.hpp"
 #include "matchedFilterParameters.hpp"
 #include "multiChannelMatchedFilter.hpp"
@@ -7,7 +8,14 @@ PYBIND11_MODULE(pymflib, m)
 {
     //pybind11::module m; // = modules.def_submodule("Classes");
     //m.doc() = "Bindings for performing matched filtering.";
-
+    //pybind11::class_<PBMFLib::Version> version(m, "__version__");
+    //version.def(pybind11::init<> ());
+    m.attr("__version__") = MFLIB_VERSION; 
+    //      &PBMFLib::Version::getVersion,
+    //      "A string-form of the version number given by MAJOR.MINOR.PATCH.");
+    //--------------------------------------------------------------------------------------------//
+    //                                     Waveform Template                                      //
+    //--------------------------------------------------------------------------------------------//
     pybind11::class_<PBMFLib::WaveformTemplate> wt(m, "WaveformTemplate");
     /// The default constructor:
     wt.def(pybind11::init<> ());
