@@ -1102,7 +1102,7 @@ void MatchedFilter<float>::apply()
     #pragma omp parallel  for \
      shared (ldm, nxUnpadded, mTemplates) \
      default(none)
-    for (int it=0; it<pImpl->mTemplates; ++it)
+    for (int it=0; it<mTemplates; ++it)
     {
         if (pImpl->mSkipZeroSignal[it]){continue;}
         auto isrc = ldm*static_cast<size_t> (it);
