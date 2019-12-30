@@ -217,6 +217,8 @@ public:
         mSignalSegment = nullptr;
         mSegmentSpectra = nullptr;
         mSegmentSpectraPtr = nullptr;
+        mSingleSegmentSpectra = nullptr;
+        mSingleSegmentSpectraPtr = nullptr;
         mInputSignals = nullptr;
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
@@ -257,6 +259,11 @@ public:
     /// dimension [mSpectraLeadingDimension x mTemplates].
     fftw_complex *mSegmentSpectra = nullptr;
     std::complex<double> *mSegmentSpectraPtr = nullptr;
+    /// The spectra of a signle segment of the input time signal.  This has
+    /// dimension [mSpectraLeadingDimension] and is only use for the single
+    /// station application.
+    fftw_complex *mSingleSegmentSpectra = nullptr;
+    std::complex<double> *mSingleSegmentSpectraPtr = nullptr;
     /// The matched filtered signals.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     double *mFilteredSignals = nullptr;
@@ -329,6 +336,7 @@ public:
         //if (mCorrelogramSpectra){MKL_free(mCorrelogramSpectra);}
         if (mSignalSegment){MKL_free(mSignalSegment);}
         if (mSegmentSpectra){MKL_free(mSegmentSpectra);}
+        if (mSingleSegmentSpectra){MKL_free(mSingleSegmentSpectra);}
         //if (mOVACorrelograms){MKL_free(mOVACorrelograms);}
         if (mInputSignals){MKL_free(mInputSignals);}
         if (mFilteredSignals){MKL_free(mFilteredSignals);}
@@ -341,6 +349,8 @@ public:
         mSignalSegment = nullptr;
         mSegmentSpectra = nullptr;
         mSegmentSpectraPtr = nullptr;
+        mSingleSegmentSpectra = nullptr;
+        mSingleSegmentSpectraPtr = nullptr;
         mInputSignals = nullptr;
         mFilteredSignals = nullptr;
         mDenominator = nullptr;
@@ -381,6 +391,11 @@ public:
     /// dimension [mSpectraLeadingDimension x mTemplates].
     fftwf_complex *mSegmentSpectra = nullptr;
     std::complex<float> *mSegmentSpectraPtr = nullptr;
+    /// The spectra of a signle segment of the input time signal.  This has
+    /// dimension [mSpectraLeadingDimension] and is only use for the single
+    /// station application.
+    fftwf_complex *mSingleSegmentSpectra = nullptr;
+    std::complex<float> *mSingleSegmentSpectraPtr = nullptr;
     /// The matched filtered signals.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     float *mFilteredSignals = nullptr;
@@ -566,6 +581,17 @@ void MatchedFilter<double>::initialize(
                                  ostride, pImpl->mSpectraLeadingDimension,
                                  FFTW_PATIENT);
     fftw_execute_dft_r2c(pImpl->mForwardPlan, b, pImpl->mB);
+    /*
+    if (detectionMode == MatchedFilterDectionMode::SINGLE_CHANNEL)
+    {
+        len = pImpl->mSpectraLeadingDimension*sizeof(fftw_complex);
+        pImpl->mSingleSegmentSpectra
+            = static_cast<fftw_complex *> (MKL_calloc(len, 1, 64));
+        pImpl->mForwardPlan 
+            = fftw_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSingleSignal,
+                                   pImpl->mSingleSegmentSpectra, FFTW_PATIENT);
+    }
+    */
     // Create the inverse plan
     int ni[1] = {pImpl->mFFTLength};
     pImpl->mInversePlan
@@ -871,47 +897,52 @@ void MatchedFilter<double>::apply()
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
-        for (int it=0; it<nTemplates; ++it)
-        {
-            auto ioff = static_cast<size_t> (it)
-                       *static_cast<size_t> (pImpl->mSamplesLeadingDimension);
-            const double *signalPtr = &pImpl->mInputSignals[ioff+istart];
-            ioff = static_cast<size_t> (it)
-                  *static_cast<size_t> (pImpl->mConvolutionLeadingDimension); 
-            double *__attribute__((aligned(64))) dest
-                = &pImpl->mSignalSegment[ioff];
-            int iend = std::min(nx, istart + L); // Exclusive
-            int ncopy = iend - istart;
-#ifdef USE_PSTL
-            // Extract the padded signal
-            std::copy(std::execution::unseq,
-                      signalPtr, signalPtr+ncopy, dest);
-            // Zero out signal until end
-            std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
-#else
-            std::copy(signalPtr, signalPtr+ncopy, dest);
-            std::fill(dest+ncopy, dest+nfft, 0);
-#endif
-        }
-        // Fourier transform
-        fftw_execute_dft_r2c(pImpl->mForwardPlan,
-                             pImpl->mSignalSegment,
-                             pImpl->mSegmentSpectra);
-        // Convolve by multiplying spectra.  Note, that here we have removed
-        // the mean from the template and normalized.  Hence, the numerator
-        // looks like \tilde{X}*Y.
-        for (int it=0; it<nTemplates; ++it)
-        {
-            auto ioff = static_cast<size_t> (it)
-                       *static_cast<size_t> (pImpl->mSpectraLeadingDimension);
-            std::complex<double> __attribute__((aligned(64))) *bRow = &B[ioff];
-            std::complex<double> __attribute__((aligned(64))) *xcRow = &X[ioff];
-            #pragma omp simd
-            for (int w=0; w<pImpl->mSpectraLength; ++w)
+        // This is for many signals
+            for (int it=0; it<nTemplates; ++it)
             {
-                xcRow[w] = bRow[w]*xcRow[w];
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSamplesLeadingDimension;
+                const double *signalPtr = &pImpl->mInputSignals[ioff+istart];
+                ioff = static_cast<size_t> (it)
+                      *pImpl->mConvolutionLeadingDimension; 
+                double *__attribute__((aligned(64))) dest
+                   = &pImpl->mSignalSegment[ioff];
+                int iend = std::min(nx, istart + L); // Exclusive
+                int ncopy = iend - istart;
+#ifdef USE_PSTL
+                // Extract the padded signal
+                std::copy(std::execution::unseq,
+                          signalPtr, signalPtr+ncopy, dest);
+                // Zero out signal until end
+                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
+#else
+                std::copy(signalPtr, signalPtr+ncopy, dest);
+                std::fill(dest+ncopy, dest+nfft, 0);
+#endif
             }
-        }
+            // Fourier transform
+            fftw_execute_dft_r2c(pImpl->mForwardPlan,
+                                 pImpl->mSignalSegment,
+                                 pImpl->mSegmentSpectra);
+            // Convolve by multiplying spectra.  Note, that here we have removed
+            // the mean from the template and normalized.  Hence, the numerator
+            // looks like \tilde{X}*Y.
+            for (int it=0; it<nTemplates; ++it)
+            {
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSpectraLeadingDimension;
+                std::complex<double>
+                    __attribute__((aligned(64))) *bRow = &B[ioff];
+                std::complex<double>
+                    __attribute__((aligned(64))) *xcRow = &X[ioff];
+                #pragma omp simd
+                for (int w=0; w<pImpl->mSpectraLength; ++w)
+                {
+                    xcRow[w] = bRow[w]*xcRow[w];
+                }
+            }
+        // This is for one signal and many templates
+
         // Inverse transform
         fftw_execute_dft_c2r(pImpl->mInversePlan,
                              pImpl->mSegmentSpectra,
@@ -991,47 +1022,51 @@ void MatchedFilter<float>::apply()
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
-        for (int it=0; it<nTemplates; ++it)
-        {
-            auto ioff = static_cast<size_t> (it)
-                       *static_cast<size_t> (pImpl->mSamplesLeadingDimension);
-            const float *signalPtr = &pImpl->mInputSignals[ioff+istart];
-            ioff = static_cast<size_t> (it)
-                  *static_cast<size_t> (pImpl->mConvolutionLeadingDimension);
-            float *__attribute__((aligned(64))) dest
-                = &pImpl->mSignalSegment[ioff];
-            int iend = std::min(nx, istart + L); // Exclusive
-            int ncopy = iend - istart;
-#ifdef USE_PSTL
-            // Extract the padded signal
-            std::copy(std::execution::unseq,
-                      signalPtr, signalPtr+ncopy, dest);
-            // Zero out signal until end
-            std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
-#else
-            std::copy(signalPtr, signalPtr+ncopy, dest);
-            std::fill(dest+ncopy, dest+nfft, 0);
-#endif
-        }
-        // Fourier transform
-        fftwf_execute_dft_r2c(pImpl->mForwardPlan,
-                              pImpl->mSignalSegment,
-                              pImpl->mSegmentSpectra);
-        // Convolve by multiplying spectra.  Note, that here we have removed
-        // the mean from the template and normalized.  Hence, the numerator
-        // looks like \tilde{X}*Y.
-        for (int it=0; it<nTemplates; ++it)
-        {
-            auto ioff = static_cast<size_t> (it)
-                       *static_cast<size_t> (pImpl->mSpectraLeadingDimension);
-            std::complex<float> __attribute__((aligned(64))) *bRow = &B[ioff];
-            std::complex<float> __attribute__((aligned(64))) *xcRow = &X[ioff];
-            #pragma omp simd
-            for (int w=0; w<pImpl->mSpectraLength; ++w)
+        // This is for many signals
+            for (int it=0; it<nTemplates; ++it)
             {
-                xcRow[w] = bRow[w]*xcRow[w];
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSamplesLeadingDimension;
+                const float *signalPtr = &pImpl->mInputSignals[ioff+istart];
+                ioff = static_cast<size_t> (it)
+                      *pImpl->mConvolutionLeadingDimension;
+                float *__attribute__((aligned(64))) dest
+                     = &pImpl->mSignalSegment[ioff];
+                int iend = std::min(nx, istart + L); // Exclusive
+                int ncopy = iend - istart;
+#ifdef USE_PSTL
+                // Extract the padded signal
+                std::copy(std::execution::unseq,
+                          signalPtr, signalPtr+ncopy, dest);
+                // Zero out signal until end
+                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
+#else
+                std::copy(signalPtr, signalPtr+ncopy, dest);
+                std::fill(dest+ncopy, dest+nfft, 0);
+#endif
             }
-        }
+            // Fourier transform
+            fftwf_execute_dft_r2c(pImpl->mForwardPlan,
+                                  pImpl->mSignalSegment,
+                                  pImpl->mSegmentSpectra);
+            // Convolve by multiplying spectra.  Note, that here we have removed
+            // the mean from the template and normalized.  Hence, the numerator
+            // looks like \tilde{X}*Y.
+            for (int it=0; it<nTemplates; ++it)
+            {
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSpectraLeadingDimension;
+                std::complex<float>
+                    __attribute__((aligned(64))) *bRow = &B[ioff];
+                std::complex<float>
+                    __attribute__((aligned(64))) *xcRow = &X[ioff];
+                #pragma omp simd
+                for (int w=0; w<pImpl->mSpectraLength; ++w)
+                {
+                    xcRow[w] = bRow[w]*xcRow[w];
+                }
+            }
+
         // Inverse transform
         fftwf_execute_dft_c2r(pImpl->mInversePlan,
                               pImpl->mSegmentSpectra,

@@ -147,6 +147,11 @@ public:
     int getBlockLength() const;
 
     /*!
+     * @brief Gets the matched filter detection mode.
+     * @result The detection mode.
+     */
+    MatchedFilterDetectionMode getDetectionMode() const noexcept;
+    /*!
      * @brief Defines the matched filter implementation.
      * @param[in] implementation  The matched filter implementation.
      */
