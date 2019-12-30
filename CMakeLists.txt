@@ -11,6 +11,15 @@ if (OPENMP_FOUND)
    string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
 endif()
 
+check_cxx_source_compiles("
+#include <memory>
+int main () {
+  std::unique_ptr<int> foo = std::make_unique<int>();
+}
+"
+  HAVE_STD__MAKE_UNIQUE
+)
+
 find_package(GTest REQUIRED)
 find_package(MPI)
 if (MPI_FOUND)
