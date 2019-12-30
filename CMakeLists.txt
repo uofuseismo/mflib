@@ -91,7 +91,8 @@ if (MFLIB_WRAP_PYTHON)
                python/matchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
-   target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA})
+   target_link_libraries(pymflib PRIVATE
+                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} OpenMP::OpenMP_CXX)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
    #target_include_directories(pymflib PRIVATE pybind11)
@@ -109,7 +110,8 @@ add_executable(unitTests
 target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
                       ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(unitTests
-                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})
+                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
+                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 
 file(COPY ${CMAKE_SOURCE_DIR}/python/unit_tests.py DESTINATION .)

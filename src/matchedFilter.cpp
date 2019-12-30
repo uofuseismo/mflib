@@ -100,7 +100,7 @@ void normalizeSignal(const int n, const int lent,
 */
     {
     const T zero = 0;
-    auto nbytes = static_cast<size_t> (lent)*sizeof(T);
+    auto nbytes = static_cast<size_t> (lent+16)*sizeof(T);
     auto s  = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     auto s2 = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     T scalNum = static_cast<T> (std::sqrt(static_cast<double> (lent)));
@@ -972,16 +972,14 @@ void MatchedFilter<double>::apply()
         }
     } // Loop on windows
     // Compute the normalization 
-/*
-    #pragma omp parallel \
-     default(none)
-*/
-    {
+    const double tol = 1.e-12;
     auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
-    const double tol = 1.e-12;
- //   #pragma omp for
-    for (int it=0; it<pImpl->mTemplates; ++it)
+    auto mTemplates = pImpl->mTemplates;
+    #pragma omp parallel  for \
+     shared (ldm, nxUnpadded, mTemplates) \
+     default(none)
+    for (int it=0; it<mTemplates; ++it)
     {
         // Avoid division by zero for obviously dead traces.
         // Since the numerators were zero'd on entry simply skip it.
@@ -998,7 +996,6 @@ void MatchedFilter<double>::apply()
         //                        y, yNum);
 
     }
-    } // End parallel
     pImpl->mHaveMatchedFilters = true;
 }
 
@@ -1098,15 +1095,13 @@ void MatchedFilter<float>::apply()
         }
     } // Loop on windows
     // Compute the normalization 
-/*
-    #pragma omp parallel \
-     default(none)
-*/
-    {
+    const float tol = 1.e-6;
     auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
-    const float tol = 1.e-6;
-    //#pragma omp for
+    auto mTemplates = pImpl->mTemplates;
+    #pragma omp parallel  for \
+     shared (ldm, nxUnpadded, mTemplates) \
+     default(none)
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         if (pImpl->mSkipZeroSignal[it]){continue;}
@@ -1127,7 +1122,6 @@ void MatchedFilter<float>::apply()
                         y, yNum, tol);
         */
     }
-    } // End parallel
     pImpl->mHaveMatchedFilters = true;
 }
 
