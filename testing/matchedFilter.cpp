@@ -590,7 +590,8 @@ void dumbXC(const int nb, const double b[],
         ippsSubC_64f(&x[i], mean, xtemp, nb);
         ippsNorm_L2_64f(xtemp, nb, &Ex);
         Ex = std::max(std::numeric_limits<double>::epsilon(), Ex);
-        ippsDotProd_64f(btemp, xtemp, nb, &xc[i]);
+        //ippsDotProd_64f(btemp, xtemp, nb, &xc[i]);
+        xc[i] = std::inner_product(btemp, btemp+nb, xtemp, 0.0); //ippsDotProd_64f(btemp, xtemp, nb, &xc[i]);
         xc[i] = xc[i]/(Eb*Ex);
     }
     ippsFree(btemp);

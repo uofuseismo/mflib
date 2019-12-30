@@ -92,10 +92,12 @@ void normalizeSignal(const int n, const int lent,
                      T *__restrict__ yNum,
                      const T tol = 1.e-12)
 {
+/*
     #pragma omp parallel \
      shared(y, yNum) \
      firstprivate(tol) \
      default(none)
+*/
     {
     const T zero = 0;
     auto nbytes = static_cast<size_t> (lent)*sizeof(T);
@@ -104,7 +106,7 @@ void normalizeSignal(const int n, const int lent,
     T scalNum = static_cast<T> (std::sqrt(static_cast<double> (lent)));
     int scalDen = lent;
     // Parallel loop on the waveform chunks
-    #pragma omp for schedule(static)
+//    #pragma omp for
     for (int i=0; i<n-lent+1; i=i+lent)
     {
         const T *yp = &y[i];
@@ -970,21 +972,23 @@ void MatchedFilter<double>::apply()
         }
     } // Loop on windows
     // Compute the normalization 
+/*
     #pragma omp parallel \
      default(none)
+*/
     {
     auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
-    constexpr double tol = 1.e-12;
-    #pragma omp for
+    const double tol = 1.e-12;
+ //   #pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         // Avoid division by zero for obviously dead traces.
         // Since the numerators were zero'd on entry simply skip it.
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        auto isrc = ldm*it;
+        auto isrc = ldm*static_cast<size_t> (it);
         // Skip the filter start-up - will be different for each signal.
-        auto idst = ldm*it
+        auto idst = ldm*static_cast<size_t> (it)
                   + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
         const double *y = &pImpl->mInputSignals[isrc];
         double *yNum = &pImpl->mFilteredSignals[idst];
@@ -1094,18 +1098,20 @@ void MatchedFilter<float>::apply()
         }
     } // Loop on windows
     // Compute the normalization 
+/*
     #pragma omp parallel \
      default(none)
+*/
     {
     auto ldm = pImpl->mSamplesLeadingDimension;
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
-    constexpr float tol = 1.e-6;
-    #pragma omp for
+    const float tol = 1.e-6;
+    //#pragma omp for
     for (int it=0; it<pImpl->mTemplates; ++it)
     {
         if (pImpl->mSkipZeroSignal[it]){continue;}
-        auto isrc = ldm*it;
-        auto idst = ldm*it
+        auto isrc = ldm*static_cast<size_t> (it);
+        auto idst = ldm*static_cast<size_t> (it)
                   + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
         const float *y = &pImpl->mInputSignals[isrc];
         float *yNum = &pImpl->mFilteredSignals[idst];
