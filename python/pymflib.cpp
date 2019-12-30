@@ -96,7 +96,7 @@ PYBIND11_MODULE(pymflib, m)
     /// The default constructor:
     mcmf.def(pybind11::init<> ());
     mcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
-    /// Initiailze
+    /// Initialize
     mcmf.def("initialize",
              &PBMFLib::MultiChannelMatchedFilter<double>::initialize,
              "Initializes the multi-channel matched filtering engine.  This is a high-overhead function.");
@@ -110,5 +110,18 @@ PYBIND11_MODULE(pymflib, m)
     mcmf.def_property_readonly("number_of_templates", 
                                &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
                                "The number of templates in the multi-channel cross-correlation.");
+    /// Apply
+    mcmf.def("apply",
+             &PBMFLib::MultiChannelMatchedFilter<double>::apply,
+             "Applies the templates set during the initialization stage to the signals set by set_signal");
+    /// 
+    mcmf.def_property_readonly("have_matched_filtered_signals",
+                               &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
+                               "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
+    /// Gets the it'th matched filtered signal
+    mcmf.def("get_matched_filtered_signal",
+             &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,
+             "Gets the it'th matched filtered signal.  The `apply' method must have been called and the template index must be in the range [0,number_of_templates]");
+           
 
 }

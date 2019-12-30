@@ -91,7 +91,7 @@ if (MFLIB_WRAP_PYTHON)
                python/matchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
-   target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter)
+   target_link_libraries(pymflib PRIVATE pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA})
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
    #target_include_directories(pymflib PRIVATE pybind11)

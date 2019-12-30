@@ -105,7 +105,7 @@ void normalizeSignal(const int n, const int lent,
     int scalDen = lent;
     // Parallel loop on the waveform chunks
     #pragma omp for schedule(static)
-    for (int i=0; i<n-lent; i=i+lent)
+    for (int i=0; i<n-lent+1; i=i+lent)
     {
         const T *yp = &y[i];
         T *yn = &yNum[i];
