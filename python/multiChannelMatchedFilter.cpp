@@ -26,6 +26,14 @@ void MultiChannelMatchedFilter<T>::initialize(
     MFLib::MatchedFilterParameters parms = parmsIn.getNativeClass();
     if (!parms.isValid())
     {
+         if (parms.getSignalSize() < 1)
+         {
+             fprintf(stderr, "Signal size not set\n");
+         }
+         if (parms.getNumberOfTemplates() < 1)
+         {
+             fprintf(stderr, "No templates\n");
+         }
          throw std::invalid_argument("Parameters are invalid\n");
     }
     mcmf->initialize(parms);
@@ -77,6 +85,49 @@ template<class T>
 bool MultiChannelMatchedFilter<T>::isInitialized() const noexcept
 {
     return mcmf->isInitialized();
+}
+
+/// Applies the matched filtering
+template<class T>
+void MultiChannelMatchedFilter<T>::apply()
+{
+    if (!isInitialized())
+    {
+        throw std::runtime_error("Matched filter not initialized\n");
+    }
+    mcmf->apply();
+}
+
+/// Determines if the matched filtering was applied
+template<class T>
+bool MultiChannelMatchedFilter<T>::haveMatchedFilteredSignals() const noexcept
+{
+    return mcmf->haveMatchedFilteredSignals();
+}
+
+/// Gets the matched filtered signals
+template<class T>
+pybind11::array_t<T, pybind11::array::c_style | pybind11::array::forcecast>
+MultiChannelMatchedFilter<T>::getMatchedFilteredSignal(const int it) const
+{
+    if (!haveMatchedFilteredSignals())
+    {
+        throw std::runtime_error("Matched filtering not yet applied\n");
+    }
+    auto nt = getNumberOfTemplates();
+    if (it < 0 || it >= nt)
+    {
+        throw std::invalid_argument("Template index = " + std::to_string(it)
+                                  + " must be in range [0," + std::to_string(nt-1)
+                                  + "]\n");
+    }
+    auto res = mcmf->getMatchedFilteredSignal(it);
+    auto npts = res.size();
+    auto y = pybind11::array_t<T, pybind11::array::c_style> (npts);
+    pybind11::buffer_info ybuf = y.request();
+    auto yptr = static_cast<T *> (ybuf.ptr);
+    std::copy(res.begin(), res.end(), yptr);
+    return y;
 }
 
 /// Instantiation
