@@ -14,15 +14,15 @@ class MatchedFilterParameters;
 namespace PBMFLib
 {
 class WaveformTemplate;
-class MatchedFilterParameters
+class MultiChannelMatchedFilterParameters
 {
 public:
     /// Constructor
-    MatchedFilterParameters();
-    MatchedFilterParameters(const MatchedFilterParameters &parms);
-    MatchedFilterParameters& operator=(const MatchedFilterParameters &parms);
+    MultiChannelMatchedFilterParameters();
+    MultiChannelMatchedFilterParameters(const MultiChannelMatchedFilterParameters &parms);
+    MultiChannelMatchedFilterParameters& operator=(const MultiChannelMatchedFilterParameters &parms);
     /// Destructor
-    ~MatchedFilterParameters();
+    ~MultiChannelMatchedFilterParameters();
     /// Add template
     void addTemplate(const WaveformTemplate &wt);
     int getNumberOfTemplates() const; 

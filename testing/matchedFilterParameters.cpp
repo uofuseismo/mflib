@@ -62,6 +62,11 @@ TEST(MatchedFilter, options)
 
     options.setStackAbsoluteValues(false);
     EXPECT_FALSE(options.getStackAbsoluteValues());
+
+    options.setDetectionMode(MatchedFilterDetectionMode::MULTI_CHANNEL);
+    EXPECT_EQ(options.getDetectionMode(),
+              MatchedFilterDetectionMode::MULTI_CHANNEL);
+    options.setDetectionMode(MatchedFilterDetectionMode::SINGLE_CHANNEL);
  
     EXPECT_FALSE(options.isValid());
     EXPECT_NO_THROW(options.addTemplate(tplate1)); //tp1.size(), tp1.data()));
@@ -111,6 +116,8 @@ TEST(MatchedFilter, options)
               MatchedFilterImplementation::AUTO);
     EXPECT_FALSE(optionsCopy.getStackAbsoluteValues());
     EXPECT_EQ(optionsCopy.getSignalSize(), signalSize);
+    EXPECT_EQ(optionsCopy.getDetectionMode(),
+              MatchedFilterDetectionMode::SINGLE_CHANNEL);
     EXPECT_TRUE(optionsCopy.isValid());
     EXPECT_NO_THROW(tplateOut = optionsCopy.getTemplate(0));
     tplateOut.getSignal(work8.size(), &work8Ptr);

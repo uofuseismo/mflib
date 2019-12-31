@@ -111,6 +111,9 @@ public:
     /// Matched filter implementation
     MatchedFilterImplementation mImplementation
         = MatchedFilterImplementation::DIRECT;
+    /// Matched filter job
+    MatchedFilterDetectionMode mDetectionMode
+        = MatchedFilterDetectionMode::MULTI_CHANNEL;
     /// Sampling rate of templates
     double mSamplingRate =-1;
     /// Signal size
@@ -212,27 +215,6 @@ void MatchedFilterParameters::addTemplate(const WaveformTemplate &tplate)
     pImpl->mTemplates.push_back(tplate); 
 }
 
-/// Adds a template
-/*
-void MatchedFilterParameters::addTemplate(
-    const int nSamples, const T templateSignal[])
-{
-    pImpl->mFFTLength = 0;
-    pImpl->mBlockLength = 0;
-    if (nSamples < 1 || templateSignal == nullptr)
-    {
-        if (nSamples < 1)
-        {
-            throw std::invalid_argument("No samples in template\n");
-        }
-        throw std::invalid_argument("templateSignal is NULL\n");
-    }
-    std::vector<T> work(nSamples);
-    //std::copy(templateSignal, templateSignal+nSamples, work.begin());
-    //pImpl->mTemplates.push_back(work);
-} 
-*/
-
 /// Gets the template length
 int MatchedFilterParameters::getMaxTemplateLength() const
 {
@@ -260,27 +242,6 @@ WaveformTemplate MatchedFilterParameters::getTemplate(const int it) const
     }
     return pImpl->mTemplates[it];
 }
-
-/*
-template<class T>
-std::vector<T> MatchedFilterParameters<T>::getTemplate(
-    const int it) const
-{
-    auto nt = getNumberOfTemplates();
-    if (it < 0 || it >= nt)
-    {
-        throw std::invalid_argument("Template " + std::to_string(it)
-                                  + " must be in range [0,"
-                                  + std::to_string(nt) + "]\n");
-    }
-    // Pad out the it'the template
-    auto len = getTemplateLength();
-    std::vector<T> work(len, 0);
-    //std::copy(pImpl->mTemplates[it].begin(), pImpl->mTemplates[it].end(),
-    //          work.begin());
-    return work;
-}
-*/
 
 /// Sets the FFT length
 void MatchedFilterParameters::setFFTLength(const int fftLength)
@@ -382,6 +343,18 @@ bool MatchedFilterParameters::getStackAbsoluteValues() const noexcept
     return pImpl->mStackAbs;
 }
 
+/// Sets/gets the detection mode
+void MatchedFilterParameters::setDetectionMode(
+    const MatchedFilterDetectionMode mode) noexcept
+{
+    pImpl->mDetectionMode = mode;
+}
+
+MatchedFilterDetectionMode 
+MatchedFilterParameters::getDetectionMode() const noexcept
+{
+    return pImpl->mDetectionMode;
+}
 
 /// Checks if this is a valid set of template parameters 
 bool MatchedFilterParameters::isValid() const noexcept

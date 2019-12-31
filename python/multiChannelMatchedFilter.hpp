@@ -11,7 +11,7 @@ template<class T> class MatchedFilter;
 
 namespace PBMFLib
 {
-class MatchedFilterParameters;
+class MultiChannelMatchedFilterParameters;
 template<class T = double>
 class MultiChannelMatchedFilter
 {
@@ -21,7 +21,7 @@ public:
     /// Destructors
     ~MultiChannelMatchedFilter();
     /// Set parameters
-    void initialize(const MatchedFilterParameters &parms);
+    void initialize(const MultiChannelMatchedFilterParameters &parms);
     /// Set signal
     void setSignal(int it,
                    const pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);

@@ -1,26 +1,30 @@
 #include <cstdio>
 #include <cstdlib>
+#include "mflib/enums.hpp"
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "waveformTemplate.hpp"
-#include "matchedFilterParameters.hpp"
+#include "multiChannelMatchedFilterParameters.hpp"
 
 using namespace PBMFLib;
 
 /// Constructor
-MatchedFilterParameters::MatchedFilterParameters() :
+MultiChannelMatchedFilterParameters::MultiChannelMatchedFilterParameters() :
     mParameters(std::make_unique<MFLib::MatchedFilterParameters> ())
 {
+    mParameters->setDetectionMode(
+        MFLib::MatchedFilterDetectionMode::MULTI_CHANNEL);
 }
 
-MatchedFilterParameters::MatchedFilterParameters(
-    const MatchedFilterParameters &parms)
+MultiChannelMatchedFilterParameters::MultiChannelMatchedFilterParameters(
+    const MultiChannelMatchedFilterParameters &parms)
 {
     *this = parms;
 }
 
-MatchedFilterParameters& 
-MatchedFilterParameters::operator=(const MatchedFilterParameters &parms)
+MultiChannelMatchedFilterParameters& 
+MultiChannelMatchedFilterParameters::operator=(
+    const MultiChannelMatchedFilterParameters &parms)
 {
     if (&parms == this){return *this;}
     mParameters
@@ -29,21 +33,24 @@ MatchedFilterParameters::operator=(const MatchedFilterParameters &parms)
 }
 
 /// Destructor
-MatchedFilterParameters::~MatchedFilterParameters() = default;
+MultiChannelMatchedFilterParameters::~MultiChannelMatchedFilterParameters()
+    = default;
 
 /// Adds a template
-void MatchedFilterParameters::addTemplate(const WaveformTemplate &wt)
+void MultiChannelMatchedFilterParameters::addTemplate(
+    const WaveformTemplate &wt)
 {
     auto t = wt.getNativeClass();
     mParameters->addTemplate(t);
 }
 
-int MatchedFilterParameters::getNumberOfTemplates() const
+int MultiChannelMatchedFilterParameters::getNumberOfTemplates() const
 {
     return mParameters->getNumberOfTemplates();
 }
 
-WaveformTemplate MatchedFilterParameters::getTemplate(const int it) const
+WaveformTemplate 
+MultiChannelMatchedFilterParameters::getTemplate(const int it) const
 {
     if (it < 0 || it >= getNumberOfTemplates())
     {
@@ -59,7 +66,7 @@ WaveformTemplate MatchedFilterParameters::getTemplate(const int it) const
 }
 
 /// FFT Length 
-void MatchedFilterParameters::setFFTLength(const int fftLength)
+void MultiChannelMatchedFilterParameters::setFFTLength(const int fftLength)
 {
     auto nt = mParameters->getNumberOfTemplates();
     if (nt < 1)
@@ -69,14 +76,14 @@ void MatchedFilterParameters::setFFTLength(const int fftLength)
     mParameters->setFFTLength(fftLength);
 }
 
-int MatchedFilterParameters::getFFTLength() const
+int MultiChannelMatchedFilterParameters::getFFTLength() const
 {
     auto nt = getNumberOfTemplates(); //mParameters->getNumberOfTemplates();
     if (nt < 1){return 0;}
     return mParameters->getFFTLength();
 }
 
-int MatchedFilterParameters::getBlockLength() const
+int MultiChannelMatchedFilterParameters::getBlockLength() const
 {
     auto nt = getNumberOfTemplates(); //mParameters->getNumberOfTemplates();
     if (nt < 1){return 0;}
@@ -84,7 +91,7 @@ int MatchedFilterParameters::getBlockLength() const
 }
 
 /// Sets/gets the signals size
-void MatchedFilterParameters::setSignalSize(const int n)
+void MultiChannelMatchedFilterParameters::setSignalSize(const int n)
 {
     if (n < 1)
     {
@@ -93,27 +100,27 @@ void MatchedFilterParameters::setSignalSize(const int n)
     mParameters->setSignalSize(n);     
 }
 
-int MatchedFilterParameters::getSignalSize() const
+int MultiChannelMatchedFilterParameters::getSignalSize() const
 {
     if (getNumberOfTemplates() < 1){return 0;}
     return mParameters->getSignalSize();
 }
 
 /// Clears the templates from the class
-void MatchedFilterParameters::clearTemplates() noexcept
+void MultiChannelMatchedFilterParameters::clearTemplates() noexcept
 {
     mParameters->clearTemplates();
 }
 
 /// Clears the class
-void MatchedFilterParameters::clear() noexcept
+void MultiChannelMatchedFilterParameters::clear() noexcept
 {
     mParameters->clear();
 }
 
 /// Get the native class
 MFLib::MatchedFilterParameters
-MatchedFilterParameters::getNativeClass() const
+MultiChannelMatchedFilterParameters::getNativeClass() const
 {
     auto parmsOut(*mParameters);
     return parmsOut;

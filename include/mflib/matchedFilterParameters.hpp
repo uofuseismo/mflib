@@ -147,6 +147,12 @@ public:
     int getBlockLength() const;
 
     /*!
+     * @brief Sets the detection mode.
+     * @param[in] mode   Toggles between a single-channel multiple template
+     *                   and many channel-many template detection strategy.
+     */
+    void setDetectionMode(const MatchedFilterDetectionMode mode) noexcept;
+    /*!
      * @brief Gets the matched filter detection mode.
      * @result The detection mode.
      */

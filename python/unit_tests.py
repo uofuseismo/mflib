@@ -56,7 +56,7 @@ def test_matched_filter_parameters():
     """
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
-    mf_parameters = pymflib.MatchedFilterParameters()
+    mf_parameters = pymflib.MultiChannelMatchedFilterParameters()
 
     signal_size = 1024  # Signal size
     sampling_rate = 100 # Sampling rate of templates and signal
@@ -155,7 +155,7 @@ def test_matched_filtering():
     wf2.sampling_rate = sampling_rate
 
     # Attached the templates to the parameters
-    mf_parameters = pymflib.MatchedFilterParameters()
+    mf_parameters = pymflib.MultiChannelMatchedFilterParameters()
     mf_parameters.add_template(wf1)
     mf_parameters.add_template(wf2)
     mf_parameters.signal_size = signal_size

@@ -3,7 +3,7 @@
 #include "mflib/matchedFilter.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "multiChannelMatchedFilter.hpp"
-#include "matchedFilterParameters.hpp"
+#include "multiChannelMatchedFilterParameters.hpp"
 
 using namespace PBMFLib;
 
@@ -21,7 +21,7 @@ MultiChannelMatchedFilter<T>::~MultiChannelMatchedFilter() = default;
 /// Initialize
 template<class T>
 void MultiChannelMatchedFilter<T>::initialize(
-    const MatchedFilterParameters &parmsIn)
+    const MultiChannelMatchedFilterParameters &parmsIn)
 {
     MFLib::MatchedFilterParameters parms = parmsIn.getNativeClass();
     if (!parms.isValid())

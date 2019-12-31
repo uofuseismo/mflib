@@ -1,6 +1,6 @@
 #include "mflib/version.hpp"
 #include "waveformTemplate.hpp"
-#include "matchedFilterParameters.hpp"
+#include "multiChannelMatchedFilterParameters.hpp"
 #include "multiChannelMatchedFilter.hpp"
 #include <pybind11/pybind11.h>
 
@@ -52,39 +52,40 @@ PYBIND11_MODULE(pymflib, m)
     //--------------------------------------------------------------------------------------------//
     //                                  Matched Filter Parameters                                 //
     //--------------------------------------------------------------------------------------------// 
-    pybind11::class_<PBMFLib::MatchedFilterParameters> mfParameters(m, "MatchedFilterParameters");
+    pybind11::class_<PBMFLib::MultiChannelMatchedFilterParameters>
+        mfParameters(m, "MultiChannelMatchedFilterParameters");
     /// The default constructor:
     mfParameters.def(pybind11::init<> ());
     mfParameters.doc() = "Defines the options class for matched filtering.";
     /// Adds a template to the class
     mfParameters.def("add_template",
-                     &PBMFLib::MatchedFilterParameters::addTemplate,
+                     &PBMFLib::MultiChannelMatchedFilterParameters::addTemplate,
                      "Adds a waveform template.  The waveform template must at minimum have a signal.");
     mfParameters.def("get_template",
-                     &PBMFLib::MatchedFilterParameters::getTemplate,
+                     &PBMFLib::MultiChannelMatchedFilterParameters::getTemplate,
                      "Gets the it'th waveform template.");
     mfParameters.def_property("signal_size",
-                              &PBMFLib::MatchedFilterParameters::getSignalSize,
-                              &PBMFLib::MatchedFilterParameters::setSignalSize,
+                              &PBMFLib::MultiChannelMatchedFilterParameters::getSignalSize,
+                              &PBMFLib::MultiChannelMatchedFilterParameters::setSignalSize,
                               "Defines the size of the signals to which the templates will be applied.  This must be positive and should be called after setting all the templates.");
     mfParameters.def_property_readonly("number_of_templates",
-                                       &PBMFLib::MatchedFilterParameters::getNumberOfTemplates,
+                                       &PBMFLib::MultiChannelMatchedFilterParameters::getNumberOfTemplates,
                                        "This is the number of templates that have been set in the class.");
     /// Tuning parameters
     mfParameters.def_property("fft_length",
-                              &PBMFLib::MatchedFilterParameters::getFFTLength,
-                              &PBMFLib::MatchedFilterParameters::setFFTLength,
+                              &PBMFLib::MultiChannelMatchedFilterParameters::getFFTLength,
+                              &PBMFLib::MultiChannelMatchedFilterParameters::setFFTLength,
                               "This is a tuning parameter.  From the signal size and template lengths a nominal FFT length will be computed.  While this length will be a power of 2 the underlying Cooley-Tukey Discrete Fourier Transform may be more efficient for smaller FFT lenghts.  This should be set after both the templates and signal size are set."); 
     mfParameters.def("block_length",
-                     &PBMFLib::MatchedFilterParameters::getFFTLength,
+                     &PBMFLib::MultiChannelMatchedFilterParameters::getFFTLength,
                      "This is the block length in the overlap-and-add method.  It is computed from the FFT length and the signal size.");
     /// Clear the templates
     mfParameters.def("clear_templates",
-                     &PBMFLib::MatchedFilterParameters::clearTemplates,
+                     &PBMFLib::MultiChannelMatchedFilterParameters::clearTemplates,
                      "Clears the existing templates from class's memory.");
     /// Clears the class
     mfParameters.def("clear",
-                     &PBMFLib::MatchedFilterParameters::clear,
+                     &PBMFLib::MultiChannelMatchedFilterParameters::clear,
                      "Clears the class's memory and resets the class.");
     //--------------------------------------------------------------------------------------------//
     //                                   Matched Filtering                                        //
