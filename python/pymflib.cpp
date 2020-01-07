@@ -6,13 +6,8 @@
 
 PYBIND11_MODULE(pymflib, m)
 {
-    //pybind11::module m; // = modules.def_submodule("Classes");
-    //m.doc() = "Bindings for performing matched filtering.";
-    //pybind11::class_<PBMFLib::Version> version(m, "__version__");
-    //version.def(pybind11::init<> ());
+    // Version number
     m.attr("__version__") = MFLIB_VERSION; 
-    //      &PBMFLib::Version::getVersion,
-    //      "A string-form of the version number given by MAJOR.MINOR.PATCH.");
     //--------------------------------------------------------------------------------------------//
     //                                     Waveform Template                                      //
     //--------------------------------------------------------------------------------------------//
