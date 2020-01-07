@@ -90,39 +90,39 @@ PYBIND11_MODULE(pymflib, m)
     //--------------------------------------------------------------------------------------------//
     //                                   Matched Filtering                                        //
     //--------------------------------------------------------------------------------------------//
-    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> mcmf(m, "MultiChannelMatchedFilter");
-    //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> fmcmf(m, "MultiChannelMatchedFilter");    
+    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> dmcmf(m, "MultiChannelMatchedFilter");
+    //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> fmcmf(m, "MultiChannelMatchedFilter");
     //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> mcmf(m, "MultiChannelMatchedFilter");
     //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> mcmf(m, "MultiChannelMatchedFilter");
     /// The default constructor:
-    mcmf.def(pybind11::init<> ());
-    mcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
+    dmcmf.def(pybind11::init<> ());
+    dmcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
     /// Initialize
-    mcmf.def("initialize",
-             &PBMFLib::MultiChannelMatchedFilter<double>::initialize,
-             "Initializes the multi-channel matched filtering engine.  This is a high-overhead function.");
+    dmcmf.def("initialize",
+              &PBMFLib::MultiChannelMatchedFilter<double>::initialize,
+              "Initializes the multi-channel matched filtering engine.  This is a high-overhead function.");
     /// Sets signals
-    mcmf.def("set_signal",
-             &PBMFLib::MultiChannelMatchedFilter<double>::setSignal,
-             "Sets the signal corresponding to the it'th template.  This should be called after the class is initialized.  Moreover, the template index must in the range of [0, number_of_templates].");
-    mcmf.def("zero_signal",
-             &PBMFLib::MultiChannelMatchedFilter<double>::zeroSignal,
-             "Over a time period a station can be down.  This sets the signal corresponding to the it'th template to 0.  The template index must be in the range of [0, number_of_templates].");
-    mcmf.def_property_readonly("number_of_templates", 
-                               &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
-                               "The number of templates in the multi-channel cross-correlation.");
+    dmcmf.def("set_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::setSignal,
+              "Sets the signal corresponding to the it'th template.  This should be called after the class is initialized.  Moreover, the template index must in the range of [0, number_of_templates].");
+    dmcmf.def("zero_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::zeroSignal,
+              "Over a time period a station can be down.  This sets the signal corresponding to the it'th template to 0.  The template index must be in the range of [0, number_of_templates].");
+    dmcmf.def_property_readonly("number_of_templates", 
+                                &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
+                                "The number of templates in the multi-channel cross-correlation.");
     /// Apply
-    mcmf.def("apply",
-             &PBMFLib::MultiChannelMatchedFilter<double>::apply,
-             "Applies the templates set during the initialization stage to the signals set by set_signal");
+    dmcmf.def("apply",
+              &PBMFLib::MultiChannelMatchedFilter<double>::apply,
+              "Applies the templates set during the initialization stage to the signals set by set_signal");
     /// 
-    mcmf.def_property_readonly("have_matched_filtered_signals",
-                               &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
-                               "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
+    dmcmf.def_property_readonly("have_matched_filtered_signals",
+                                &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
+                                "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
     /// Gets the it'th matched filtered signal
-    mcmf.def("get_matched_filtered_signal",
-             &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,
-             "Gets the it'th matched filtered signal.  The `apply' method must have been called and the template index must be in the range [0,number_of_templates]");
+    dmcmf.def("get_matched_filtered_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,
+              "Gets the it'th matched filtered signal.  The `apply' method must have been called and the template index must be in the range [0,number_of_templates]");
            
 
 }

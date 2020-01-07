@@ -117,3 +117,32 @@ target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 file(COPY ${CMAKE_SOURCE_DIR}/python/unit_tests.py DESTINATION .)
 add_test(NAME unitTests
          COMMAND unitTests)
+
+###############################################################################
+#                                 Installation                                #
+###############################################################################
+include(GNUInstallDirs)
+if (MFLIB_WRAP_PYTHON)
+   install(TARGETS matchedFilter pymflib
+           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+else()
+   install(TARGETS matchedFilter
+           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+
+##########################################################################################
+#                                     CPACK Packaging                                    #
+##########################################################################################
+set(CPACK_PACKAGE_NAME "mflib")
+set(CPACK_PACKAGE_VENDOR "The Internet")
+set(CPACK_PACKAGE_CONTACT "bbaker@seis.utah.edu")
+set(CPACK_PACKAGE_LICENSE "MIT")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A toolkit for template matching seismic signals")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
