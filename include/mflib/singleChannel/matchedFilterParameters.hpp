@@ -2,6 +2,7 @@
 #define MFLIB_SINGLECHANNEL_FILTERPARAMETERS_HPP
 #include <memory>
 #include <vector>
+#include "mflib/matchedFilterParameters.hpp"
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/enums.hpp"
 namespace MFLib
@@ -81,7 +82,7 @@ public:
      *         sampling rate.
      * @note This will invalidate the FFT length and the block size.
      */
-    void addTemplate(const WaveformTemplate &waveformTemplate);
+    void addTemplate(const MFLib::WaveformTemplate &waveformTemplate);
     /*!
      * @brief Clears all templates but leaves other variables untouched.
      */
@@ -152,7 +153,7 @@ public:
      * @brief Gets the matched filter detection mode.
      * @result The detection mode.
      */
-    MatchedFilterDetectionMode getDetectionMode() const noexcept;
+    MFLib::MatchedFilterDetectionMode getDetectionMode() const noexcept;
     /*!
      * @brief Defines the matched filter implementation.
      * @param[in] implementation  The matched filter implementation.
@@ -166,26 +167,20 @@ public:
     MatchedFilterImplementation getMatchedFilterImplementation() const noexcept;
 
     /*!
-     * @brief When stacking - stack the absolute value of the matched filters
-     *        or the raw values.
-     * @param[in] labs   If true then stack the absolute values of the matched
-     *                   filtered signals.
-     */
-    void setStackAbsoluteValues(bool labs) noexcept;
-    /*!
-     * @brief Determines whether or not to stack the absolute values or raw
-     *        values of the matched filtered signals.
-     * @result True indicates the absolute values of the matched filtered
-     *         signals are to be stacked.
-     */
-    bool getStackAbsoluteValues() const noexcept;
-
-    /*!
      * @brief Determines if the matched filtering parameters are well-defined.
      * @result True indicates that this is a valid matched filtering parameters
      *         class.
      */    
     bool isValid() const noexcept;   
+
+    /*!
+     * @brief Returns a copy of the matched filter parameters that are suitable
+     *        for initializing the matched filtering engines.
+     * @result The matched filter parameters suitable for initializing the
+     *         matched filtering engine classes.
+     * @throws std::runtime_error if the class is not valid.
+     */
+    MFLib::MatchedFilterParameters getParameters() const;
 private:
     class MatchedFilterParametersImpl;
     std::unique_ptr<MatchedFilterParametersImpl> pImpl;

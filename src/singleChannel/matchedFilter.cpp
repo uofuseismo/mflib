@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+#include "mflib/matchedFilterParameters.hpp"
+#include "mflib/singleChannel/matchedFilterParameters.hpp"
 #include "mflib/singleChannel/matchedFilter.hpp"
 #include "mflib/matchedFilter.hpp"
 
@@ -30,6 +32,19 @@ template<class T>
 void MatchedFilter<T>::clear() noexcept
 {
     pImpl->mMF.clear();
+}
+
+/// Initializes the class
+template<class T>
+void MatchedFilter<T>::initialize(
+    const MFLib::SingleChannel::MatchedFilterParameters &parmsIn)
+{
+    if (!parmsIn.isValid())
+    {
+        throw std::invalid_argument("Parameters are invalid\n");
+    }
+    auto parms = parmsIn.getParameters();
+    pImpl->mMF.initialize(parms);    
 }
 
 /// Sets a signal

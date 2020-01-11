@@ -8,6 +8,13 @@ namespace MFLib
 namespace SingleChannel
 {
 class MatchedFilterParameters;
+}
+}
+
+namespace MFLib
+{
+namespace SingleChannel
+{
 /*!
  * @brief The interface to the single-channel matched filtering method.
  *        This is to be used when the user wishes to apply many templates
