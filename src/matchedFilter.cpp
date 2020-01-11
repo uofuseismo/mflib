@@ -7,7 +7,7 @@
 #include <numeric>
 #include <mkl.h>
 #include <mkl_cblas.h>
-#include <ipps.h>
+//#include <ipps.h>
 #include <fftw/fftw3.h>
 #if __has_include(<pstl/algorithm>)
 #include <pstl/algorithm>
@@ -160,6 +160,31 @@ void normalizeSignal(const int n, const int lent,
     } // End parallel
 }
 
+template<class T>
+void demeanNormalizeAndReverseTemplate(const int nb, const T *__restrict__ b,
+                                       T *__restrict__ bOut)
+{   
+    // Compute the mean
+    double mean = 0; // Enforce high accuracy 
+    #pragma omp simd reduction(+:mean)
+    for (int i=0; i<nb; ++i){mean = mean + b[i];}
+    mean = static_cast<T> (mean/static_cast<double> (nb));
+    // Reverse copy, remove mean, and tabulate norm 
+    T norm = 0;
+    #pragma omp simd reduction(+:norm)
+    for (int i=0; i<nb; ++i)
+    {   
+        bOut[i] = b[nb-1-i] - mean;
+        norm = norm + bOut[i]*bOut[i];
+    }
+    norm = std::sqrt(norm);
+    if (norm > 0){norm = static_cast<T> (1.0/static_cast<double> (norm));}
+    // Normalize
+    #pragma omp simd
+    for (int i=0; i<nb; ++i){bOut[i] = bOut[i]*norm;}
+}
+
+/*
 void demeanNormalizeAndReverseTemplate(const int nb, const double b[],
                                        double bOut[])
 {
@@ -183,6 +208,7 @@ void demeanNormalizeAndReverseTemplate(const int nb, const float b[],
     ippsDivC_32f_I(norm, bOut, nb);   // Normalize bOut = bOut/||bOut||_2
     ippsFlip_32f_I(bOut, nb);         // Reverse
 }
+*/
 
 }
 
@@ -256,16 +282,18 @@ public:
     fftw_complex *mB = nullptr;
     /// This a pointer to mB which is useful when computing X*B in the 
     /// frequency domain.
-    std::complex<double> *mBPtr = nullptr;
+    std::complex<double> *__attribute__((aligned(64))) mBPtr = nullptr;
     /// The spectra of a segment of the input time domain signals.  This has
     /// dimension [mSpectraLeadingDimension x mTemplates].
     fftw_complex *mSegmentSpectra = nullptr;
-    std::complex<double> *mSegmentSpectraPtr = nullptr;
+    std::complex<double> *__attribute__((aligned(64)))
+        mSegmentSpectraPtr = nullptr;
     /// The spectra of a signle segment of the input time signal.  This has
     /// dimension [mSpectraLeadingDimension] and is only use for the single
     /// station application.
     fftw_complex *mSingleSegmentSpectra = nullptr;
-    std::complex<double> *mSingleSegmentSpectraPtr = nullptr;
+    std::complex<double> *__attribute__((aligned(64))) 
+        mSingleSegmentSpectraPtr = nullptr;
     /// The matched filtered signals.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     double *mFilteredSignals = nullptr;
@@ -388,16 +416,18 @@ public:
     fftwf_complex *mB = nullptr;
     /// This a pointer to mB which is useful when computing X*B in the 
     /// frequency domain.
-    std::complex<float> *mBPtr = nullptr;
+    std::complex<float> *__attribute__((aligned(64))) mBPtr = nullptr;
     /// The spectra of a segment of the input time domain signals.  This has
     /// dimension [mSpectraLeadingDimension x mTemplates].
     fftwf_complex *mSegmentSpectra = nullptr;
-    std::complex<float> *mSegmentSpectraPtr = nullptr;
+    std::complex<float> *__attribute__((aligned(64)))
+        mSegmentSpectraPtr = nullptr;
     /// The spectra of a signle segment of the input time signal.  This has
     /// dimension [mSpectraLeadingDimension] and is only use for the single
     /// station application.
     fftwf_complex *mSingleSegmentSpectra = nullptr;
-    std::complex<float> *mSingleSegmentSpectraPtr = nullptr;
+    std::complex<float> *__attribute__((aligned(64)))
+        mSingleSegmentSpectraPtr = nullptr;
     /// The matched filtered signals.  This has dimension
     /// [mSamplesLeadingDimension x mTemplates].
     float *mFilteredSignals = nullptr;
@@ -574,7 +604,7 @@ void MatchedFilter<double>::initialize(
         = static_cast<fftw_complex *> (MKL_calloc(len, 1, 64));
     pImpl->mSegmentSpectraPtr
         = reinterpret_cast<std::complex<double> *> (pImpl->mSegmentSpectra);
-    // Create the forward plan
+    // Create the forward plan and transform all of the templates
     pImpl->mForwardPlan
         = fftw_plan_many_dft_r2c(rank, nf, pImpl->mTemplates,
                                  pImpl->mSignalSegment, inembed,
@@ -583,17 +613,24 @@ void MatchedFilter<double>::initialize(
                                  ostride, pImpl->mSpectraLeadingDimension,
                                  FFTW_PATIENT);
     fftw_execute_dft_r2c(pImpl->mForwardPlan, b, pImpl->mB);
-    /*
-    if (detectionMode == MatchedFilterDectionMode::SINGLE_CHANNEL)
+    // For a single channel and many detections we can reduce the number
+    /// of requisite transforms by reducing to a single channel 
+    if (pImpl->mParameters.getDetectionMode() ==
+        MatchedFilterDetectionMode::SINGLE_CHANNEL)
     {
+        fftw_plan(pImpl->mForwardPlan); // Destroy plan
         len = pImpl->mSpectraLeadingDimension*sizeof(fftw_complex);
         pImpl->mSingleSegmentSpectra
             = static_cast<fftw_complex *> (MKL_calloc(len, 1, 64));
+        // Resize the signal segment transform
+        MKL_free(pImpl->mSignalSegment);
+        len = pImpl->mConvolutionLeadingDimension*sizeof(double);
+        pImpl->mSignalSegment = static_cast<double *> (MKL_calloc(len, 1, 64));
+        // Create a 1d plan exclusively for one signal
         pImpl->mForwardPlan 
-            = fftw_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSingleSignal,
+            = fftw_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSignalSegment,
                                    pImpl->mSingleSegmentSpectra, FFTW_PATIENT);
     }
-    */
     // Create the inverse plan
     int ni[1] = {pImpl->mFFTLength};
     pImpl->mInversePlan
@@ -724,6 +761,24 @@ void MatchedFilter<float>::initialize(
                                   ostride, pImpl->mSpectraLeadingDimension,
                                   FFTW_PATIENT);
     fftwf_execute_dft_r2c(pImpl->mForwardPlan, b, pImpl->mB);
+    // For a single channel and many detections we can reduce the number
+    /// of requisite transforms by reducing to a single channel 
+    if (pImpl->mParameters.getDetectionMode() ==
+        MatchedFilterDetectionMode::SINGLE_CHANNEL)
+    {
+        fftwf_plan(pImpl->mForwardPlan); // Destroy plan
+        len = pImpl->mSpectraLeadingDimension*sizeof(fftwf_complex);
+        pImpl->mSingleSegmentSpectra
+            = static_cast<fftwf_complex *> (MKL_calloc(len, 1, 64));
+        // Resize the signal segment transform
+        MKL_free(pImpl->mSignalSegment);
+        len = pImpl->mConvolutionLeadingDimension*sizeof(float);
+        pImpl->mSignalSegment = static_cast<float *> (MKL_calloc(len, 1, 64));
+        // Create a 1d plan exclusively for one signal
+        pImpl->mForwardPlan 
+            = fftwf_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSignalSegment,
+                                    pImpl->mSingleSegmentSpectra, FFTW_PATIENT);
+    }
     // Create the inverse plan
     int ni[1] = {pImpl->mFFTLength};
     pImpl->mInversePlan
@@ -879,6 +934,7 @@ const T* MatchedFilter<T>::getMatchedFilterSignalPointer(const int it) const
 template<>
 void MatchedFilter<double>::apply()
 {
+    const double zerof = 0;
     pImpl->mHaveMatchedFilters = false;
     if (!isInitialized())
     {
@@ -886,7 +942,16 @@ void MatchedFilter<double>::apply()
     }
     size_t nzero = pImpl->mSamplesLeadingDimension
                   *static_cast<size_t> (pImpl->mTemplates);
-    std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, 0);
+#ifdef USE_PSTL
+    std::fill(std::execution::unseq,
+              pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, zerof);
+#else
+    std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, zerof);
+#endif
+    // Is this a multi channel mode?
+    bool lMultiChannel = true;
+    if (pImpl->mParameters.getDetectionMode() ==
+        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = true;}
     // Get the sizes 
     auto L = pImpl->mL; 
     auto nx = pImpl->mSamplesExtra;
@@ -894,17 +959,20 @@ void MatchedFilter<double>::apply()
     auto nTemplates = pImpl->mTemplates;
     auto xnorm = 1/static_cast<double> (pImpl->mFFTLength);
 
-    std::complex<double> *B = pImpl->mBPtr;
-    std::complex<double> *X = pImpl->mSegmentSpectraPtr;
+    auto B = pImpl->mBPtr;
+    auto X = pImpl->mSegmentSpectraPtr;
+    auto XSingle = pImpl->mSingleSegmentSpectraPtr;
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
         // This is for many signals
+        if (lMultiChannel)
+        {
             for (int it=0; it<nTemplates; ++it)
             {
                 auto ioff = static_cast<size_t> (it)
                            *pImpl->mSamplesLeadingDimension;
-                const double *signalPtr = &pImpl->mInputSignals[ioff+istart];
+                auto signalPtr = &pImpl->mInputSignals[ioff+istart];
                 ioff = static_cast<size_t> (it)
                       *pImpl->mConvolutionLeadingDimension; 
                 double *__attribute__((aligned(64))) dest
@@ -916,10 +984,10 @@ void MatchedFilter<double>::apply()
                 std::copy(std::execution::unseq,
                           signalPtr, signalPtr+ncopy, dest);
                 // Zero out signal until end
-                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
+                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, zerof);
 #else
                 std::copy(signalPtr, signalPtr+ncopy, dest);
-                std::fill(dest+ncopy, dest+nfft, 0);
+                std::fill(dest+ncopy, dest+nfft, zerof);
 #endif
             }
             // Fourier transform
@@ -943,8 +1011,11 @@ void MatchedFilter<double>::apply()
                     xcRow[w] = bRow[w]*xcRow[w];
                 }
             }
-        // This is for one signal and many templates
+        }
+        else // This is for one signal and many templates
+        {
 
+        }
         // Inverse transform
         fftw_execute_dft_c2r(pImpl->mInversePlan,
                              pImpl->mSegmentSpectra,
@@ -977,7 +1048,7 @@ void MatchedFilter<double>::apply()
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
     auto mTemplates = pImpl->mTemplates;
     #pragma omp parallel  for \
-     shared (ldm, nxUnpadded, mTemplates) \
+     shared (ldm, lMultiChannel, nxUnpadded, mTemplates) \
      default(none)
     for (int it=0; it<mTemplates; ++it)
     {
@@ -985,6 +1056,7 @@ void MatchedFilter<double>::apply()
         // Since the numerators were zero'd on entry simply skip it.
         if (pImpl->mSkipZeroSignal[it]){continue;}
         auto isrc = ldm*static_cast<size_t> (it);
+        if (!lMultiChannel){isrc = 0;}
         // Skip the filter start-up - will be different for each signal.
         auto idst = ldm*static_cast<size_t> (it)
                   + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
@@ -1003,6 +1075,7 @@ void MatchedFilter<double>::apply()
 template<>
 void MatchedFilter<float>::apply()
 {
+    const float zerof = 0;
     pImpl->mHaveMatchedFilters = false;
     if (!isInitialized())
     {
@@ -1010,7 +1083,16 @@ void MatchedFilter<float>::apply()
     }
     size_t nzero = pImpl->mSamplesLeadingDimension
                   *static_cast<size_t> (pImpl->mTemplates);
-    std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, 0);
+#ifdef USE_PSTL
+    std::fill(std::execution::unseq,
+              pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, zerof);
+#else
+    std::fill(pImpl->mFilteredSignals, pImpl->mFilteredSignals+nzero, zerof);
+#endif
+    // Is this a multi channel mode?
+    bool lMultiChannel = true;
+    if (pImpl->mParameters.getDetectionMode() ==
+        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = true;}
     // Get the sizes 
     auto L = pImpl->mL;
     auto nx = pImpl->mSamplesExtra;
@@ -1018,17 +1100,20 @@ void MatchedFilter<float>::apply()
     auto nTemplates = pImpl->mTemplates;
     auto xnorm = static_cast<float> (1/static_cast<double> (pImpl->mFFTLength));
 
-    std::complex<float> *B = pImpl->mBPtr;
-    std::complex<float> *X = pImpl->mSegmentSpectraPtr;
+    auto B = pImpl->mBPtr;
+    auto X = pImpl->mSegmentSpectraPtr;
+    auto XSingle = pImpl->mSingleSegmentSpectraPtr;
     // Loop on the windows - parallelizing requires buffering
     for (int istart=0; istart<nx; istart=istart+L)
     {
         // This is for many signals
+        if (lMultiChannel)
+        {
             for (int it=0; it<nTemplates; ++it)
             {
                 auto ioff = static_cast<size_t> (it)
                            *pImpl->mSamplesLeadingDimension;
-                const float *signalPtr = &pImpl->mInputSignals[ioff+istart];
+                auto signalPtr = &pImpl->mInputSignals[ioff+istart];
                 ioff = static_cast<size_t> (it)
                       *pImpl->mConvolutionLeadingDimension;
                 float *__attribute__((aligned(64))) dest
@@ -1040,10 +1125,10 @@ void MatchedFilter<float>::apply()
                 std::copy(std::execution::unseq,
                           signalPtr, signalPtr+ncopy, dest);
                 // Zero out signal until end
-                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, 0);
+                std::fill(std::execution::unseq, dest+ncopy, dest+nfft, zerof);
 #else
                 std::copy(signalPtr, signalPtr+ncopy, dest);
-                std::fill(dest+ncopy, dest+nfft, 0);
+                std::fill(dest+ncopy, dest+nfft, zerof);
 #endif
             }
             // Fourier transform
@@ -1067,7 +1152,42 @@ void MatchedFilter<float>::apply()
                     xcRow[w] = bRow[w]*xcRow[w];
                 }
             }
-
+        }
+        else // Single channel approach
+        {
+            const float *signalPtr = &pImpl->mInputSignals[istart];
+            float *__attribute__((aligned(64))) dest = pImpl->mSignalSegment;
+            int iend = std::min(nx, istart + L); // Exclusive
+            int ncopy = iend - istart;
+#ifdef USE_PSTL
+            // Extract the padded signal
+            std::copy(std::execution::unseq, signalPtr, signalPtr+ncopy, dest);
+            // Zero out signal until end
+            std::fill(std::execution::unseq, dest+ncopy, dest+nfft, zerof);
+#else
+            std::copy(signalPtr, signalPtr+ncopy, dest);
+            std::fill(dest+ncopy, dest+nfft, zerof);
+#endif
+            // Fourier transform
+            fftwf_execute_dft_r2c(pImpl->mForwardPlan,
+                                  pImpl->mSignalSegment,
+                                  pImpl->mSingleSegmentSpectra);
+            // Convolve by multiplying spectra
+            for (int it=0; it<nTemplates; ++it)
+            {
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSpectraLeadingDimension;
+                std::complex<float>
+                    __attribute__((aligned(64))) *bRow = &B[ioff];
+                std::complex<float>
+                    __attribute__((aligned(64))) *xcRow = &X[ioff];
+                #pragma omp simd
+                for (int w=0; w<pImpl->mSpectraLength; ++w) 
+                {
+                    xcRow[w] = bRow[w]*XSingle[w];
+                }
+            }
+        }
         // Inverse transform
         fftwf_execute_dft_c2r(pImpl->mInversePlan,
                               pImpl->mSegmentSpectra,
@@ -1100,12 +1220,13 @@ void MatchedFilter<float>::apply()
     auto nxUnpadded = pImpl->mSamples; // Normalization uses unpadded input pts
     auto mTemplates = pImpl->mTemplates;
     #pragma omp parallel  for \
-     shared (ldm, nxUnpadded, mTemplates) \
+     shared (ldm, lMultiChannel, nxUnpadded, mTemplates) \
      default(none)
     for (int it=0; it<mTemplates; ++it)
     {
         if (pImpl->mSkipZeroSignal[it]){continue;}
         auto isrc = ldm*static_cast<size_t> (it);
+        if (!lMultiChannel){isrc = 0;}
         auto idst = ldm*static_cast<size_t> (it)
                   + static_cast<size_t> (pImpl->mTemplateLengths[it]) - 1;
         const float *y = &pImpl->mInputSignals[isrc];

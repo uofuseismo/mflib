@@ -19,6 +19,10 @@ int main () {
 "
   HAVE_STD__MAKE_UNIQUE
 )
+if (${HAVE_STD__MAKE_UNIQUE})
+   message("Using library provided unique_ptr implementation")
+   add_definitions(-DHAVE_STD__MAKE_UNIQUE)
+endif()
 
 find_package(GTest REQUIRED)
 find_package(MPI)
