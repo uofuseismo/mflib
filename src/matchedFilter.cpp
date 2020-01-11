@@ -1014,7 +1014,38 @@ void MatchedFilter<double>::apply()
         }
         else // This is for one signal and many templates
         {
-
+            auto signalPtr = &pImpl->mInputSignals[istart];
+            double *__attribute__((aligned(64))) dest = pImpl->mSignalSegment;
+            int iend = std::min(nx, istart + L); // Exclusive
+            int ncopy = iend - istart;
+#ifdef USE_PSTL
+            // Extract the padded signal
+            std::copy(std::execution::unseq, signalPtr, signalPtr+ncopy, dest);
+            // Zero out signal until end
+            std::fill(std::execution::unseq, dest+ncopy, dest+nfft, zerof);
+#else
+            std::copy(signalPtr, signalPtr+ncopy, dest);
+            std::fill(dest+ncopy, dest+nfft, zerof);
+#endif
+            // Fourier transform
+            fftw_execute_dft_r2c(pImpl->mForwardPlan,
+                                 pImpl->mSignalSegment,
+                                 pImpl->mSingleSegmentSpectra);
+            // Convolve by multiplying spectra
+            for (int it=0; it<nTemplates; ++it)
+            {
+                auto ioff = static_cast<size_t> (it)
+                           *pImpl->mSpectraLeadingDimension;
+                std::complex<double>
+                    __attribute__((aligned(64))) *bRow = &B[ioff];
+                std::complex<double>
+                    __attribute__((aligned(64))) *xcRow = &X[ioff];
+                #pragma omp simd
+                for (int w=0; w<pImpl->mSpectraLength; ++w)
+                {
+                    xcRow[w] = bRow[w]*XSingle[w];
+                }
+            }
         }
         // Inverse transform
         fftw_execute_dft_c2r(pImpl->mInversePlan,
@@ -1155,7 +1186,7 @@ void MatchedFilter<float>::apply()
         }
         else // Single channel approach
         {
-            const float *signalPtr = &pImpl->mInputSignals[istart];
+            auto signalPtr = &pImpl->mInputSignals[istart];
             float *__attribute__((aligned(64))) dest = pImpl->mSignalSegment;
             int iend = std::min(nx, istart + L); // Exclusive
             int ncopy = iend - istart;
