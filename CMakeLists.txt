@@ -94,6 +94,7 @@ SET_PROPERTY(TARGET matchedFilter PROPERTY CXX_STANDARD 17)
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
+               python/singleChannelMatchedFilter.cpp
                python/multiChannelMatchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)

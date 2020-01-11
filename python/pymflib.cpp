@@ -2,12 +2,15 @@
 #include "waveformTemplate.hpp"
 #include "multiChannelMatchedFilterParameters.hpp"
 #include "multiChannelMatchedFilter.hpp"
+#include "singleChannelMatchedFilter.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
 {
     // Version number
     m.attr("__version__") = MFLIB_VERSION; 
+
+    PBMFLib::SingleChannel::initializeMatchedFilter(m);
     //--------------------------------------------------------------------------------------------//
     //                                     Waveform Template                                      //
     //--------------------------------------------------------------------------------------------//

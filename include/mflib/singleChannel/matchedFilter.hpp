@@ -1,11 +1,13 @@
-#ifndef MFLIB_SINGLECHANNELMATCHEDFILTER_HPP
-#define MFLIB_SINGLECHANNELMATCHEDFILTER_HPP
+#ifndef MFLIB_SINGLECHANNEL_MATCHEDFILTER_HPP
+#define MFLIB_SINGLECHANNEL_MATCHEDFILTER_HPP
 #include <memory>
 #include <complex>
 #include <vector>
 namespace MFLib
 {
-//class SingleChannelMatchedFilterParameters;
+namespace SingleChannel
+{
+class MatchedFilterParameters;
 /*!
  * @brief The interface to the single-channel matched filtering method.
  *        This is to be used when the user wishes to apply many templates
@@ -13,7 +15,7 @@ namespace MFLib
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
 template<class T>
-class SingleChannelMatchedFilter
+class MatchedFilter
 {
 public:
     /*! @name Constructors
@@ -22,7 +24,7 @@ public:
     /*!
      * @brief Constructor.
      */
-    SingleChannelMatchedFilter();
+    MatchedFilter();
     /*! @} */
 
     /*! @name Destructors
@@ -31,7 +33,7 @@ public:
     /*!
      * @brief Destructor.
      */
-    ~SingleChannelMatchedFilter();
+    ~MatchedFilter();
     /*!
      * @brief Resets the class and releases the memory.
      */
@@ -43,7 +45,7 @@ public:
      * @param[in] parameters  The parameters for the matched filtering.
      * @throws std::invalid_argument if the parameters are not valid.
      */
-//    void initialize(const SingleChannelMatchedFilterParameters &parameters);
+    void initialize(const MFLib::SingleChannel::MatchedFilterParameters &parameters);
 
     /*!
      * @brief Sets the signal corresponding to the it'th template.
@@ -125,10 +127,11 @@ public:
      */
     bool isInitialized() const noexcept;
 private:
-    SingleChannelMatchedFilter(const SingleChannelMatchedFilter &mf) = delete;
-    SingleChannelMatchedFilter& operator=(const SingleChannelMatchedFilter &mf) = delete;
-    class SingleChannelMatchedFilterImpl;
-    std::unique_ptr<SingleChannelMatchedFilterImpl> pImpl;
+    MatchedFilter(const MatchedFilter &mf) = delete;
+    MatchedFilter& operator=(const MatchedFilter &mf) = delete;
+    class MatchedFilterImpl;
+    std::unique_ptr<MatchedFilterImpl> pImpl;
 };
+}
 }
 #endif

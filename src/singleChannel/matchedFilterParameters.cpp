@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include "mflib/singleChannelMatchedFilterParameters.hpp"
+#include "mflib/singleChannel/matchedFilterParameters.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/enums.hpp"
 
