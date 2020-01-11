@@ -7,8 +7,12 @@ namespace MFLib
 {
 class MatchedFilterParameters;
 /*!
- * @brief The workhorse algorithm that applies the matched filters.
- * @copyright Ben Baker distributed under the MIT license.
+ * @class MatchedFilter matchedFilter.hpp "mflib/matchedFilter.hpp"
+ * @brief The workhorse that class interfaces to the workhorses that actually
+ *        apply the matched filters.  You likely will find the 
+ *        \c SingleChannelMatchedFilter and \c MultiChannelMatchedFilter
+ *        classes easier to use.
+ * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
 template<class T>
 class MatchedFilter
