@@ -1,17 +1,19 @@
-#ifndef MFLIB_MATCHEDFILTER_HPP
-#define MFLIB_MATCHEDFILTER_HPP
+#ifndef MFLIB_SINGLECHANNELMATCHEDFILTER_HPP
+#define MFLIB_SINGLECHANNELMATCHEDFILTER_HPP
 #include <memory>
 #include <complex>
 #include <vector>
 namespace MFLib
 {
-class MatchedFilterParameters;
+//class SingleChannelMatchedFilterParameters;
 /*!
- * @brief The workhorse algorithm that applies the matched filters.
- * @copyright Ben Baker distributed under the MIT license.
+ * @brief The interface to the single-channel matched filtering method.
+ *        This is to be used when the user wishes to apply many templates
+ *        to the same signal.
+ * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
 template<class T>
-class MatchedFilter
+class SingleChannelMatchedFilter
 {
 public:
     /*! @name Constructors
@@ -20,7 +22,7 @@ public:
     /*!
      * @brief Constructor.
      */
-    MatchedFilter();
+    SingleChannelMatchedFilter();
     /*! @} */
 
     /*! @name Destructors
@@ -29,7 +31,7 @@ public:
     /*!
      * @brief Destructor.
      */
-    ~MatchedFilter();
+    ~SingleChannelMatchedFilter();
     /*!
      * @brief Resets the class and releases the memory.
      */
@@ -41,31 +43,25 @@ public:
      * @param[in] parameters  The parameters for the matched filtering.
      * @throws std::invalid_argument if the parameters are not valid.
      */
-    void initialize(const MatchedFilterParameters &parameters);
+//    void initialize(const SingleChannelMatchedFilterParameters &parameters);
 
     /*!
      * @brief Sets the signal corresponding to the it'th template.
-     * @param[in] it        The signal corresponds to the it'th template.
      * @param[in] nSamples  The number of samples in the signal.
      * @param[in] signal    The signal corresponding to the it'th template
      *                      to set.  This is an array whose dimension is 
      *                      [nSamples].
      * @throws std::runtime_error if the class is not initialized.
-     * @throws std::invalid_argument if it is not in the range
-     *         [0,\c getNumberOfTemplates()-1], nSamples does not
-     *         match \c getSignalLength(), or signal is NULL.
+     * @throws std::invalid_argument if nSamples does not match
+     *         \c getSignalLenght() or signal is NULL.
      */
-    void setSignal(int it, int nSamples, const T signal[]);
+    void setSignal(int nSamples, const T signal[]);
     /*!
-     * @brief For the case when the signal corresponding to the it'th
-     *        template corresponds to a dead trace this is a convenience
-     *        function that allows its values to be set to 0.
-     * @param[in] it   The template index.
+     * @brief For the case when the signal is all zeros and the user does
+     *        not wish to break the processing workflow.
      * @throws std::runtime_error if the class is not initialized.
-     * @throws std::invalid_argument if it is not in the range
-     *         [0,\c getNumberOfTemplates()-1].
      */
-    void zeroSignal(int it);
+    void zeroSignal();
     /*!
      * @brief Gets the number of templates.
      * @result The number of templates.
@@ -90,13 +86,6 @@ public:
      * @sa \c isInitialized()
      */
     void apply();
-    /*!
-     * @brief Performs the shfit and stack operation of the correlograms
-     *        in the group.
-     * @throws std::runtime_error if the matched filtered signals are not
-     *         yet computed.
-     */
-    std::vector<T> shiftAndStack();
 
     /*!
      * @brief Gets the matched filtered signal corresponding to the it'th
@@ -125,8 +114,7 @@ public:
      */  
     const T* getMatchedFilterSignalPointer(int it) const;
     /*!
-     * @brief Checks if the matched filtering has been applied to this batch
-     *        of signals.
+     * @brief Checks if the matched filtering has been applied to the signal.
      * @result True indicates that the matched filtering has been applied.
      */
     bool haveMatchedFilteredSignals() const noexcept;
@@ -136,27 +124,11 @@ public:
      * @result True indicates that the class is initialized.
      */
     bool isInitialized() const noexcept;
-
-
-    /*! @name Debugging Routines
-     * @{
-     */
-    /*!
-     * @brief Gets the frequency domain spectrum of the it'th template.
-     * @note This is a debugging routine.
-     * @param[in] it   The template index.  
-     * @result The spectra of the it'th template.
-     * @throws std::invalid_error if it is less than 0 or greater than or equal
-     *         to the number of templates.
-     * @throws std::runtime_error if the class is not initialized.
-     */
-    std::vector<std::complex<T>> getSpectraOfTemplate(int it) const;
-    /*! @} */
 private:
-    MatchedFilter& operator=(const MatchedFilter &mf) = delete;
-    MatchedFilter(const MatchedFilter &mf) = delete;
-    class MatchedFilterImpl;
-    std::unique_ptr<MatchedFilterImpl> pImpl;
+    SingleChannelMatchedFilter(const SingleChannelMatchedFilter &mf) = delete;
+    SingleChannelMatchedFilter& operator=(const SingleChannelMatchedFilter &mf) = delete;
+    class SingleChannelMatchedFilterImpl;
+    std::unique_ptr<SingleChannelMatchedFilterImpl> pImpl;
 };
 }
 #endif

@@ -66,6 +66,7 @@ set(SRC
     src/version.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
+    src/singleChannelMatchedFilter.cpp
     src/waveformTemplate.cpp)
 #    src/shiftAndStack.cpp)
 # Use MPI?
