@@ -1,5 +1,5 @@
-#ifndef PYMFLIB_WAVEFORMTEMPLATE_HPP
-#define PYMFLIB_WAVEFORMTEMPLATE_HPP
+#ifndef PYMFLIB_PYWAVEFORMTEMPLATE_HPP
+#define PYMFLIB_PYWAVEFORMTEMPLATE_HPP
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>

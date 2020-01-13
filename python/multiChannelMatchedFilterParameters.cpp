@@ -3,8 +3,8 @@
 #include "mflib/enums.hpp"
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
-#include "waveformTemplate.hpp"
-#include "multiChannelMatchedFilterParameters.hpp"
+#include "pyWaveformTemplate.hpp"
+#include "pyMultiChannelMatchedFilterParameters.hpp"
 
 using namespace PBMFLib;
 

@@ -1,9 +1,9 @@
-#ifndef PYMFLIB_MATCHEDFILTERPARAMETERS_HPP
-#define PYMFLIB_MATCHEDFILTERPARAMETERS_HPP
+#ifndef PYMFLIB_PYMATCHEDFILTERPARAMETERS_HPP
+#define PYMFLIB_PYMATCHEDFILTERPARAMETERS_HPP
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "waveformTemplate.hpp"
+#include "pyWaveformTemplate.hpp"
 
 namespace MFLib
 {

@@ -94,7 +94,8 @@ SET_PROPERTY(TARGET matchedFilter PROPERTY CXX_STANDARD 17)
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
-               python/singleChannelMatchedFilter.cpp
+               python/singleChannel/matchedFilterParameters.cpp
+               python/singleChannel/matchedFilter.cpp
                python/multiChannelMatchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
@@ -102,7 +103,8 @@ if (MFLIB_WRAP_PYTHON)
                          pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} OpenMP::OpenMP_CXX)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
-   #target_include_directories(pymflib PRIVATE pybind11)
+   message("hey" ${CMAKE_SOURCE_DIR}/python/include)
+   target_include_directories(pymflib PRIVATE pybind11 ${CMAKE_SOURCE_DIR}/python/include)
 endif()
 
 ################################################################################

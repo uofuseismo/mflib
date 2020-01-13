@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include "mflib/matchedFilter.hpp"
 #include "mflib/matchedFilterParameters.hpp"
-#include "multiChannelMatchedFilter.hpp"
-#include "multiChannelMatchedFilterParameters.hpp"
+#include "pyMultiChannelMatchedFilter.hpp"
+#include "pyMultiChannelMatchedFilterParameters.hpp"
 
 using namespace PBMFLib;
 

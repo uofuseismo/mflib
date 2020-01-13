@@ -1,8 +1,9 @@
 #include "mflib/version.hpp"
-#include "waveformTemplate.hpp"
-#include "multiChannelMatchedFilterParameters.hpp"
-#include "multiChannelMatchedFilter.hpp"
-#include "singleChannelMatchedFilter.hpp"
+#include "pyWaveformTemplate.hpp"
+#include "pyMultiChannelMatchedFilterParameters.hpp"
+#include "pyMultiChannelMatchedFilter.hpp"
+#include "pySingleChannelMatchedFilterParameters.hpp"
+#include "pySingleChannelMatchedFilter.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)

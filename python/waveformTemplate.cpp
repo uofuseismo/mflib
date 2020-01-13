@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <vector>
 #include "mflib/waveformTemplate.hpp"
-#include "waveformTemplate.hpp"
+#include "pyWaveformTemplate.hpp"
 
 using namespace PBMFLib;
 
