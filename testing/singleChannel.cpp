@@ -9,12 +9,14 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/matchedFilter.hpp"
 #include "mflib/singleChannel/matchedFilterParameters.hpp"
+#include "utilities.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 using namespace MFLib;
 
+/*
 /// Generates uniform random numbers
 std::vector<double> generateUniformRandomNumbers(
    int n, double lower =-1, double upper=+1);
@@ -22,7 +24,7 @@ std::vector<double> generateUniformRandomNumbers(
 template<class T> T infinityNorm(int n, const T *r);
 /// computes the inifnity norm: max(|x - y|)
 template<class T> T infinityNorm(int n, const T *x, const T *y);
-
+*/
 
 TEST(singleChannelMatchedFilter, parameters)
 {
@@ -104,10 +106,43 @@ TEST(singleChannelMatchedFilter, testDouble)
 {
     SingleChannel::MatchedFilterParameters parms;
     SingleChannel::MatchedFilter<double> mf;
+    // Create a template by 
+    int signalSize = 4000;
+    int templateSize = 130;
+    auto wave = generateUniformRandomNumbers(signalSize,  2, 3); // Mean is 2.5
+    // Extract some subsignals and call them `templates'
+    const double samplingRate = 1;
+    int i1 = 25;
+    int i2 = 1124; 
+    int i3 = 3601; 
+    std::vector<double> tp1(wave.data()+i1, wave.data()+i1+templateSize);
+    std::vector<double> tp2(wave.data()+i2, wave.data()+i2+templateSize+10);
+    std::vector<double> tp3(wave.data()+i3, wave.data()+i3+templateSize-5);
+    WaveformTemplate tplate1, tplate2, tplate3;
+    tplate1.setSignal(tp1.size(), tp1.data());
+    tplate2.setSignal(tp2.size(), tp2.data());
+    tplate3.setSignal(tp3.size(), tp3.data());
+    tplate1.setSamplingRate(samplingRate);
+    tplate2.setSamplingRate(samplingRate);
+    tplate3.setSamplingRate(samplingRate);
+    // Create the parameters
+    parms.setSignalSize(signalSize);
+    parms.addTemplate(tplate1);
+    parms.addTemplate(tplate2);
+    parms.addTemplate(tplate3);
+    EXPECT_TRUE(parms.isValid());
+    // Recover it
+    EXPECT_NO_THROW(mf.initialize(parms));
+    EXPECT_NO_THROW(mf.apply());
+    // Get the correlations 
+    auto xc1 = mf.getMatchedFilteredSignal(0);
+    auto xc2 = mf.getMatchedFilteredSignal(1);
+    auto xc3 = mf.getMatchedFilteredSignal(2);
+    // Compute the 
+    printf("%ld, %ld, %ld\n", xc1.size(), xc2.size(), xc3.size());
 }
 
-
-
+/*
 std::vector<double> generateUniformRandomNumbers(
    const int n, const double lower, const double upper)
 {
@@ -141,6 +176,6 @@ template<class T> T infinityNorm(const int n,
     } 
     return linf;
 }
-
+*/
 
 }

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
+#include "utilities.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -94,21 +95,14 @@ TEST(MatchedFilter, options)
     double *work8Ptr = work8.data();
     tplateOut.getSignal(work8.size(), &work8Ptr);
     EXPECT_EQ(static_cast<int> (tp1.size()), tplateOut.getSignalLength());
-    error = 0;
-    for (int i=0; i<static_cast<int> (tp1.size()); ++i)
-    {
-        EXPECT_NEAR(tp1[i], work8[i], 1.e-14);
-    }
-    //EXPECT_NEAR(work[nSamples], 0, 1.e-14);
+    error = infinityNorm(tp1.size(), tp1.data(), work8.data());
+    EXPECT_NEAR(error, 0, 1.e-14);
 
     EXPECT_NO_THROW(tplateOut = options.getTemplate(1));
     tplateOut.getSignal(work8.size(), &work8Ptr);
     EXPECT_EQ(static_cast<int> (tp2.size()), tplateOut.getSignalLength());
-    error = 0;
-    for (int i=0; i<static_cast<int> (tp2.size()); ++i)
-    {   
-        EXPECT_NEAR(tp2[i], work8[i], 1.e-14);
-    }
+    error = infinityNorm(tp2.size(), tp2.data(), work8.data());
+    EXPECT_NEAR(error, 0, 1.e-14);
 
     // Test copy c'tor
     MatchedFilterParameters optionsCopy(options); 

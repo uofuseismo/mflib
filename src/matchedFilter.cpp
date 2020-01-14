@@ -230,10 +230,8 @@ public:
             fftw_destroy_plan(mInversePlan);
         }
         if (mB){fftw_free(mB);}
-        //if (mCorrelogramSpectra){MKL_free(mCorrelogramSpectra);}
         if (mSignalSegment){MKL_free(mSignalSegment);}
         if (mSegmentSpectra){MKL_free(mSegmentSpectra);}
-        //if (mOVACorrelograms){MKL_free(mOVACorrelograms);}
         if (mInputSignals){MKL_free(mInputSignals);}
         if (mFilteredSignals){MKL_free(mFilteredSignals);}
         if (mDenominator){MKL_free(mDenominator);}
@@ -614,19 +612,18 @@ void MatchedFilter<double>::initialize(
                                  FFTW_PATIENT);
     fftw_execute_dft_r2c(pImpl->mForwardPlan, b, pImpl->mB);
     // For a single channel and many detections we can reduce the number
-    /// of requisite transforms by reducing to a single channel 
+    // of requisite transforms by reducing to a single channel.
     if (pImpl->mParameters.getDetectionMode() ==
         MatchedFilterDetectionMode::SINGLE_CHANNEL)
     {
-        fftw_plan(pImpl->mForwardPlan); // Destroy plan
+        fftw_destroy_plan(pImpl->mForwardPlan); // Destroy plan
         len = pImpl->mSpectraLeadingDimension*sizeof(fftw_complex);
         pImpl->mSingleSegmentSpectra
             = static_cast<fftw_complex *> (MKL_calloc(len, 1, 64));
-        // Resize the signal segment transform
-        MKL_free(pImpl->mSignalSegment);
-        len = pImpl->mConvolutionLeadingDimension*sizeof(double);
-        pImpl->mSignalSegment = static_cast<double *> (MKL_calloc(len, 1, 64));
-        // Create a 1d plan exclusively for one signal
+        // Create a 1d plan exclusively for one signal.  Note, mSignalSegment
+        // is too large since we only have one input signal.  The reason for
+        // not resizing is that in mSignalSegment will return the inverse 
+        // transform of many signals (see plan_many_dft_c2r).
         pImpl->mForwardPlan 
             = fftw_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSignalSegment,
                                    pImpl->mSingleSegmentSpectra, FFTW_PATIENT);
@@ -762,18 +759,14 @@ void MatchedFilter<float>::initialize(
                                   FFTW_PATIENT);
     fftwf_execute_dft_r2c(pImpl->mForwardPlan, b, pImpl->mB);
     // For a single channel and many detections we can reduce the number
-    /// of requisite transforms by reducing to a single channel 
+    // of requisite transforms by reducing to a single channel 
     if (pImpl->mParameters.getDetectionMode() ==
         MatchedFilterDetectionMode::SINGLE_CHANNEL)
     {
-        fftwf_plan(pImpl->mForwardPlan); // Destroy plan
+        fftwf_destroy_plan(pImpl->mForwardPlan); // Destroy plan
         len = pImpl->mSpectraLeadingDimension*sizeof(fftwf_complex);
         pImpl->mSingleSegmentSpectra
             = static_cast<fftwf_complex *> (MKL_calloc(len, 1, 64));
-        // Resize the signal segment transform
-        MKL_free(pImpl->mSignalSegment);
-        len = pImpl->mConvolutionLeadingDimension*sizeof(float);
-        pImpl->mSignalSegment = static_cast<float *> (MKL_calloc(len, 1, 64));
         // Create a 1d plan exclusively for one signal
         pImpl->mForwardPlan 
             = fftwf_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSignalSegment,
