@@ -133,13 +133,26 @@ TEST(singleChannelMatchedFilter, testDouble)
     EXPECT_TRUE(parms.isValid());
     // Recover it
     EXPECT_NO_THROW(mf.initialize(parms));
+    EXPECT_NO_THROW(mf.setSignal(wave.size(), wave.data()));
     EXPECT_NO_THROW(mf.apply());
     // Get the correlations 
     auto xc1 = mf.getMatchedFilteredSignal(0);
     auto xc2 = mf.getMatchedFilteredSignal(1);
     auto xc3 = mf.getMatchedFilteredSignal(2);
-    // Compute the 
-    printf("%ld, %ld, %ld\n", xc1.size(), xc2.size(), xc3.size());
+    // Compute the reference correlations
+    auto xcRef1 = naivePearsonCorrelation(static_cast<int> (tp1.size()), tp1.data(),
+                                          signalSize, wave.data());
+    auto xcRef2 = naivePearsonCorrelation(static_cast<int> (tp2.size()), tp2.data(),
+                                          signalSize, wave.data());
+    auto xcRef3 = naivePearsonCorrelation(static_cast<int> (tp3.size()), tp3.data(),
+                                          signalSize, wave.data());
+    // Compare
+    auto error = infinityNorm(xc1.size(), xc1.data(), xcRef1.data());
+    EXPECT_LT(error, 1.e-12);
+    error = infinityNorm(xc2.size(), xc2.data(), xcRef2.data());
+    EXPECT_LT(error, 1.e-12);
+    error = infinityNorm(xc3.size(), xc3.data(), xcRef3.data());
+    EXPECT_LT(error, 1.e-12);
 }
 
 /*

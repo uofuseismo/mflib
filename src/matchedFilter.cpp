@@ -80,9 +80,11 @@ void slowSignalNormalization(const int n, const int nb,
 /// @param[in,out] yNum  On input, this is the numerator signal.  
 ///                      On exit, this is the normalized signal which will
 ///                      be the Pearson correlation coefficient at each sample.
-/// @param[in] tol       If the denominator falls below tol, the Pearson 
-///                      correlation coefficient will be set to 0.  This avoids
-///                      division by 0.
+/// @param[in] tol       If the denominator falls below tol, then it is likely
+///                      that the numerator is zero.  In this case, we safely
+///                      divide num/max(den, tol).  
+/// @param[in] tooBig    If after all checks, the numerator exceeds tooBig then
+///                      it is thresholded to zero.
 /// @note I need to lash this int something like:
 ///       https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf
 ///       to get a greater speedup.
@@ -90,7 +92,8 @@ template<typename T>
 void normalizeSignal(const int n, const int lent,
                      const T *__restrict__ y,
                      T *__restrict__ yNum,
-                     const T tol = 1.e-12)
+                     const T tol = 1.e-12,
+                     const T tooBig = 1.1)
 {
 /*
     #pragma omp parallel \
@@ -100,6 +103,7 @@ void normalizeSignal(const int n, const int lent,
 */
     {
     const T zero = 0;
+    const T one = 1;
     auto nbytes = static_cast<size_t> (lent+16)*sizeof(T);
     auto s  = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     auto s2 = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
@@ -148,10 +152,9 @@ void normalizeSignal(const int n, const int lent,
             //if (arg < 0){printf("problem, %lf\n",arg);} 
             T den = std::sqrt(arg); //scalDen*s2[j] - s[j]*s[j]);
             T newNum = scalNum*yn[j];
-            yn[j] = newNum/den;
-            // This prevents a divide by zero from blinding us.
-            // As programmed the XC can go slightly over 1.
-            if (den < std::abs(newNum) + tol){yn[j] = 0;}
+            yn[j] = newNum/std::max(tol, den); // Avoid divide by zero
+            // In case this is nonsensical
+            if (yn[j] > tooBig){yn[j] = zero;}
         }
     } // End loop
     // Release space on all processes
@@ -620,6 +623,9 @@ void MatchedFilter<double>::initialize(
         len = pImpl->mSpectraLeadingDimension*sizeof(fftw_complex);
         pImpl->mSingleSegmentSpectra
             = static_cast<fftw_complex *> (MKL_calloc(len, 1, 64));
+        pImpl->mSingleSegmentSpectraPtr
+            = reinterpret_cast<std::complex<double> *>
+              (pImpl->mSingleSegmentSpectra); 
         // Create a 1d plan exclusively for one signal.  Note, mSignalSegment
         // is too large since we only have one input signal.  The reason for
         // not resizing is that in mSignalSegment will return the inverse 
@@ -767,6 +773,9 @@ void MatchedFilter<float>::initialize(
         len = pImpl->mSpectraLeadingDimension*sizeof(fftwf_complex);
         pImpl->mSingleSegmentSpectra
             = static_cast<fftwf_complex *> (MKL_calloc(len, 1, 64));
+        pImpl->mSingleSegmentSpectraPtr
+            = reinterpret_cast<std::complex<float> *>
+              (pImpl->mSingleSegmentSpectra);
         // Create a 1d plan exclusively for one signal
         pImpl->mForwardPlan 
             = fftwf_plan_dft_r2c_1d(pImpl->mFFTLength, pImpl->mSignalSegment,
@@ -944,7 +953,7 @@ void MatchedFilter<double>::apply()
     // Is this a multi channel mode?
     bool lMultiChannel = true;
     if (pImpl->mParameters.getDetectionMode() ==
-        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = true;}
+        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = false;}
     // Get the sizes 
     auto L = pImpl->mL; 
     auto nx = pImpl->mSamplesExtra;
@@ -1116,7 +1125,7 @@ void MatchedFilter<float>::apply()
     // Is this a multi channel mode?
     bool lMultiChannel = true;
     if (pImpl->mParameters.getDetectionMode() ==
-        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = true;}
+        MatchedFilterDetectionMode::SINGLE_CHANNEL){lMultiChannel = false;}
     // Get the sizes 
     auto L = pImpl->mL;
     auto nx = pImpl->mSamplesExtra;
