@@ -47,6 +47,6 @@ public:
 private:
     std::unique_ptr<MFLib::WaveformTemplate> mWaveformTemplate;
 };
-
+void initializeWaveformTemplate(pybind11::module &m);
 }
 #endif

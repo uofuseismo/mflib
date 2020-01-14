@@ -40,8 +40,8 @@ void MultiChannelMatchedFilter<T>::initialize(
 }
 
 /// Sets the signal
-template<class T>
-void MultiChannelMatchedFilter<T>::setSignal(
+template<>
+void MultiChannelMatchedFilter<double>::setSignal(
     const int it,
     const pybind11::array_t<double, pybind11::array::c_style |
                                     pybind11::array::forcecast> &x)
@@ -59,6 +59,30 @@ void MultiChannelMatchedFilter<T>::setSignal(
         throw std::runtime_error("x is null");
     }
     mcmf->setSignal(it, len, xptr);
+}
+
+template<>
+void MultiChannelMatchedFilter<float>::setSignal(
+    const int it,
+    const pybind11::array_t<double, pybind11::array::c_style |
+                                    pybind11::array::forcecast> &x)
+{
+    if (!isInitialized())
+    {   
+        throw std::runtime_error("Class is not initialized\n");
+    }   
+    // Use pointers
+    pybind11::buffer_info xbuf = x.request();
+    auto len = static_cast<int> (xbuf.size);
+    const double *xptr = (double *) (xbuf.ptr);
+    if (xptr == nullptr)
+    {   
+        throw std::runtime_error("x is null");
+    }
+    std::vector<float> xIn(len);
+    #pragma omp simd
+    for (int i=0; i<len; ++i){xIn[i] = static_cast<float> (xptr[i]);}
+    mcmf->setSignal(it, len, xIn.data());
 }
 
 /// Zeros a signal
@@ -130,5 +154,40 @@ MultiChannelMatchedFilter<T>::getMatchedFilteredSignal(const int it) const
     return y;
 }
 
+/// Initialize
+void PBMFLib::initializeMultiChannelMatchedFilter(pybind11::module &m)
+{
+    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> dmcmf(m, "MultiChannelMatchedFilter");
+    dmcmf.def(pybind11::init<> ());
+    dmcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
+    /// Initialize
+    dmcmf.def("initialize",
+              &PBMFLib::MultiChannelMatchedFilter<double>::initialize,
+              "Initializes the multi-channel matched filtering engine.  This is a high-overhead function.");
+    /// Sets signals
+    dmcmf.def("set_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::setSignal,
+              "Sets the signal corresponding to the it'th template.  This should be called after the class is initialized.  Moreover, the template index must in the range of [0, number_of_templates].");
+    dmcmf.def("zero_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::zeroSignal,
+              "Over a time period a station can be down.  This sets the signal corresponding to the it'th template to 0.  The template index must be in the range of [0, number_of_templates].");
+    dmcmf.def_property_readonly("number_of_templates", 
+                                &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
+                                "The number of templates in the multi-channel cross-correlation.");
+    /// Apply
+    dmcmf.def("apply",
+              &PBMFLib::MultiChannelMatchedFilter<double>::apply,
+              "Applies the templates set during the initialization stage to the signals set by set_signal");
+    /// 
+    dmcmf.def_property_readonly("have_matched_filtered_signals",
+                                &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
+                                "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
+    /// Gets the it'th matched filtered signal
+    dmcmf.def("get_matched_filtered_signal",
+              &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,
+              "Gets the it'th matched filtered signal.  The `apply' method must have been called and the template index must be in the range [0,number_of_templates]");
+}
+
 /// Instantiation
 template class PBMFLib::MultiChannelMatchedFilter<double>;
+template class PBMFLib::MultiChannelMatchedFilter<float>;

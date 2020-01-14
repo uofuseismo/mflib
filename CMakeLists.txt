@@ -95,7 +95,7 @@ if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
                python/singleChannel/matchedFilterParameters.cpp
-               python/singleChannel/matchedFilter.cpp
+               #python/singleChannel/matchedFilter.cpp
                python/multiChannelMatchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)

@@ -43,5 +43,6 @@ public:
 private:
     std::unique_ptr<MFLib::MatchedFilterParameters> mParameters;
 };
+void initializeMultiChannelMatchedFilterParameters(pybind11::module &m);
 }
 #endif

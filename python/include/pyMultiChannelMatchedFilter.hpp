@@ -40,5 +40,6 @@ private:
 //    MultiChannelMatchedFilter(const MultiChannelMatchedFilter &m) = delete;
 //    MultiChannelMatchedFilter& operator=(const MultiChannelMatchedFilter &m) = delete;
 };
+void initializeMultiChannelMatchedFilter(pybind11::module &m);
 }
 #endif

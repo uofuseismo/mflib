@@ -10,11 +10,15 @@ PYBIND11_MODULE(pymflib, m)
 {
     // Version number
     m.attr("__version__") = MFLIB_VERSION; 
-
-    PBMFLib::SingleChannel::initializeMatchedFilter(m);
+   
+    PBMFLib::initializeWaveformTemplate(m);
+    PBMFLib::SingleChannel::initializeMatchedFilterParameters(m);
+    PBMFLib::initializeMultiChannelMatchedFilterParameters(m);
+    PBMFLib::initializeMultiChannelMatchedFilter(m);
     //--------------------------------------------------------------------------------------------//
     //                                     Waveform Template                                      //
     //--------------------------------------------------------------------------------------------//
+/*
     pybind11::class_<PBMFLib::WaveformTemplate> wt(m, "WaveformTemplate");
     /// The default constructor:
     wt.def(pybind11::init<> ());
@@ -86,9 +90,11 @@ PYBIND11_MODULE(pymflib, m)
     mfParameters.def("clear",
                      &PBMFLib::MultiChannelMatchedFilterParameters::clear,
                      "Clears the class's memory and resets the class.");
+*/
     //--------------------------------------------------------------------------------------------//
     //                                   Matched Filtering                                        //
     //--------------------------------------------------------------------------------------------//
+/*
     pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> dmcmf(m, "MultiChannelMatchedFilter");
     //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<float>> fmcmf(m, "MultiChannelMatchedFilter");
     //pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> mcmf(m, "MultiChannelMatchedFilter");
@@ -122,6 +128,5 @@ PYBIND11_MODULE(pymflib, m)
     dmcmf.def("get_matched_filtered_signal",
               &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,
               "Gets the it'th matched filtered signal.  The `apply' method must have been called and the template index must be in the range [0,number_of_templates]");
-           
-
+*/ 
 }

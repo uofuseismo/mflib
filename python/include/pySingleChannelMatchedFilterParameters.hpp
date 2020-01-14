@@ -1,5 +1,5 @@
-#ifndef PYMFLIB_PYMATCHEDFILTERPARAMETERS_HPP
-#define PYMFLIB_PYMATCHEDFILTERPARAMETERS_HPP
+#ifndef PYMFLIB_SINGLECHANNEL_PYMATCHEDFILTERPARAMETERS_HPP
+#define PYMFLIB_SINGLECHANNEL_PYMATCHEDFILTERPARAMETERS_HPP
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -13,7 +13,6 @@ class WaveformTemplate;
 
 namespace PBMFLib
 {
-class WaveformTemplate;
 namespace SingleChannel
 {
 class MatchedFilterParameters
@@ -26,7 +25,7 @@ public:
     /// Destructor
     ~MatchedFilterParameters();
     /// Add template
-    void addTemplate(const WaveformTemplate &wt);
+    void addTemplate(const PBMFLib::WaveformTemplate &wt);
     int getNumberOfTemplates() const; 
     PBMFLib::WaveformTemplate getTemplate(int indx) const;
     /// Clears templates
@@ -45,7 +44,7 @@ public:
 private:
     std::unique_ptr<MFLib::SingleChannel::MatchedFilterParameters> mParameters;
 };
+void initializeMatchedFilterParameters(pybind11::module &m);
 }
-void initializeSingleChannelMatchedFilterParameters(pybind11::module &m);
 }
 #endif

@@ -177,6 +177,11 @@ def test_matched_filtering():
     assert np.max(np.abs(mf2 - xc2)) < 1.e-14, 'mfilter 2 failed'
    
 
+def test_single_channel_matched_filtering():
+    wf1 = pymflib.WaveformTemplate()
+    wf2 = pymflib.WaveformTemplate()
+
+    
 if __name__ == "__main__":
     test_matched_filter_parameters()
     test_matched_filtering()
