@@ -116,7 +116,8 @@ add_executable(unitTests
                testing/waveformTemplate.cpp
                testing/matchedFilterParameters.cpp
                testing/matchedFilter.cpp
-               testing/singleChannel.cpp)
+               testing/singleChannel.cpp
+               testing/utilities.cpp)
 target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
                       ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(unitTests
