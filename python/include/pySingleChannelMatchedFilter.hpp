@@ -21,8 +21,24 @@ template<class T = double>
 class MatchedFilter
 {
 public:
+    /// Constructor
     MatchedFilter();
+    /// Destructor
     ~MatchedFilter();
+    /// Initialize the class
+    void initialize(const PBMFLib::SingleChannel::MatchedFilterParameters &parms);
+    /// Set signal
+    void setSignal(const pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
+    /// Is this class initiialized
+    bool isInitialized() const noexcept; 
+    int getNumberOfTemplates() const noexcept;
+    /// Apply
+    void apply();
+    /// Have the matched filtered signals?
+    bool haveMatchedFilteredSignals() const noexcept;
+    pybind11::array_t<T, pybind11::array::c_style | pybind11::array::forcecast>
+    getMatchedFilteredSignal(int it) const;
+
 private:
     std::unique_ptr<MFLib::SingleChannel::MatchedFilter<T>> scmf; 
 };

@@ -175,13 +175,54 @@ def test_matched_filtering():
     xc2 = dumb_xc(t2, signal2) # Do it the dumb way
     assert np.max(np.abs(mf1 - xc1)) < 1.e-14, 'mfilter 1 failed'
     assert np.max(np.abs(mf2 - xc2)) < 1.e-14, 'mfilter 2 failed'
-   
+  
+##########################################################################################################
 
 def test_single_channel_matched_filtering():
+    sampling_rate = 100.0
+    signal_size = int(sampling_rate*60*3) + 1  # Signal size is 3 minutes
+    template_size = int(sampling_rate*10) + 1  # Template size is 10 seconds 
+    # Generate a random signal
+    signal = np.random.uniform(-3, 4, signal_size) # Mean is (4 + -3)/2 = 0.5 
+    print(signal)
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
-
-    
+    wf3 = pymflib.WaveformTemplate()
+    # Extract templates from given pct in signal 
+    i1 = int(signal_size*0.25)
+    i2 = int(signal_size*0.05)
+    i3 = int(signal_size*0.8)
+    # Extract parts of the input signal and set those as templates
+    wf1.sampling_rate = sampling_rate
+    wf2.sampling_rate = sampling_rate
+    wf3.sampling_rate = sampling_rate
+    wf1.signal = np.copy(signal[i1:i1+template_size])
+    wf2.signal = np.copy(signal[i2:i2+template_size])
+    wf3.signal = np.copy(signal[i3:i3+template_size])
+    # Initialize the parameters
+    mf_parms = pymflib.SingleChannelMatchedFilterParameters() 
+    mf_parms.signal_size = signal_size 
+    mf_parms.add_template(wf1)
+    mf_parms.add_template(wf2)
+    mf_parms.add_template(wf3)
+    assert mf_parms.number_of_templates == 3, 'failed to set templates'
+    mf = pymflib.SingleChannelMatchedFilter()
+    mf.initialize(mf_parms)
+    mf.set_signal(signal)
+    mf.apply()
+    xc1 = mf.get_matched_filtered_signal(0)
+    xc2 = mf.get_matched_filtered_signal(1)
+    xc3 = mf.get_matched_filtered_signal(2)
+    xc1_ref = dumb_xc(wf1.signal, signal)
+    xc2_ref = dumb_xc(wf2.signal, signal)
+    xc3_ref = dumb_xc(wf3.signal, signal)
+    assert np.max(np.abs(xc1 - xc1_ref)) < 1.e-14, 'failed to compute xc1'
+    assert np.max(np.abs(xc2 - xc2_ref)) < 1.e-14, 'failed to compute xc2'
+    assert np.max(np.abs(xc3 - xc3_ref)) < 1.e-14, 'failed to compute xc3'
+    mf_parms.clear_templates()
+    assert mf_parms.number_of_templates == 0, 'failed to clear templates'
+ 
 if __name__ == "__main__":
     test_matched_filter_parameters()
     test_matched_filtering()
+    test_single_channel_matched_filtering()

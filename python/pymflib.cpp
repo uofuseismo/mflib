@@ -13,6 +13,7 @@ PYBIND11_MODULE(pymflib, m)
    
     PBMFLib::initializeWaveformTemplate(m);
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(m);
+    PBMFLib::SingleChannel::initializeMatchedFilter(m);
     PBMFLib::initializeMultiChannelMatchedFilterParameters(m);
     PBMFLib::initializeMultiChannelMatchedFilter(m);
     //--------------------------------------------------------------------------------------------//
