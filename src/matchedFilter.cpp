@@ -103,7 +103,6 @@ void normalizeSignal(const int n, const int lent,
 */
     {
     const T zero = 0;
-    const T one = 1;
     auto nbytes = static_cast<size_t> (lent+16)*sizeof(T);
     auto s  = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     auto s2 = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
