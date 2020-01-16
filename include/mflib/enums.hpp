@@ -31,5 +31,21 @@ enum class MatchedFilterDetectionMode
                          detection within a network. */ 
 };
 
+/*!
+ * @brief Defines the relative magnitude computation strategy.
+ */
+enum class RelativeMagnitudeType
+{
+    GIBBONS_RINGDAL_2006, /*!< This finds the optimal scalar to match the 
+                                amplitude of the template waveform to the
+                                detected waveform. */
+    SCHAFF_RICHARDS_2014  /*!< This finds a scalar to match the amplitude
+                               of the template waveform to the detected
+                               waveform whilst including a correction for
+                               the fact that the template and detected event
+                               have a noise contribution. */
+};
+
+
 }
 #endif

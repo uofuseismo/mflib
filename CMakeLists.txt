@@ -68,6 +68,7 @@ set(SRC
     src/matchedFilter.cpp
     src/singleChannel/matchedFilterParameters.cpp
     src/singleChannel/matchedFilter.cpp
+    src/singleChannel/relativeMagnitude.cpp
     src/waveformTemplate.cpp)
 #    src/shiftAndStack.cpp)
 # Use MPI?
@@ -83,7 +84,10 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
-SET_PROPERTY(TARGET matchedFilter PROPERTY CXX_STANDARD 17)
+set_target_properties(matchedFilter PROPERTIES
+                      CXX_STANDARD 17
+                      CXX_STANDARD_REQUIRED YES
+                      CXX_EXTENSIONS NO)
 #if(OpenMP_CXX_FOUND)
 #   message("yes")
 #   #target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
