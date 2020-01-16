@@ -13,6 +13,7 @@
 #include <algorithm>
 #endif
 #include <mkl.h>
+#include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
 
 using namespace MFLib::SingleChannel;
@@ -75,6 +76,28 @@ double demeanCopyComputeNorm2(const int n,
     return xsum;
 }
 
+double demeanNorm2(const int n, double *__restrict__ y)
+{
+    // Remove mean and copy
+    constexpr double zero = 0;
+#ifdef USE_PSTL
+    auto mean = std::reduce(std::execution::unseq, y, y+n, zero)
+               /static_cast<double> (n);
+#else
+    auto mean = std::accumulate(y, y+n, zero)
+               /static_cast<double> (n);
+#endif
+    double xsum = 0;
+    #pragma omp simd reduction(+:xsum)
+    for (int i=0; i<n; ++i)
+    {   
+        y[i] = y[i] - mean;
+        xsum = xsum + y[i]*y[i];
+    }   
+    return xsum;
+}
+
+
 double demeanCopyComputeNorm2(const int n,
                               const float *__restrict__ y,
                               double *__restrict__ ydemeaned)
@@ -123,7 +146,6 @@ public:
         mGibbonsRingdalAlpha = impl.mGibbonsRingdalAlpha;
         mSchaffRichardsAlpha = impl.mSchaffRichardsAlpha;
         mSignalLength = impl.mSignalLength;
-        mHaveTemplateWaveform = impl.mHaveTemplateWaveform;
         mHaveDetectedWaveform = impl.mHaveDetectedWaveform;
         mHaveGibbonsRingdalAlpha = impl.mHaveGibbonsRingdalAlpha;
         mHaveSchaffRichardsAlpha = impl.mHaveSchaffRichardsAlpha;
@@ -151,8 +173,9 @@ public:
         mY = nullptr;
         mXL22 = 0;
         mYL22 = 0;
-        mHaveTemplateWaveform = false;
+        mSignalLength = 0;
         mHaveDetectedWaveform = false;
+        mInitialized = false;
     }
     void nullifyAlpha() noexcept
     {
@@ -176,7 +199,6 @@ public:
     double mSchaffRichardsAlpha = 1;
     /// The length of the template and detected signal.
     int mSignalLength = 0;
-    bool mHaveTemplateWaveform = false;
     bool mHaveDetectedWaveform = false;
     bool mHaveGibbonsRingdalAlpha = false;
     bool mHaveSchaffRichardsAlpha = false;
@@ -239,18 +261,32 @@ void RelativeMagnitude<T>::clear() noexcept
 
 /// Initializes the class
 template<class T>
-void RelativeMagnitude<T>::initialize(const int signalLength)
+void RelativeMagnitude<T>::initialize(const WaveformTemplate &wt)
 {
     clear();
-    if (signalLength < 1)
+    pImpl->mSignalLength = wt.getSignalLength();
+    if (pImpl->mSignalLength < 1)
     {
-        throw std::invalid_argument("signalLength = " 
-                                  + std::to_string(signalLength)
+        throw std::invalid_argument("Template signal length = " 
+                                  + std::to_string(pImpl->mSignalLength)
                                   + " must be positive\n");
     }
-    auto len = static_cast<size_t> (signalLength)*sizeof(double);
+    // Set space
+    auto len = static_cast<size_t> (pImpl->mSignalLength)*sizeof(double);
     pImpl->mX = static_cast<double *> (MKL_calloc(len, 1, 64));
     pImpl->mY = static_cast<double *> (MKL_calloc(len, 1, 64));
+    // Copy over the signal
+    wt.getSignal(pImpl->mSignalLength, &pImpl->mX);
+    // Demean the signal then compute norm
+    pImpl->mXL22 = demeanNorm2(pImpl->mSignalLength, pImpl->mX);
+    if (pImpl->mXL22 == std::numeric_limits<double>::epsilon()*100)
+    {
+        if (pImpl->mXL22 == 0)
+        {
+            throw std::invalid_argument("Template signal cannot be constant\n");
+        }
+        fprintf(stderr, "RelativeMagnitude: Template signal may be dead\n");
+    }
     pImpl->mInitialized = true;
 }
 
@@ -267,44 +303,6 @@ template<class T>
 bool RelativeMagnitude<T>::isInitialized() const noexcept
 {
     return pImpl->mInitialized;
-}
-
-/// Sets the template waveform
-template<class T>
-void RelativeMagnitude<T>::setTemplateWaveform(
-    const int n, const T *__restrict__ x)
-{
-    pImpl->mHaveTemplateWaveform = false;
-    pImpl->nullifyAlpha();
-    auto nref = getSignalLength();
-    if (n != nref || x == nullptr)
-    {
-        if (n != nref)
-        {
-            throw std::invalid_argument("Signal length = " + std::to_string(n)
-                                      + " must = " + std::to_string(nref)
-                                      + "\n");
-        }
-        throw std::invalid_argument("Waveform is NULL\n");
-    }
-    // Remove mean, copy, compute squared L2 norm of demeaned signal
-    pImpl->mXL22 = demeanCopyComputeNorm2(n, x, pImpl->mX);
-    if (pImpl->mXL22 == std::numeric_limits<double>::epsilon()*100)
-    {   
-        if (pImpl->mXL22 == 0)
-        {
-            throw std::invalid_argument("Template signal cannot be constant\n");
-        }
-        fprintf(stderr, "RelativeMagnitude: Template signal may be dead\n");
-    }
-    pImpl->mHaveTemplateWaveform = true;
-}
-
-/// Is the template waveform set?
-template<class T>
-bool RelativeMagnitude<T>::haveTemplateWaveform() const noexcept
-{
-    return pImpl->mHaveTemplateWaveform;
 }
 
 /// Sets the detected waveform
@@ -350,13 +348,13 @@ template<class T>
 T RelativeMagnitude<T>::computeAmplitudeScalingFactor(
     const MFLib::RelativeMagnitudeType type) const
 {
-    // Check the waveforms exist
-    if (!pImpl->mHaveTemplateWaveform || !pImpl->mHaveDetectedWaveform)
+    if (!isInitialized())
     {
-        if (!pImpl->mHaveTemplateWaveform)
-        {
-            throw std::runtime_error("Template waveform not set\n");
-        }
+        throw std::runtime_error("Class is not initialized\n");
+    }
+    // Check the waveforms exist
+    if (!pImpl->mHaveDetectedWaveform)
+    {
         throw std::runtime_error("Detected waveform not set\n");
     }
     // Compute the magnitudes
@@ -395,11 +393,3 @@ T RelativeMagnitude<T>::computeMagnitudePerturbation(
 template class MFLib::SingleChannel::RelativeMagnitude<double>;
 template class MFLib::SingleChannel::RelativeMagnitude<float>;
 
-/*
-int main()
-{
-    std::vector<double> x(100, 1), y(100, 0.5);
-    printf("%lf\n", computeSandREqn1(x.size(), x.data(), y.data()));
-    printf("%lf\n", computeSandREqn11(x.size(), x.data(), y.data())); 
-}
-*/

@@ -4,6 +4,7 @@
 #include "mflib/enums.hpp"
 namespace MFLib
 {
+class WaveformTemplate;
 namespace SingleChannel
 {
 /*!
@@ -75,15 +76,14 @@ public:
      */
     /*!
      * @brief Initializes the class.
-     * @param[in] signalLength  This defines the length of the template and 
-     *                          detected signal from which to compute the
-     *                          relative amplitude and magnitude.
-     * @throws std::invalid_argument if this is not positive.
+     * @param[in] wt   The waveform template.  
+     * @throws std::invalid_argument if there is no signal set on the
+     *         waveform template or that signal is constant or all zero.
      */
-    void initialize(int signalLength);
+    void initialize(const WaveformTemplate &wt);
     /*!
      * @brief Gets the expected signal length size.
-     * @result The length of the expected template and detected signal.
+     * @result The length of the expected detected signal.
      * @throws std::runtime_error if the class is not initialized.
      * @sa \c isInitialized()
      */
@@ -92,28 +92,6 @@ public:
      * @brief Determines if the class is initialized.
      */
     bool isInitialized() const noexcept;
-    /*! @} */
-
-    /*! @name Template Signal
-     * @{
-     */
-    /*!
-     * @brief Sets the template (master) waveform.
-     * @param[in] n   The length of the template waveform.  This must
-     *                match \c getSignalLength().
-     * @param[in] x   The template (master) waveform.  This is an array
-     *                whose dimension is [n].
-     * @throws std::runtime_error if the class is not initialized.
-     * @throws std::invalid_argument if x is NULL or constant or n does not
-     *         equal \c getSignalLength().
-     * @sa \c isInitialized(), \c getSignalLength()
-     */
-    void setTemplateWaveform(int n, const T x[]);
-    /*!
-     * @brief Determines whether or not the template signal has been set.
-     * @result True indicates that the template signal was set.
-     */
-    bool haveTemplateWaveform() const noexcept;
     /*! @} */
 
     /*! @name Detected Signal
@@ -148,9 +126,9 @@ public:
      *        is the template waveform. 
      * @param[in] type   Defines the relative magnitude type.
      * @result The scaling factor.
-     * @throws std::runtime_error if the template waveform or detected waveform
-     *         have not been set.
-     * @sa \c haveTemplateWaveform(), \c haveDetectedWaveform()
+     * @throws std::runtime_error if the class is not initialized or the 
+     *         detected waveform has not been set.
+     * @sa \c isInitialized(), \c haveDetectedWaveform()
      */
     T computeAmplitudeScalingFactor(const MFLib::RelativeMagnitudeType type) const;
     /*! 
@@ -160,9 +138,9 @@ public:
      *        scaling factor computed by \c computeAmplitudeScalingFactor().
      * @param[in] type   Defines the relative magnitude type.
      * @result The relative magnitude perturbation.
-     * @throws std::runtime_error if the template waveform or detected waveform
-     *         have not been set.
-     * @sa \c haveTemplateWaveform(), \c haveDetectedWaveform()
+     * @throws std::runtime_error if the class is not initialized or the 
+     *         detected waveform has not been set.
+     * @sa \c isInitialized(), \c haveDetectedWaveform()
      */
     T computeMagnitudePerturbation(const MFLib::RelativeMagnitudeType type) const;
     /*! @} */
