@@ -42,7 +42,8 @@ std::vector<T> naivePearsonCorrelation(const int nb, const T *__restrict__ b,
     // Detrend b
     T bmean = std::accumulate(b, b+nb, zero)/static_cast<T> (nb);
     std::transform(b, b+nb, btemp.begin(),
-                   std::bind2nd(std::minus<T>(), bmean));
+                   [&](auto value){return value - bmean;});
+                   //std::bind2nd(std::minus<T>(), bmean));
     // Compute the L2 norm of the template
     T Eb = std::inner_product(btemp.begin(), btemp.end(),
                               btemp.begin(), zero);
@@ -52,7 +53,8 @@ std::vector<T> naivePearsonCorrelation(const int nb, const T *__restrict__ b,
         // Detrend the signal in this window
         T xmean = std::accumulate(x+i, x+i+nb, zero)/static_cast<T> (nb);
         std::transform(x+i, x+i+nb, xtemp.begin(), 
-                       std::bind2nd(std::minus<T>(), xmean));
+                       [&](auto value){return value - xmean;});
+                       //std::bind2nd(std::minus<T>(), xmean));
         // Compute the L2 norm of the signal
         T Ex = std::inner_product(xtemp.begin(), xtemp.end(),
                                   xtemp.begin(), zero);
