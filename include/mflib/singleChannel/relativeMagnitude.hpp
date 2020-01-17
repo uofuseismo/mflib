@@ -50,7 +50,7 @@ public:
      * @param[in] magnitude   The relative magnitude class to copy.
      * @result A deep copy of the magnitude class.
      */
-    RelativeMagnitude operator=(const RelativeMagnitude &magnitude);
+    RelativeMagnitude& operator=(const RelativeMagnitude &magnitude);
     /*! 
      * @brief Move assignment operator.
      * @param[in,out] magnitude  The relative magnitude class whose memory will
@@ -58,7 +58,7 @@ public:
      *                           is undefined.
      * @result The memory from magnitude moved to this.
      */
-    RelativeMagnitude operator=(RelativeMagnitude &&magnitude) noexcept;
+    RelativeMagnitude& operator=(RelativeMagnitude &&magnitude) noexcept;
     /*! @} */
 
     /*! @name Destructors
@@ -85,12 +85,12 @@ public:
      */
     void initialize(const WaveformTemplate &wt);
     /*!
-     * @brief Gets the expected signal length size.
-     * @result The length of the expected detected signal.
+     * @brief Gets the expected length of the detected signal.
+     * @result The expected length of the detected signal.
      * @throws std::runtime_error if the class is not initialized.
      * @sa \c isInitialized()
      */
-    int getSignalLength() const; 
+    int getDetectedSignalLength() const; 
     /*! 
      * @brief Determines if the class is initialized.
      */
@@ -103,20 +103,20 @@ public:
     /*! 
      * @brief Sets the detected (slave) waveform.
      * @param[in] n   The length of the detected waveform.  This must
-     *                match \c getSignalLength().
+     *                match \c getDetectedSignalLength().
      * @param[in] x   The detected (slave) waveform.  This is an array
      *                whose dimension is [n].
      * @throws std::runtime_error if the class is not initialized.
      * @throws std::invalid_argument if x is NULL or constant or n does not
-     *         equal \c getSignalLength().
-     * @sa \c isInitialized(), \c getSignalLength()
+     *         equal \c getDetectedSignalLength().
+     * @sa \c isInitialized(), \c getDetectedSignalLength()
      */
-    void setDetectedWaveform(int n, const T y[]);
+    void setDetectedSignal(int n, const T y[]);
     /*! 
      * @brief Determines whether or not the detected signal has been set.
      * @result True indicates that the detected signal was set.
      */
-    bool haveDetectedWaveform() const noexcept;
+    bool haveDetectedSignal() const noexcept;
     /*! @} */
 
     /*! @name Computations
@@ -131,7 +131,7 @@ public:
      * @result The scaling factor.
      * @throws std::runtime_error if the class is not initialized or the 
      *         detected waveform has not been set.
-     * @sa \c isInitialized(), \c haveDetectedWaveform()
+     * @sa \c isInitialized(), \c haveDetectedSignal()
      */
     T computeAmplitudeScalingFactor(const MFLib::RelativeMagnitudeType type) const;
     /*! 
@@ -143,13 +143,13 @@ public:
      * @result The relative magnitude perturbation.
      * @throws std::runtime_error if the class is not initialized or the 
      *         detected waveform has not been set.
-     * @sa \c isInitialized(), \c haveDetectedWaveform()
+     * @sa \c isInitialized(), \c haveDetectedSignal()
      */
     T computeMagnitudePerturbation(const MFLib::RelativeMagnitudeType type) const;
     /*! @} */
 private:
     class RelativeMagnitudeImpl;
-    mutable std::unique_ptr<RelativeMagnitudeImpl> pImpl;
+    std::unique_ptr<RelativeMagnitudeImpl> pImpl;
 };
 }
 }

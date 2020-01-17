@@ -146,7 +146,7 @@ public:
         mGibbonsRingdalAlpha = impl.mGibbonsRingdalAlpha;
         mSchaffRichardsAlpha = impl.mSchaffRichardsAlpha;
         mSignalLength = impl.mSignalLength;
-        mHaveDetectedWaveform = impl.mHaveDetectedWaveform;
+        mHaveDetectedSignal = impl.mHaveDetectedSignal;
         mHaveGibbonsRingdalAlpha = impl.mHaveGibbonsRingdalAlpha;
         mHaveSchaffRichardsAlpha = impl.mHaveSchaffRichardsAlpha;
         mInitialized = impl.mInitialized;
@@ -174,7 +174,7 @@ public:
         mXL22 = 0;
         mYL22 = 0;
         mSignalLength = 0;
-        mHaveDetectedWaveform = false;
+        mHaveDetectedSignal = false;
         mInitialized = false;
     }
     void nullifyAlpha() noexcept
@@ -199,7 +199,7 @@ public:
     double mSchaffRichardsAlpha = 1;
     /// The length of the template and detected signal.
     int mSignalLength = 0;
-    bool mHaveDetectedWaveform = false;
+    bool mHaveDetectedSignal = false;
     bool mHaveGibbonsRingdalAlpha = false;
     bool mHaveSchaffRichardsAlpha = false;
     bool mInitialized = false;
@@ -228,22 +228,22 @@ RelativeMagnitude<T>::RelativeMagnitude(RelativeMagnitude &&mag) noexcept
 
 /// Copy assignment operator
 template<class T>
-RelativeMagnitude<T> 
+RelativeMagnitude<T>&
 RelativeMagnitude<T>::operator=(const RelativeMagnitude &mag)
 {
     if (&mag == this){return *this;}
-    if (pImpl){clear();}
-    pImpl = std::make_unique<RelativeMagnitudeImpl> (*mag.pImpl);
+    if (pImpl){pImpl->clear();}
+    pImpl = std::make_unique<RelativeMagnitude<T>::RelativeMagnitudeImpl>
+            (*mag.pImpl);
     return *this;
 }
 
 /// Move assignment operator
 template<class T>
-RelativeMagnitude<T> 
+RelativeMagnitude<T>&
 RelativeMagnitude<T>::operator=(RelativeMagnitude &&mag) noexcept
 {
     if (&mag == this){return *this;}
-    if (pImpl){clear();}
     pImpl = std::move(mag.pImpl);
     return *this;
 }
@@ -292,7 +292,7 @@ void RelativeMagnitude<T>::initialize(const WaveformTemplate &wt)
 
 /// Gets the signal length
 template<class T>
-int RelativeMagnitude<T>::getSignalLength() const
+int RelativeMagnitude<T>::getDetectedSignalLength() const
 {
     if (!isInitialized()){throw std::runtime_error("Class not initialized\n");}
     return pImpl->mSignalLength;
@@ -307,12 +307,12 @@ bool RelativeMagnitude<T>::isInitialized() const noexcept
 
 /// Sets the detected waveform
 template<class T>
-void RelativeMagnitude<T>::setDetectedWaveform(
+void RelativeMagnitude<T>::setDetectedSignal(
     const int n, const T *__restrict__ y)
 {
-    pImpl->mHaveDetectedWaveform = false;
+    pImpl->mHaveDetectedSignal = false;
     pImpl->nullifyAlpha();
-    auto nref = getSignalLength();
+    auto nref = getDetectedSignalLength();
     if (n != nref || y == nullptr)
     {
         if (n != nref)
@@ -321,7 +321,7 @@ void RelativeMagnitude<T>::setDetectedWaveform(
                                       + " must = " + std::to_string(nref) 
                                       + "\n");
         }
-        throw std::invalid_argument("Waveform is NULL\n");
+        throw std::invalid_argument("Signal is NULL\n");
     }
     // Remove mean, copy, compute squared L2 norm of demeaned signal
     pImpl->mYL22 = demeanCopyComputeNorm2(n, y, pImpl->mY);
@@ -333,14 +333,14 @@ void RelativeMagnitude<T>::setDetectedWaveform(
         }
         fprintf(stderr, "RelativeMagnitude: Detected signal may be dead\n");
     }
-    pImpl->mHaveDetectedWaveform = true;
+    pImpl->mHaveDetectedSignal = true;
 }
 
 /// Is the detected waveform set?
 template<class T>
-bool RelativeMagnitude<T>::haveDetectedWaveform() const noexcept
+bool RelativeMagnitude<T>::haveDetectedSignal() const noexcept
 {
-    return pImpl->mHaveDetectedWaveform;
+    return pImpl->mHaveDetectedSignal;
 }
 
 /// Compute the scaling factor
@@ -353,7 +353,7 @@ T RelativeMagnitude<T>::computeAmplitudeScalingFactor(
         throw std::runtime_error("Class is not initialized\n");
     }
     // Check the waveforms exist
-    if (!pImpl->mHaveDetectedWaveform)
+    if (!pImpl->mHaveDetectedSignal)
     {
         throw std::runtime_error("Detected waveform not set\n");
     }
