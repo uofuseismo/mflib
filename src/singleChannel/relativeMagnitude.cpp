@@ -360,23 +360,25 @@ T RelativeMagnitude<T>::computeAmplitudeScalingFactor(
     // Compute the magnitudes
     if (!pImpl->mHaveGibbonsRingdalAlpha)
     {
-        pImpl->mHaveGibbonsRingdalAlpha 
+        pImpl->mGibbonsRingdalAlpha
             = gibbonsRingdal2006(pImpl->mSignalLength,
                                  pImpl->mXL22, pImpl->mX, pImpl->mY);
+        pImpl->mHaveGibbonsRingdalAlpha = true;
     }
     if (!pImpl->mHaveSchaffRichardsAlpha)
     {
-        pImpl->mHaveSchaffRichardsAlpha
-            = schaffRichards2014(pImpl->mXL22, pImpl->mYL22);
+        pImpl->mSchaffRichardsAlpha
+           = schaffRichards2014(pImpl->mXL22, pImpl->mYL22);
+        pImpl->mHaveSchaffRichardsAlpha = true;
     }
     // Return what the user wants
     if (type == MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006)
     {
-        return static_cast<T> (pImpl->mHaveGibbonsRingdalAlpha);
+        return static_cast<T> (pImpl->mGibbonsRingdalAlpha);
     }
     else
     {
-        return static_cast<T> (pImpl->mHaveSchaffRichardsAlpha);
+        return static_cast<T> (pImpl->mSchaffRichardsAlpha);
     }
 }
 

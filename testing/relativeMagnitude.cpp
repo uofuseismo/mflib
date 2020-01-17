@@ -43,10 +43,11 @@ TEST(singleChannelRelativeMagnitude, relativeMagnitude)
     double dmagRef2 = get_dmag_2(x.data(), y.data(), x.size());
     auto dmag1 = mag.computeMagnitudePerturbation(
                     RelativeMagnitudeType::GIBBONS_RINGDAL_2006); 
+    EXPECT_NEAR(dmag1, dmagRef1, 1.e-12);
     auto dmag2 = mag.computeMagnitudePerturbation(
                     RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
-printf("%lf, %lf\n", dmagRef1, dmagRef2);
-printf("%lf, %lf\n", dmag1, dmag2);
+    EXPECT_NEAR(dmag2, dmagRef2, 1.e-12);
+
 }
 
 std::vector<double> demean(const std::vector<double> &x)
@@ -76,7 +77,7 @@ double get_dmag_1(double *x,double *y,int np)
         num+=x[i]*y[i];
         denom+=x[i]*x[i];
     }
-printf("%lf, %lf\n", num, denom);
+    num = std::abs(num);
     return(log10(num/denom));
 }
 
