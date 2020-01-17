@@ -38,15 +38,15 @@ def test_waveform_template():
 
     # Test the copy c'tor
     wt_copy = wt
-    assert np.max(np.abs(wt_copy.signal - template_signal)) == 0, "Copy signal failed"
-    assert wt_copy.sampling_rate() == sampling_rate, "Copy sampling rate failed"
-    assert wt_copy.shift_and_stack_weight() == shift_and_stack_weight, "Copy shift and stack weight failed"
-    assert wt_copy.phase_travel_time() == travel_time, "Travel time failed"
-    assert wt_copy.onset_time_in_signal() == onset_time, "Onset time failed"
+    assert np.max(np.abs(wt_copy.get_signal() - template_signal)) == 0, "Copy signal failed"
+    assert wt_copy.get_sampling_rate() == sampling_rate, "Copy sampling rate failed"
+    assert wt_copy.get_shift_and_stack_weight() == shift_and_stack_weight, "Copy shift and stack weight failed"
+    assert wt_copy.get_phase_travel_time() == travel_time, "Travel time failed"
+    assert wt_copy.get_onset_time_in_signal() == onset_time, "Onset time failed"
 
     # Clear the module
     wt.clear()
-    assert wt.shift_and_stack_weight() == 1, "Clear failed" # Should reset to default weight
+    assert wt.get_shift_and_stack_weight() == 1, "Clear failed" # Should reset to default weight
 
 ##########################################################################################################
 
