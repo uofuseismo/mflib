@@ -146,7 +146,7 @@ void PBMFLib::SingleChannel::initializeRelativeMagnitude(pybind11::module &m)
                     &PBMFLib::SingleChannel::RelativeMagnitude<double>::getDetectedSignalLength,
                     "Gets the expected length of the detected signal."); 
     mRmagDouble.def("set_detected_signal",
-                    &PBMFLib::SingleChannel::RelativeMagnitude<double>::initialize,
+                    &PBMFLib::SingleChannel::RelativeMagnitude<double>::setDetectedSignal,
                     "Sets the signal detected by the template.  The signal is a NumPy array whose length must must equal the value return by get_detected_signal_length.");
     mRmagDouble.def("have_detected_signal",
                     &PBMFLib::SingleChannel::RelativeMagnitude<double>::haveDetectedSignal,

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 import pymflib
+import time
 import numpy as np
 
 def test_waveform_template():
@@ -128,6 +129,7 @@ def dumb_xc(template, signal):
     return xc
 
 def test_matched_filtering():
+    print("Multi channel matched filtering test...")
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
     # Define signals and templates
@@ -179,12 +181,13 @@ def test_matched_filtering():
 ##########################################################################################################
 
 def test_single_channel_matched_filtering():
+    print("Single channel matched filtering test...")
     sampling_rate = 100.0
     signal_size = int(sampling_rate*60*3) + 1  # Signal size is 3 minutes
     template_size = int(sampling_rate*10) + 1  # Template size is 10 seconds 
     # Generate a random signal
+    time_start = time.time()
     signal = np.random.uniform(-3, 4, signal_size) # Mean is (4 + -3)/2 = 0.5 
-    print(signal)
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
     wf3 = pymflib.WaveformTemplate()
@@ -213,19 +216,47 @@ def test_single_channel_matched_filtering():
     xc1 = mf.get_matched_filtered_signal(0)
     xc2 = mf.get_matched_filtered_signal(1)
     xc3 = mf.get_matched_filtered_signal(2)
+    time_end = time.time()
+
+    time_start_naive = time.time() 
     xc1_ref = dumb_xc(wf1.get_signal(), signal)
     xc2_ref = dumb_xc(wf2.get_signal(), signal)
     xc3_ref = dumb_xc(wf3.get_signal(), signal)
+    time_end_naive = time.time()
     assert np.max(np.abs(xc1 - xc1_ref)) < 1.e-14, 'failed to compute xc1'
     assert np.max(np.abs(xc2 - xc2_ref)) < 1.e-14, 'failed to compute xc2'
     assert np.max(np.abs(xc3 - xc3_ref)) < 1.e-14, 'failed to compute xc3'
     mf_parms.clear_templates()
     assert mf_parms.get_number_of_templates() == 0, 'failed to clear templates'
+    print("Library execution time: %f (s)"%(time_end - time_start))
+    print("Naive execution time on Python: %f (s)"%(time_end_naive - time_start_naive))
 
 def test_single_channel_relative_magnitude():
+    print("Single channel relative magnitude test...")
+    signal_size = 355
     sampling_rate = 100.0
     rmag = pymflib.SingleChannelRelativeMagnitude()
     wt = pymflib.WaveformTemplate()
+    xt = np.random.uniform( 5, 7, signal_size)
+    yt = np.random.uniform(-2, 1, signal_size)
+    wt.set_sampling_rate(sampling_rate)
+    wt.set_signal(xt)
+ 
+    rmag.initialize(wt) 
+    assert rmag.is_initialized(), 'class should be inititalized'
+    assert rmag.get_detected_signal_length() == signal_size, 'signal length is wrong'
+    rmag.set_detected_signal(yt)
+    assert rmag.have_detected_signal(), 'signal not set'
+
+    mag1 = rmag.compute_magnitude_perturbation(rmag.RelativeMagnitudeType.gibbons_ringdal_2006)
+    mag2 = rmag.compute_magnitude_perturbation(rmag.RelativeMagnitudeType.schaff_richards_2014)
+    # Compute reference solutions
+    xtd = xt - np.mean(xt)
+    ytd = yt - np.mean(yt)
+    mag1Ref = np.log10(np.abs(np.dot(xtd, ytd))/(np.dot(xtd, xtd)))
+    mag2Ref = 1./2.*np.log10(np.dot(ytd, ytd)/(np.dot(xtd, xtd)))
+    assert np.abs(mag1Ref - mag1) < 1.e-14, 'gibbons-ringdal failed'
+    assert np.abs(mag2Ref - mag2) < 1.e-14, 'schaff-richards failed'
  
 if __name__ == "__main__":
     test_matched_filter_parameters()
