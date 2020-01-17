@@ -149,7 +149,7 @@ public:
     /*! @} */
 private:
     class RelativeMagnitudeImpl;
-    std::unique_ptr<RelativeMagnitudeImpl> pImpl;
+    mutable std::unique_ptr<RelativeMagnitudeImpl> pImpl;
 };
 }
 }
