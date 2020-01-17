@@ -221,8 +221,14 @@ def test_single_channel_matched_filtering():
     assert np.max(np.abs(xc3 - xc3_ref)) < 1.e-14, 'failed to compute xc3'
     mf_parms.clear_templates()
     assert mf_parms.get_number_of_templates() == 0, 'failed to clear templates'
+
+def test_single_channel_relative_magnitude():
+    sampling_rate = 100.0
+    rmag = pymflib.SingleChannelRelativeMagnitude()
+    wt = pymflib.WaveformTemplate()
  
 if __name__ == "__main__":
     test_matched_filter_parameters()
     test_matched_filtering()
     test_single_channel_matched_filtering()
+    test_single_channel_relative_magnitude()

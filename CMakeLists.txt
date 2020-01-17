@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mflib VERSION 0.1.5 LANGUAGES CXX)
+project(mflib VERSION 0.2.0 LANGUAGES CXX)
 enable_testing()
 
 include(CheckCXXCompilerFlag)
@@ -102,6 +102,7 @@ if (MFLIB_WRAP_PYTHON)
                python/waveformTemplate.cpp
                python/singleChannel/matchedFilterParameters.cpp
                python/singleChannel/matchedFilter.cpp
+               python/singleChannel/relativeMagnitude.cpp
                python/multiChannelMatchedFilterParameters.cpp
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)

@@ -4,6 +4,7 @@
 #include "pyMultiChannelMatchedFilter.hpp"
 #include "pySingleChannelMatchedFilterParameters.hpp"
 #include "pySingleChannelMatchedFilter.hpp"
+#include "pySingleChannelRelativeMagnitude.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
@@ -14,6 +15,7 @@ PYBIND11_MODULE(pymflib, m)
     PBMFLib::initializeWaveformTemplate(m);
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(m);
     PBMFLib::SingleChannel::initializeMatchedFilter(m);
+    PBMFLib::SingleChannel::initializeRelativeMagnitude(m);
     PBMFLib::initializeMultiChannelMatchedFilterParameters(m);
     PBMFLib::initializeMultiChannelMatchedFilter(m);
 }

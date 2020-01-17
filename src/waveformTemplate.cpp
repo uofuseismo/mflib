@@ -24,6 +24,7 @@ public:
     /// Deep copy of the template
     WaveformTemplateImpl& operator=(const WaveformTemplateImpl &tplate)
     {
+        if (&tplate == this){return *this;}
         mShiftAndStackWeight = tplate.mShiftAndStackWeight;
         mSamplingRate = tplate.mSamplingRate;
         mOnsetTime = tplate.mOnsetTime;

@@ -55,8 +55,8 @@ void MultiChannelMatchedFilter<double>::setSignal(
     auto len = static_cast<int> (xbuf.size);
     const double *xptr = (double *) (xbuf.ptr);
     if (xptr == nullptr)
-    {   
-        throw std::runtime_error("x is null");
+    {
+        throw std::invalid_argument("x is null");
     }
     mcmf->setSignal(it, len, xptr);
 }
@@ -77,7 +77,7 @@ void MultiChannelMatchedFilter<float>::setSignal(
     const double *xptr = (double *) (xbuf.ptr);
     if (xptr == nullptr)
     {   
-        throw std::runtime_error("x is null");
+        throw std::invalid_argument("x is null");
     }
     std::vector<float> xIn(len);
     #pragma omp simd

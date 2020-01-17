@@ -62,7 +62,7 @@ void WaveformTemplate::setSignal(
     const double *xptr = (double *) (xbuf.ptr);
     if (xptr == nullptr)
     {
-        throw std::runtime_error("x is null");
+        throw std::invalid_argument("x is null");
     }
     mWaveformTemplate->setSignal(len, xptr);
 }
