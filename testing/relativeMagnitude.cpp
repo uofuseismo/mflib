@@ -30,12 +30,12 @@ TEST(singleChannelRelativeMagnitude, relativeMagnitude)
     auto testSignal1 = generateUniformRandomNumbers(signalSize, -3, 8);
     auto testSignal2 = generateUniformRandomNumbers(signalSize, -7, 1); 
     EXPECT_NO_THROW(mag.initialize(wt));
-    EXPECT_EQ(mag.getSignalLength(), signalSize);
+    EXPECT_EQ(mag.getDetectedSignalLength(), signalSize);
     EXPECT_TRUE(mag.isInitialized());
-    EXPECT_FALSE(mag.haveDetectedWaveform());
+    EXPECT_FALSE(mag.haveDetectedSignal());
     // Do two computations
-    mag.setDetectedWaveform(testSignal1.size(), testSignal1.data());
-    EXPECT_TRUE(mag.haveDetectedWaveform());
+    mag.setDetectedSignal(testSignal1.size(), testSignal1.data());
+    EXPECT_TRUE(mag.haveDetectedSignal());
     // Compute
     auto x = demean(randomTemplate);
     auto y = demean(testSignal1);
@@ -47,7 +47,18 @@ TEST(singleChannelRelativeMagnitude, relativeMagnitude)
     auto dmag2 = mag.computeMagnitudePerturbation(
                     RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
     EXPECT_NEAR(dmag2, dmagRef2, 1.e-12);
-
+    // Test copy c'tor by copying second signal onto mag and computing
+    mag.setDetectedSignal(testSignal1.size(), testSignal2.data());
+    y = demean(testSignal2);
+    dmagRef1 = get_dmag_1(x.data(), y.data(), x.size());
+    dmagRef2 = get_dmag_2(x.data(), y.data(), x.size());
+    MFLib::SingleChannel::RelativeMagnitude magCopy(mag);
+    dmag1 = magCopy.computeMagnitudePerturbation(
+              RelativeMagnitudeType::GIBBONS_RINGDAL_2006);
+    EXPECT_NEAR(dmag1, dmagRef1, 1.e-12);
+    dmag2 = magCopy.computeMagnitudePerturbation(
+              RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
+    EXPECT_NEAR(dmag2, dmagRef2, 1.e-12);
 }
 
 std::vector<double> demean(const std::vector<double> &x)
