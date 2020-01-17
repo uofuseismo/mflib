@@ -234,6 +234,7 @@ public:
         if (mB){fftw_free(mB);}
         if (mSignalSegment){MKL_free(mSignalSegment);}
         if (mSegmentSpectra){MKL_free(mSegmentSpectra);}
+        if (mSingleSegmentSpectra){MKL_free(mSingleSegmentSpectra);}
         if (mInputSignals){MKL_free(mInputSignals);}
         if (mFilteredSignals){MKL_free(mFilteredSignals);}
         if (mDenominator){MKL_free(mDenominator);}
@@ -365,6 +366,7 @@ public:
         if (mB){fftw_free(mB);}
         //if (mCorrelogramSpectra){MKL_free(mCorrelogramSpectra);}
         if (mSignalSegment){MKL_free(mSignalSegment);}
+        if (mSingleSegmentSpectra){MKL_free(mSingleSegmentSpectra);}
         if (mSegmentSpectra){MKL_free(mSegmentSpectra);}
         if (mSingleSegmentSpectra){MKL_free(mSingleSegmentSpectra);}
         //if (mOVACorrelograms){MKL_free(mOVACorrelograms);}
