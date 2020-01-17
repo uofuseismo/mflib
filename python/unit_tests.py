@@ -17,36 +17,36 @@ def test_waveform_template():
     wt = pymflib.WaveformTemplate()
 
     # Test the signal
-    wt.signal = template_signal
-    assert np.max(np.abs(wt.signal - template_signal)) == 0, "Signal failed"
+    wt.set_signal(template_signal)
+    assert np.max(np.abs(wt.get_signal() - template_signal)) == 0, "Signal failed"
 
     # Test the sampling rate
-    wt.sampling_rate = sampling_rate 
-    assert wt.sampling_rate == sampling_rate, "Sampling rate failed"
+    wt.set_sampling_rate(sampling_rate)
+    assert wt.get_sampling_rate() == sampling_rate, "Sampling rate failed"
 
     # Test the shift and stack weight
-    wt.shift_and_stack_weight = shift_and_stack_weight
-    assert wt.shift_and_stack_weight == shift_and_stack_weight, "Shift and stack weight failed"
+    wt.set_shift_and_stack_weight(shift_and_stack_weight)
+    assert wt.get_shift_and_stack_weight() == shift_and_stack_weight, "Shift and stack weight failed"
 
     # Test the travel time
-    wt.phase_travel_time = travel_time
-    assert wt.phase_travel_time == travel_time, "Travel time failed"
+    wt.set_phase_travel_time(travel_time)
+    assert wt.get_phase_travel_time() == travel_time, "Travel time failed"
 
     # Test the onset time
-    wt.onset_time_in_signal = onset_time
-    assert wt.onset_time_in_signal == onset_time, "Onset time failed"
+    wt.set_onset_time_in_signal(onset_time)
+    assert wt.get_onset_time_in_signal() == onset_time, "Onset time failed"
 
     # Test the copy c'tor
     wt_copy = wt
     assert np.max(np.abs(wt_copy.signal - template_signal)) == 0, "Copy signal failed"
-    assert wt_copy.sampling_rate == sampling_rate, "Copy sampling rate failed"
-    assert wt_copy.shift_and_stack_weight == shift_and_stack_weight, "Copy shift and stack weight failed"
-    assert wt_copy.phase_travel_time == travel_time, "Travel time failed"
-    assert wt_copy.onset_time_in_signal == onset_time, "Onset time failed"
+    assert wt_copy.sampling_rate() == sampling_rate, "Copy sampling rate failed"
+    assert wt_copy.shift_and_stack_weight() == shift_and_stack_weight, "Copy shift and stack weight failed"
+    assert wt_copy.phase_travel_time() == travel_time, "Travel time failed"
+    assert wt_copy.onset_time_in_signal() == onset_time, "Onset time failed"
 
     # Clear the module
     wt.clear()
-    assert wt.shift_and_stack_weight == 1, "Clear failed" # Should reset to default weight
+    assert wt.shift_and_stack_weight() == 1, "Clear failed" # Should reset to default weight
 
 ##########################################################################################################
 
@@ -65,41 +65,41 @@ def test_matched_filter_parameters():
     t1 = np.arange(1, n_samples1, 1)
     t2 = np.arange(1, n_samples2, 1)
 
-    wf1.signal = t1
-    wf2.signal = t2
-    wf1.sampling_rate = sampling_rate
-    wf2.sampling_rate = sampling_rate
+    wf1.set_signal(t1)
+    wf2.set_signal(t2)
+    wf1.set_sampling_rate(sampling_rate)
+    wf2.set_sampling_rate(sampling_rate)
     # Set some other things for a subsequent test
     travel_time = 4
     onset_time = 0.05
     sas_weight = 0.8
-    wf1.shift_and_stack_weight = sas_weight
-    wf1.onset_time_in_signal = onset_time
-    wf1.shift_and_stack_weight = sas_weight
-    wf1.phase_travel_time = travel_time
+    wf1.set_shift_and_stack_weight(sas_weight)
+    wf1.set_onset_time_in_signal(onset_time)
+    wf1.set_shift_and_stack_weight(sas_weight)
+    wf1.set_phase_travel_time(travel_time)
 
-    wf2.shift_and_stack_weight = sas_weight
-    wf2.onset_time_in_signal = onset_time
-    wf2.shift_and_stack_weight = sas_weight
-    wf2.phase_travel_time = travel_time
+    wf2.set_shift_and_stack_weight(sas_weight)
+    wf2.set_onset_time_in_signal(onset_time)
+    wf2.set_shift_and_stack_weight(sas_weight)
+    wf2.set_phase_travel_time(travel_time)
 
     mf_parameters.add_template(wf1)
     mf_parameters.add_template(wf2)
-    mf_parameters.signal_size = signal_size
-    assert mf_parameters.number_of_templates == 2, "n_templates failed"
+    mf_parameters.set_signal_size( signal_size)
+    assert mf_parameters.get_number_of_templates() == 2, "n_templates failed"
     # Should default to this
-    assert mf_parameters.fft_length == 512, "fft length wrong"
+    assert mf_parameters.get_fft_length() == 512, "fft length wrong"
     # Can try changing it
-    mf_parameters.fft_length = 550
-    assert mf_parameters.fft_length == 550, "fft length change failed"
+    mf_parameters.set_fft_length(550)
+    assert mf_parameters.get_fft_length() == 550, "fft length change failed"
     # Try to recover one of my templates
-    for i in range(mf_parameters.number_of_templates):
+    for i in range(mf_parameters.get_number_of_templates()):
         wt_back = mf_parameters.get_template(i)
-        assert wt_back.sampling_rate == sampling_rate, "sampling rate copy failed"
-        assert wt_back.shift_and_stack_weight == sas_weight, "sas weight copy failed"
-        assert wt_back.onset_time_in_signal == onset_time, "onset time copy failed"
-        assert wt_back.phase_travel_time == travel_time, "ttime copy failed"
-        t_back = wt_back.signal
+        assert wt_back.get_sampling_rate() == sampling_rate, "sampling rate copy failed"
+        assert wt_back.get_shift_and_stack_weight() == sas_weight, "sas weight copy failed"
+        assert wt_back.get_onset_time_in_signal() == onset_time, "onset time copy failed"
+        assert wt_back.get_phase_travel_time() == travel_time, "ttime copy failed"
+        t_back = wt_back.get_signal()
         if (i == 0):
             t = t1
         else:
@@ -109,7 +109,7 @@ def test_matched_filter_parameters():
     # Dump the templates
     mf_parameters.clear_templates()
 
-    assert mf_parameters.number_of_templates == 0, "clear templates failed"
+    assert mf_parameters.get_number_of_templates() == 0, "clear templates failed"
 
 #############################################################################################################
 
@@ -149,16 +149,16 @@ def test_matched_filtering():
 
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
-    wf1.signal = t1
-    wf2.signal = t2
-    wf1.sampling_rate = sampling_rate
-    wf2.sampling_rate = sampling_rate
+    wf1.set_signal(t1)
+    wf2.set_signal(t2)
+    wf1.set_sampling_rate(sampling_rate)
+    wf2.set_sampling_rate(sampling_rate)
 
     # Attached the templates to the parameters
     mf_parameters = pymflib.MultiChannelMatchedFilterParameters()
     mf_parameters.add_template(wf1)
     mf_parameters.add_template(wf2)
-    mf_parameters.signal_size = signal_size
+    mf_parameters.set_signal_size(signal_size)
 
     # Initialize the multi-channel matched filter
     mf = pymflib.MultiChannelMatchedFilter()
@@ -168,7 +168,7 @@ def test_matched_filtering():
     mf.set_signal(1, signal2)
     # Run it
     mf.apply()
-    assert mf.have_matched_filtered_signals, "mf switch not updated" 
+    assert mf.have_matched_filtered_signals(), "mf switch not updated" 
     mf1 = mf.get_matched_filtered_signal(0)
     mf2 = mf.get_matched_filtered_signal(1)
     xc1 = dumb_xc(t1, signal1) # Do it the dumb way
@@ -193,19 +193,19 @@ def test_single_channel_matched_filtering():
     i2 = int(signal_size*0.05)
     i3 = int(signal_size*0.8)
     # Extract parts of the input signal and set those as templates
-    wf1.sampling_rate = sampling_rate
-    wf2.sampling_rate = sampling_rate
-    wf3.sampling_rate = sampling_rate
-    wf1.signal = np.copy(signal[i1:i1+template_size])
-    wf2.signal = np.copy(signal[i2:i2+template_size])
-    wf3.signal = np.copy(signal[i3:i3+template_size])
+    wf1.set_sampling_rate(sampling_rate)
+    wf2.set_sampling_rate(sampling_rate)
+    wf3.set_sampling_rate(sampling_rate)
+    wf1.set_signal(signal[i1:i1+template_size])
+    wf2.set_signal(signal[i2:i2+template_size])
+    wf3.set_signal(signal[i3:i3+template_size])
     # Initialize the parameters
     mf_parms = pymflib.SingleChannelMatchedFilterParameters() 
-    mf_parms.signal_size = signal_size 
+    mf_parms.set_signal_size(signal_size)
     mf_parms.add_template(wf1)
     mf_parms.add_template(wf2)
     mf_parms.add_template(wf3)
-    assert mf_parms.number_of_templates == 3, 'failed to set templates'
+    assert mf_parms.get_number_of_templates() == 3, 'failed to set templates'
     mf = pymflib.SingleChannelMatchedFilter()
     mf.initialize(mf_parms)
     mf.set_signal(signal)
@@ -213,14 +213,14 @@ def test_single_channel_matched_filtering():
     xc1 = mf.get_matched_filtered_signal(0)
     xc2 = mf.get_matched_filtered_signal(1)
     xc3 = mf.get_matched_filtered_signal(2)
-    xc1_ref = dumb_xc(wf1.signal, signal)
-    xc2_ref = dumb_xc(wf2.signal, signal)
-    xc3_ref = dumb_xc(wf3.signal, signal)
+    xc1_ref = dumb_xc(wf1.get_signal(), signal)
+    xc2_ref = dumb_xc(wf2.get_signal(), signal)
+    xc3_ref = dumb_xc(wf3.get_signal(), signal)
     assert np.max(np.abs(xc1 - xc1_ref)) < 1.e-14, 'failed to compute xc1'
     assert np.max(np.abs(xc2 - xc2_ref)) < 1.e-14, 'failed to compute xc2'
     assert np.max(np.abs(xc3 - xc3_ref)) < 1.e-14, 'failed to compute xc3'
     mf_parms.clear_templates()
-    assert mf_parms.number_of_templates == 0, 'failed to clear templates'
+    assert mf_parms.get_number_of_templates() == 0, 'failed to clear templates'
  
 if __name__ == "__main__":
     test_matched_filter_parameters()

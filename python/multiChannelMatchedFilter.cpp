@@ -171,17 +171,17 @@ void PBMFLib::initializeMultiChannelMatchedFilter(pybind11::module &m)
     dmcmf.def("zero_signal",
               &PBMFLib::MultiChannelMatchedFilter<double>::zeroSignal,
               "Over a time period a station can be down.  This sets the signal corresponding to the it'th template to 0.  The template index must be in the range of [0, number_of_templates].");
-    dmcmf.def_property_readonly("number_of_templates", 
-                                &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
-                                "The number of templates in the multi-channel cross-correlation.");
+    dmcmf.def("get_number_of_templates", 
+              &PBMFLib::MultiChannelMatchedFilter<double>::getNumberOfTemplates, 
+              "The number of templates in the multi-channel cross-correlation.");
     /// Apply
     dmcmf.def("apply",
               &PBMFLib::MultiChannelMatchedFilter<double>::apply,
               "Applies the templates set during the initialization stage to the signals set by set_signal");
     /// 
-    dmcmf.def_property_readonly("have_matched_filtered_signals",
-                                &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
-                                "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
+    dmcmf.def("have_matched_filtered_signals",
+              &PBMFLib::MultiChannelMatchedFilter<double>::haveMatchedFilteredSignals,
+              "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
     /// Gets the it'th matched filtered signal
     dmcmf.def("get_matched_filtered_signal",
               &PBMFLib::MultiChannelMatchedFilter<double>::getMatchedFilteredSignal,

@@ -137,19 +137,23 @@ void PBMFLib::SingleChannel::initializeMatchedFilterParameters(pybind11::module 
     mfParameters.def("get_template",
                      &PBMFLib::SingleChannel::MatchedFilterParameters::getTemplate,
                      "Gets the it'th waveform template.");
-    mfParameters.def_property("signal_size",
-                              &PBMFLib::SingleChannel::MatchedFilterParameters::getSignalSize,
-                              &PBMFLib::SingleChannel::MatchedFilterParameters::setSignalSize,
-                              "Defines the size of the signals to which the templates will be applied.  This must be positive and should be called after setting all the templates.");
-    mfParameters.def_property_readonly("number_of_templates",
-                                       &PBMFLib::SingleChannel::MatchedFilterParameters::getNumberOfTemplates,
-                                       "This is the number of templates that have been set in the class.");
+    mfParameters.def("get_signal_size",
+                     &PBMFLib::SingleChannel::MatchedFilterParameters::getSignalSize,
+                     "Gets the length of the expected signal to which the template will be applied.");
+    mfParameters.def("set_signal_size",
+                     &PBMFLib::SingleChannel::MatchedFilterParameters::setSignalSize,
+                     "Defines the size of the signals to which the templates will be applied.  This must be positive and should be called after setting all the templates.");
+    mfParameters.def("get_number_of_templates",
+                     &PBMFLib::SingleChannel::MatchedFilterParameters::getNumberOfTemplates,
+                     "This is the number of templates that have been set in the class.");
     /// Tuning parameters
-    mfParameters.def_property("fft_length",
-                              &PBMFLib::SingleChannel::MatchedFilterParameters::getFFTLength,
-                              &PBMFLib::SingleChannel::MatchedFilterParameters::setFFTLength,
-                              "This is a tuning parameter.  From the signal size and template lengths a nominal FFT length will be computed.  While this length will be a power of 2 the underlying Cooley-Tukey Discrete Fourier Transform may be more efficient for smaller FFT lengths.  This should be set after both the templates and signal size are set."); 
-    mfParameters.def("block_length",
+    mfParameters.def("get_fft_length",
+                     &PBMFLib::SingleChannel::MatchedFilterParameters::getFFTLength,
+                     "Gets the length of the Fourier transform in the overlap and add method.");
+    mfParameters.def("set_fft_length",
+                     &PBMFLib::SingleChannel::MatchedFilterParameters::setFFTLength,
+                     "This is a tuning parameter.  From the signal size and template lengths a nominal FFT length will be computed.  While this length will be a power of 2 the underlying Cooley-Tukey Discrete Fourier Transform may be more efficient for smaller FFT lengths.  This should be set after both the templates and signal size are set."); 
+    mfParameters.def("get_block_length",
                      &PBMFLib::SingleChannel::MatchedFilterParameters::getFFTLength,
                      "This is the block length in the overlap-and-add method.  It is computed from the FFT length and the signal size.");
     /// Clear the templates

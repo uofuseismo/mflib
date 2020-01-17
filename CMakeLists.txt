@@ -84,6 +84,8 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
+target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
+                      ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
                       CXX_STANDARD_REQUIRED YES
@@ -121,13 +123,16 @@ add_executable(unitTests
                testing/matchedFilterParameters.cpp
                testing/matchedFilter.cpp
                testing/singleChannel.cpp
+               testing/relativeMagnitude.cpp
                testing/utilities.cpp)
-target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
-                      ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
                       ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
+set_target_properties(unitTests  PROPERTIES
+                      CXX_STANDARD 17
+                      CXX_STANDARD_REQUIRED YES 
+                      CXX_EXTENSIONS NO)
 
 file(COPY ${CMAKE_SOURCE_DIR}/python/unit_tests.py DESTINATION .)
 add_test(NAME unitTests

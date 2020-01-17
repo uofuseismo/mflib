@@ -1,10 +1,13 @@
-#ifndef MFLIB_SINGLECHANNEL_RELATIVECHANNELMAGNITUDE_HPP
-#define MFLIB_SINGLECHANNEL_RELATIVECHANNELMAGNITUDE_HPP
+#ifndef MFLIB_SINGLECHANNEL_RELATIVEMAGNITUDE_HPP
+#define MFLIB_SINGLECHANNEL_RELATIVEMAGNITUDE_HPP
 #include <memory>
 #include "mflib/enums.hpp"
 namespace MFLib
 {
 class WaveformTemplate;
+}
+namespace MFLib
+{
 namespace SingleChannel
 {
 /*!
@@ -13,7 +16,7 @@ namespace SingleChannel
  *        a relative magnitude.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-template<class T>
+template<class T = double>
 class RelativeMagnitude
 {
 public:

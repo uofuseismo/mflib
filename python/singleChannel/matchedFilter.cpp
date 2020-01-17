@@ -159,17 +159,17 @@ void PBMFLib::SingleChannel::initializeMatchedFilter(pybind11::module &m)
     //scmf.def("zero_signal",
     //          &PBMFLib::SingleChannel::MatchedFilter<double>::zeroSignal,
     //          "Over a time period a station can be down.  This sets the signal to 0.");
-    scmf.def_property_readonly("number_of_templates",
-                               &PBMFLib::SingleChannel::MatchedFilter<double>::getNumberOfTemplates,
-                               "The number of templates in the single-channel multi-template cross-correlation.");
+    scmf.def("get_number_of_templates",
+             &PBMFLib::SingleChannel::MatchedFilter<double>::getNumberOfTemplates,
+             "The number of templates in the single-channel multi-template cross-correlation.");
     /// Apply
     scmf.def("apply",
              &PBMFLib::SingleChannel::MatchedFilter<double>::apply,
              "Applies the templates set during the initialization stage to the signal set by set_signal");
     /// 
-    scmf.def_property_readonly("have_matched_filtered_signals",
-                               &PBMFLib::SingleChannel::MatchedFilter<double>::haveMatchedFilteredSignals,
-                               "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
+    scmf.def("have_matched_filtered_signals",
+             &PBMFLib::SingleChannel::MatchedFilter<double>::haveMatchedFilteredSignals,
+             "Determines if the matched filtering as been applied and the signals are available for extraction from the class.");
     /// Gets the it'th matched filtered signal
     scmf.def("get_matched_filtered_signal",
              &PBMFLib::SingleChannel::MatchedFilter<double>::getMatchedFilteredSignal,
