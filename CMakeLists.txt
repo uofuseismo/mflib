@@ -61,11 +61,16 @@ include_directories(
 
 configure_file(${CMAKE_SOURCE_DIR}/include/mflib/version.hpp.in
                ${CMAKE_SOURCE_DIR}/include/mflib/version.hpp)
-
+set(PUBLIC_HEADER_DIRECTORIES
+    include/mflib/
+    include/mflib/singleChannel/)
+set(PRIVATE_HEADER_DIRECTORIES
+    include/mflib/private)
 set(SRC
     src/version.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
+    src/singleChannel/detector.cpp
     src/singleChannel/matchedFilterParameters.cpp
     src/singleChannel/matchedFilter.cpp
     src/singleChannel/relativeMagnitude.cpp
@@ -90,6 +95,8 @@ set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
                       CXX_STANDARD_REQUIRED YES
                       CXX_EXTENSIONS NO)
+target_include_directories(matchedFilter PUBLIC ${PUBLIC_HEADER_FILES})
+target_include_directories(matchedFilter PRIVATE ${PRIVATE_HEADER_FILES})
 #if(OpenMP_CXX_FOUND)
 #   message("yes")
 #   #target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
@@ -147,12 +154,14 @@ if (MFLIB_WRAP_PYTHON)
    install(TARGETS matchedFilter pymflib
            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 else()
    install(TARGETS matchedFilter
            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
 ##########################################################################################
