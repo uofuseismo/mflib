@@ -12,11 +12,17 @@ TEST(waveformTemplate, basic)
     double travelTime = 3;
     double df = 10;
     double onsetTime = 0.2; // Relative to trace start time
+    double mag = 4;
+    uint64_t waveID = 942;
     EXPECT_NO_THROW(tplate.setSamplingRate(df));
     EXPECT_EQ(tplate.getSamplingRate(), df);
     EXPECT_NO_THROW(tplate.setTravelTime(travelTime));
     EXPECT_EQ(tplate.getTravelTime(), travelTime);
-
+    EXPECT_NO_THROW(tplate.setMagnitude(mag));
+    EXPECT_EQ(tplate.getMagnitude(), mag);
+    EXPECT_NO_THROW(tplate.setIdentifier(waveID));
+    EXPECT_EQ(tplate.getIdentifier(), waveID);
+    
     double weight = 0.5;
     EXPECT_EQ(tplate.getShiftAndStackWeight(), 1); // Test default
     EXPECT_NO_THROW(tplate.setShiftAndStackWeight(weight));
@@ -59,6 +65,9 @@ TEST(waveformTemplate, basic)
     EXPECT_EQ(tplateCopy.getTravelTime(), travelTime);
     EXPECT_EQ(tplateCopy.getOnsetTime(), onsetTime);
     EXPECT_EQ(tplateCopy.getSignalLength(), npts);
+    EXPECT_EQ(tplateCopy.getMagnitude(), mag);
+    EXPECT_EQ(tplateCopy.getIdentifier(), waveID);
+
     EXPECT_NO_THROW(tplateCopy.getSignal(npts, &x8Ptr)); 
     for (int i=0; i<static_cast<int> (x8.size()); ++i)
     {   

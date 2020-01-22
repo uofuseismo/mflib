@@ -29,6 +29,10 @@ public:
         mSamplingRate = tplate.mSamplingRate;
         mOnsetTime = tplate.mOnsetTime;
         mTravelTime = tplate.mTravelTime;
+        mMagnitude = tplate.mMagnitude;
+        mIdentifier = tplate.mIdentifier;
+        mHaveIdentifier = tplate.mHaveIdentifier; 
+        mHaveMagnitude = tplate.mHaveMagnitude;
         // Copy the waveform
         mSignalLength = tplate.mSignalLength;
         if (mSignalLength > 0)
@@ -57,7 +61,11 @@ public:
         mShiftAndStackWeight = 1;
         mOnsetTime =-1;
         mTravelTime =-1;
+        mMagnitude = 0;
         mSignalLength = 0;
+        mIdentifier = 0;
+        mHaveMagnitude = false;
+        mHaveIdentifier = false;
     }
     
 //private:
@@ -67,12 +75,20 @@ public:
     double mSamplingRate = 0;
     /// The shift and stack weight.
     double mShiftAndStackWeight = 1;
-    /// The waveform onset time
+    /// The waveform onset time.
     double mOnsetTime =-1;
-    /// The travel time
+    /// The travel time.
     double mTravelTime =-1;
+    /// The magnitude.
+    double mMagnitude = 0;
+    /// The waveform identifier.
+    uint64_t mIdentifier = 0;
     /// The number of samples in the template waveform signal.
     int mSignalLength = 0;
+    /// Determines if the waveform identifier was set.
+    bool mHaveIdentifier = false;
+    /// Determines if the magnitude was set.
+    bool mHaveMagnitude = false;
 };
 
 /// Constructor
@@ -298,7 +314,7 @@ void WaveformTemplate::setTravelTime(const double travelTime)
 {
     if (travelTime < 0)
     {
-        throw std::invalid_argument("Travel time cannot be negative\n");
+        throw std::runtime_error("Travel time cannot be negative\n");
     }
     pImpl->mTravelTime = travelTime;
 }
@@ -308,7 +324,7 @@ double WaveformTemplate::getTravelTime() const
 {
     if (!haveTravelTime())
     {
-        throw std::invalid_argument("Travel time not yet set\n");
+        throw std::runtime_error("Travel time not yet set\n");
     }
     return pImpl->mTravelTime;
 }
@@ -318,4 +334,50 @@ bool WaveformTemplate::haveTravelTime() const noexcept
 {
     if (pImpl->mTravelTime < 0){return false;}
     return true;
+}
+
+/// Sets the identifier
+uint64_t WaveformTemplate::getIdentifier() const
+{
+    if (!haveIdentifier())
+    {
+        throw std::runtime_error("Waveform identifier not set");
+    }
+    return pImpl->mIdentifier;
+}
+
+/// Gets the identifier
+void WaveformTemplate::setIdentifier(const uint64_t id) noexcept
+{
+    pImpl->mIdentifier = id;
+    pImpl->mHaveIdentifier = true;
+}
+
+/// Do I have the identifier?
+bool WaveformTemplate::haveIdentifier() const noexcept
+{
+    return pImpl->mHaveIdentifier;
+}
+
+/// Sets the magnitude 
+double WaveformTemplate::getMagnitude() const
+{
+    if (!haveMagnitude())
+    {
+        throw std::runtime_error("Magnitude not set");
+    }
+    return pImpl->mMagnitude;
+}
+
+/// Gets the magnitude 
+void WaveformTemplate::setMagnitude(const double mag) noexcept
+{
+    pImpl->mMagnitude = mag;
+    pImpl->mHaveMagnitude = true;
+}
+
+/// Do I have the magnitude?
+bool WaveformTemplate::haveMagnitude() const noexcept
+{
+    return pImpl->mHaveMagnitude;
 }

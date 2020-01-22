@@ -200,8 +200,54 @@ public:
     double getTravelTime() const;
     /*!
      * @brief Determines if the travel time was set set.
+     * @result True indicates that the travel time was set.
      */
     bool haveTravelTime() const noexcept;
+    /*! @} */
+
+    /*! @brief Identifier
+     * @{
+     */
+    /*!
+     * @brief This is used to give the waveform template an identifier.
+     *        This can be useful when working with databases.
+     * @param[in] id   The waveform identifier.
+     */
+    void setIdentifier(uint64_t id) noexcept;
+    /*!
+     * @brief Gets the waveform identifier.
+     * @result The waveform identifier.
+     * @throws std::runtime_error if the waveform identifier was not set. 
+     * @sa \c haveIdentifier()
+     */
+    uint64_t getIdentifier() const;
+    /*!
+     * @brief Determines whether or not the waveform identifier was set.
+     * @result True indicates that the waveform identifier was set.
+     */
+    bool haveIdentifier() const noexcept;
+    /*! @} */
+
+    /*! @brief Magnitude
+     * @{
+     */
+    /*!
+     * @brief Sets the event magnitude associated with this template.
+     * @param[in] magnitude  The magnitude.
+     */
+    void setMagnitude(double magnitude) noexcept;
+    /*!
+     * @brief Gets the magnitude associated with this template.
+     * @result The magnitude associated with this template.
+     * @throws std::runtime_error if the magnitude was not set.
+     * @sa \c haveMagnitude()
+     */
+    double getMagnitude() const;
+    /*! 
+     * @brief Determines whether or not the magnitude was set.
+     * @result True indicates that the magnitude was set.
+     */
+    bool haveMagnitude() const noexcept; 
     /*! @} */
 private:
     class WaveformTemplateImpl;

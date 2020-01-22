@@ -145,6 +145,28 @@ double WaveformTemplate::getTravelTime() const
     return mWaveformTemplate->getTravelTime();
 }
 
+/// Setters/getters for magnitude
+void WaveformTemplate::setMagnitude(const double mag) noexcept
+{
+    mWaveformTemplate->setMagnitude(mag);
+}
+
+double WaveformTemplate::getMagnitude() const
+{
+    return mWaveformTemplate->getMagnitude();
+}
+
+/// Setters/getters for identifier
+void WaveformTemplate::setIdentifier(const uint64_t id) noexcept
+{
+    mWaveformTemplate->setIdentifier(id);
+}
+
+uint64_t WaveformTemplate::getIdentifier() const
+{
+    return mWaveformTemplate->getIdentifier();
+}
+
 void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
 {
     pybind11::class_<PBMFLib::WaveformTemplate> wt(m, "WaveformTemplate");
@@ -186,6 +208,20 @@ void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
     wt.def("set_phase_travel_time",
            &PBMFLib::WaveformTemplate::setTravelTime,
            "This defines the phase's travel time in seconds from the origin time.  For example, if this is 9 then it took 9 seconds for the phase to travel from the source to the receiver.  This is only necessary if you are shifting and stacking waveforms.  Note - the signal and sampling rate should be set prior to setting this property.");
+    /// The magnitude
+    wt.def("get_magnitude",
+           &PBMFLib::WaveformTemplate::getMagnitude,
+           "Gets the magnitude associated with this template.");
+    wt.def("set_magnitude",
+           &PBMFLib::WaveformTemplate::setMagnitude,
+           "Sets the magnitude associated with this template.");
+    /// The waveform identifier
+    wt.def("get_identifier",
+           &PBMFLib::WaveformTemplate::getIdentifier,
+           "Gets the template identifier.");
+    wt.def("set_identifier",
+           &PBMFLib::WaveformTemplate::setIdentifier,
+           "Sets the template identifier.  This can be useful when, for example, the waveform snippet corresponds to an arrival in a database.");
     /// Clears the class memory and resets
     wt.def("clear",
            &PBMFLib::WaveformTemplate::clear,

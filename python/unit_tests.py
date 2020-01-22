@@ -14,6 +14,8 @@ def test_waveform_template():
     shift_and_stack_weight = 0.8
     travel_time = 9 # Travel time for this phase is 9 seconds
     onset_time = .5 # Onset is .5 seconds into the signal
+    magnitude = 6
+    identifier = 4
     # Figure up the class
     wt = pymflib.WaveformTemplate()
 
@@ -36,6 +38,14 @@ def test_waveform_template():
     # Test the onset time
     wt.set_onset_time_in_signal(onset_time)
     assert wt.get_onset_time_in_signal() == onset_time, "Onset time failed"
+ 
+    # Test the magnitude
+    wt.set_magnitude(magnitude)
+    assert wt.get_magnitude() == magnitude, "Magnitude failed"
+
+    # Test the identifier
+    wt.set_identifier(identifier)
+    assert wt.get_identifier() == identifier, "Identifier failed"
 
     # Test the copy c'tor
     wt_copy = wt
@@ -44,6 +54,8 @@ def test_waveform_template():
     assert wt_copy.get_shift_and_stack_weight() == shift_and_stack_weight, "Copy shift and stack weight failed"
     assert wt_copy.get_phase_travel_time() == travel_time, "Travel time failed"
     assert wt_copy.get_onset_time_in_signal() == onset_time, "Onset time failed"
+    assert wt_copy.get_magnitude() == magnitude, "Magnitude failed"
+    assert wt_copy.get_identifier() == identifier, "Identifier failed"
 
     # Clear the module
     wt.clear()
