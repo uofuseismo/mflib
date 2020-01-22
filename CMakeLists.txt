@@ -65,7 +65,7 @@ set(PUBLIC_HEADER_DIRECTORIES
     include/mflib/
     include/mflib/singleChannel/)
 set(PRIVATE_HEADER_DIRECTORIES
-    include/mflib/private)
+    include/private)
 set(SRC
     src/version.cpp
     src/matchedFilterParameters.cpp
