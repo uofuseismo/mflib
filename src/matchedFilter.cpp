@@ -1396,5 +1396,5 @@ MatchedFilter<T>::getSpectraOfTemplate(const int it) const
 }
 
 /// Template class instantiation
-template class MatchedFilter<double>;
-template class MatchedFilter<float>;
+template class MFLib::MatchedFilter<double>;
+template class MFLib::MatchedFilter<float>;

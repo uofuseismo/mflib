@@ -68,6 +68,7 @@ set(PRIVATE_HEADER_DIRECTORIES
     include/private)
 set(SRC
     src/version.cpp
+    src/peakFinder.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/singleChannel/detector.cpp
@@ -132,6 +133,7 @@ add_executable(unitTests
                testing/matchedFilter.cpp
                testing/singleChannel.cpp
                testing/relativeMagnitude.cpp
+               testing/peakFinder.cpp
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
