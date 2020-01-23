@@ -119,11 +119,11 @@ public:
     int getNumberOfPeaks() const noexcept;
     /*!
      * @brief Gets the peaks.
-     * @param[in] maxSpace  The max number of elements in peaks.  This must
-     *                      be at least \c getNumberOfPeaks().
-     * @param[out] peaks    The indices of the peaks in the signal.
+     * @param[in] maxSpace       The max number of elements in peaks.  This must
+     *                           be at least \c getNumberOfPeaks().
+     * @param[out] peakIndices   The indices of the peaks in the signal.
      */
-    void getPeaks(int maxSpace, int peaks[]) const;
+    void getPeaks(int maxSpace, int *peaksIndices[]) const;
     /*! @} */
 private:
     class PeakFinderImpl;

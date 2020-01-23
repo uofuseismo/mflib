@@ -280,8 +280,9 @@ int PeakFinder<T>::getNumberOfPeaks() const noexcept
 
 /// Get the peaks
 template<class T>
-void PeakFinder<T>::getPeaks(const int maxx, int peaks[]) const
+void PeakFinder<T>::getPeaks(const int maxx, int *peaksIn[]) const
 {
+    int *peaks = *peaksIn;
     auto nPeaks = getNumberOfPeaks();
     if (maxx < nPeaks || peaks == nullptr)
     {
@@ -372,7 +373,8 @@ void PeakFinder<T>::apply()
         peakIndices[0] = maxes[0].second;
     }
     // Proceed with general argument
-    std::sort(maxes.begin(), maxes.end(), 
+    std::sort(std::execution::unseq,
+              maxes.begin(), maxes.end(), 
               [](const std::pair<T, int> &a, const std::pair<T, int> &b)
               {
                  return a.first > b.first; // Sort descending order
@@ -380,7 +382,7 @@ void PeakFinder<T>::apply()
     // This is the pruning stage
     auto minPeakDistance = pImpl->mMinPeakDistance;
     if (minPeakDistance > 0)
-    { 
+    {
         // First max is definitely a keeper
         int nPeaks = 1;
         peakIndices[0] = maxes[0].second;
@@ -393,7 +395,7 @@ void PeakFinder<T>::apply()
             #pragma omp simd reduction(min: dmin)
             for (int i=1; i<nPeaks; ++i)
             {
-                dmin = std::min(index, std::abs(peakIndices[i] - index));
+                dmin = std::min(dmin, std::abs(peakIndices[i] - index));
             }
             // If this peak is sufficiently far from the nearest trigger
             // then keep it
@@ -404,6 +406,8 @@ void PeakFinder<T>::apply()
             }
         }
         pImpl->mNumberOfPeaks = nPeaks;
+        // Sort for my sanity
+        std::sort(peakIndices, peakIndices+nPeaks); 
     }
     else
     {
