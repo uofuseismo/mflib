@@ -83,7 +83,7 @@ TEST(peakFinder, peakFinder)
     ref1[11] = signalSize - 1 - 67;
     ref1[12] = signalSize - 1;
     // The other peaks should be the main and second side lobes
-    for (int i=0; i<npeaks; ++i)
+    for (int i=0; i<static_cast<int> (ref1.size()); ++i)
     {
         EXPECT_EQ(peakPtr[i], ref1[i]);
     }
@@ -123,7 +123,7 @@ TEST(peakFinder, peakFinder)
     ref2[18] = signalSize - 1 - 67;
     ref2[19] = signalSize - 1 - 33;
     ref2[20] = signalSize - 1;     
-    for (int i=0; i<ref2.size(); ++i)
+    for (int i=0; i<static_cast<int> (ref2.size()); ++i)
     {
         EXPECT_EQ(ref2[i], peakPtr[i]);
         //printf("%d, %d\n", ref2[i], peakPtr[i]);
