@@ -88,6 +88,46 @@ TEST(peakFinder, peakFinder)
         EXPECT_EQ(peakPtr[i], ref1[i]);
     }
 
+    // Now let's keep those near-in peaks
+    EXPECT_NO_THROW(peaks.setThreshold(0.8));
+    EXPECT_NO_THROW(peaks.setMinimumPeakDistance(0));
+    EXPECT_EQ(peaks.getNumberOfPeaks(), 0);
+    peaks.setSignal(signal.size(), signal.data());
+    peaks.apply();
+    // 5*3 + 2*3 = 21 peaks
+    EXPECT_EQ(peaks.getNumberOfPeaks(), 21);
+    peaks.getPeaks(peaks.getNumberOfPeaks(), &peakPtr);
+    std::vector<int> ref2(21);
+    ref2[0] = 0;
+    ref2[1] = 33;
+    ref2[2] = 67; 
+
+    ref2[3] = signalSize*0.25 - 67; 
+    ref2[4] = signalSize*0.25 - 33;
+    ref2[5] = signalSize*0.25;
+    ref2[6] = signalSize*0.25 + 33;
+    ref2[7] = signalSize*0.25 + 67; 
+
+    ref2[8]  = signalSize*0.5 - 67; 
+    ref2[9]  = signalSize*0.5 - 33;
+    ref2[10] = signalSize*0.5;
+    ref2[11] = signalSize*0.5 + 33; 
+    ref2[12]  = signalSize*0.5 + 67; 
+
+    ref2[13] = signalSize*0.75 - 67; 
+    ref2[14] = signalSize*0.75 - 33;
+    ref2[15] = signalSize*0.75;
+    ref2[16] = signalSize*0.75 + 33;
+    ref2[17] = signalSize*0.75 + 67; 
+
+    ref2[18] = signalSize - 1 - 67;
+    ref2[19] = signalSize - 1 - 33;
+    ref2[20] = signalSize - 1;     
+    for (int i=0; i<ref2.size(); ++i)
+    {
+        EXPECT_EQ(ref2[i], peakPtr[i]);
+        //printf("%d, %d\n", ref2[i], peakPtr[i]);
+    }
 /*
     FILE *fout = fopen("gaussSine.txt", "w");
     //for (int i=0; i<tplate.size(); ++i)

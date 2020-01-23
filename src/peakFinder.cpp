@@ -372,17 +372,18 @@ void PeakFinder<T>::apply()
         pImpl->mNumberOfPeaks = 1;
         peakIndices[0] = maxes[0].second;
     }
-    // Proceed with general argument
-    std::sort(std::execution::unseq,
-              maxes.begin(), maxes.end(), 
-              [](const std::pair<T, int> &a, const std::pair<T, int> &b)
-              {
-                 return a.first > b.first; // Sort descending order
-              });
     // This is the pruning stage
     auto minPeakDistance = pImpl->mMinPeakDistance;
     if (minPeakDistance > 0)
     {
+        // Sort in descending order sort that we can identify the largest 
+        // detections first.
+        std::sort(std::execution::unseq,
+                  maxes.begin(), maxes.end(),
+                  [](const std::pair<T, int> &a, const std::pair<T, int> &b)
+                  {
+                     return a.first > b.first; // Sort descending order
+                  });
         // First max is definitely a keeper
         int nPeaks = 1;
         peakIndices[0] = maxes[0].second;
@@ -411,7 +412,8 @@ void PeakFinder<T>::apply()
     }
     else
     {
-        // No pruning - this is a straight copy of the peaks
+        // No pruning - this is a straight copy of the peaks which should
+        // be in order
         pImpl->mNumberOfPeaks = static_cast<int> (maxes.size());
         #pragma omp simd
         for (int i=0; i<pImpl->mNumberOfPeaks; ++i)
