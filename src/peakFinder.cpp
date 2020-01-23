@@ -320,7 +320,6 @@ void PeakFinder<T>::apply()
     auto maxElement = std::max_element(x, x+n);
     if (*maxElement < pImpl->mThreshold){return;}
     // Compute derivatives of the input signal
-    auto nbytes = static_cast<size_t> (n)*sizeof(T);
     auto dx = pImpl->mDiffX;
     // Differentiate x.
 #ifdef USE_PSTL
@@ -378,7 +377,10 @@ void PeakFinder<T>::apply()
     {
         // Sort in descending order sort that we can identify the largest 
         // detections first.
-        std::sort(std::execution::unseq,
+        std::sort(
+#ifdef USE_PSTL
+                  std::execution::unseq,
+#endif
                   maxes.begin(), maxes.end(),
                   [](const std::pair<T, int> &a, const std::pair<T, int> &b)
                   {
