@@ -210,6 +210,13 @@ PeakFinder<T>& PeakFinder<T>::operator=(PeakFinder &&peaks) noexcept
 template<class T>
 PeakFinder<T>::~PeakFinder() = default;
 
+/// Releases memory and clears class
+template<class T>
+void PeakFinder<T>::clear() noexcept
+{
+    pImpl->clear();
+}
+
 /// Sets the threshold
 template<class T>
 void PeakFinder<T>::setThreshold(const T thresh) 

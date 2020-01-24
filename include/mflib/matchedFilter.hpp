@@ -61,6 +61,15 @@ public:
      */
     void setSignal(int it, int nSamples, const T signal[]);
     /*!
+     * @brief Gets a pointer corresponding to the it'th template.
+     * @param[in] it  The signal corresponding to the it'th template.
+     * @result A pointer to the signal corresponding to the it'th template.
+     *         This is an array whose dimension is [\c getSignalLength()].
+     * @throws std::invalid_argument if it is not in the range
+     *         [0,\c getNumberOfTemplates()-1].
+     */
+    const T* getSignalPointer(int it) const;
+    /*!
      * @brief For the case when the signal corresponding to the it'th
      *        template corresponds to a dead trace this is a convenience
      *        function that allows its values to be set to 0.

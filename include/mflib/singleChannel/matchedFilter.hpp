@@ -55,16 +55,23 @@ public:
     void initialize(const MFLib::SingleChannel::MatchedFilterParameters &parameters);
 
     /*!
-     * @brief Sets the signal corresponding to the it'th template.
+     * @brief Sets the signal to matched filter.
      * @param[in] nSamples  The number of samples in the signal.
-     * @param[in] signal    The signal corresponding to the it'th template
-     *                      to set.  This is an array whose dimension is 
-     *                      [nSamples].
+     * @param[in] signal    The signalto matched filter.  This is an array
+     *                      whose dimension is [nSamples].
      * @throws std::runtime_error if the class is not initialized.
      * @throws std::invalid_argument if nSamples does not match
-     *         \c getSignalLenght() or signal is NULL.
+     *         \c getSignalLength() or signal is NULL.
      */
     void setSignal(int nSamples, const T signal[]);
+    /*! 
+     * @brief Gets a pointer to the signal to matched filter.
+     * @result A pointer to the signal to matched filter.
+     *         This is an array whose dimension is [\c getSignalLength()].
+     * @throws std::invalid_argument if the class is not initialized.
+     */
+    const T* getSignalPointer() const;
+
     /*!
      * @brief For the case when the signal is all zeros and the user does
      *        not wish to break the processing workflow.

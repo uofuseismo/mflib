@@ -72,6 +72,7 @@ set(SRC
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/singleChannel/detector.cpp
+    src/singleChannel/detection.cpp
     src/singleChannel/matchedFilterParameters.cpp
     src/singleChannel/matchedFilter.cpp
     src/singleChannel/relativeMagnitude.cpp

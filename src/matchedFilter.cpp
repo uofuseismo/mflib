@@ -902,6 +902,23 @@ void MatchedFilter<T>::setSignal(const int it, const int nSamples,
     pImpl->mSkipZeroSignal[it] = ldead;
 }
 
+/// Gets a pointer to the it'th signal
+template<class T>
+const T* MatchedFilter<T>::getSignalPointer(const int it) const
+{
+    auto nt = getNumberOfTemplates(); // throws
+    if (it < 0 || it >= nt)
+    {    
+        throw std::invalid_argument("it = " + std::to_string(it)
+                                  + " must be in the range [0,"
+                                  + std::to_string(nt-1) + "]\n");
+    }
+    auto offset = pImpl->mSamplesLeadingDimension
+                 *static_cast<size_t> (it);
+    const T *ptr = &pImpl->mInputSignals[offset];
+    return ptr;
+}
+
 /// Gets it'th matched filtered signal
 template<class T>
 std::vector<T> MatchedFilter<T>::getMatchedFilteredSignal(const int it) const

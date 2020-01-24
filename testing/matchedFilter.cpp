@@ -9,6 +9,7 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/matchedFilter.hpp"
+#include "utilities.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -85,13 +86,17 @@ TEST(matchedFilter, basicTestDouble)
     mf.initialize(options);
     auto templateSpectra = mf.getSpectraOfTemplate(0);
     EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
+    const double *waveDataPtr;
+    EXPECT_NO_THROW(waveDataPtr = mf.getSignalPointer(0));
+    auto error = infinityNorm(x.size(), x.data(), waveDataPtr); 
+    EXPECT_LT(error, 1.e-14);
+
     EXPECT_FALSE(mf.haveMatchedFilteredSignals());
 
     EXPECT_NO_THROW(mf.apply());
     EXPECT_TRUE(mf.haveMatchedFilteredSignals());
     std::vector<double> result;
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
-    double error;
     ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("%e\n", error);
@@ -108,6 +113,9 @@ TEST(matchedFilter, basicTestDouble)
     EXPECT_NO_THROW(mf.setSignal(1, signalSize, x2.data()));
     EXPECT_NO_THROW(mf.setSignal(2, signalSize, x.data()));
     EXPECT_NO_THROW(mf.setSignal(3, signalSize, x2.data()));
+    EXPECT_NO_THROW(waveDataPtr = mf.getSignalPointer(3));
+    error = infinityNorm(signalSize, x2.data(), waveDataPtr); 
+    EXPECT_LT(error, 1.e-14);
     EXPECT_EQ(mf.getNumberOfTemplates(), 4);
     EXPECT_NO_THROW(mf.apply());
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));

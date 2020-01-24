@@ -56,6 +56,14 @@ void MatchedFilter<T>::setSignal(
     pImpl->mMF.setSignal(is, nSamples, signal); // Throws
 }
 
+/// Gets a pointer to the signal to matched filter
+template<class T>
+const T* MatchedFilter<T>::getSignalPointer() const
+{
+    constexpr int is = 0;  // Always the first signal
+    return pImpl->mMF.getSignalPointer(is);
+}
+
 /// Zeros a signal
 template<class T>
 void MatchedFilter<T>::zeroSignal()

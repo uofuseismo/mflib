@@ -134,6 +134,11 @@ TEST(singleChannelMatchedFilter, testDouble)
     // Recover it
     EXPECT_NO_THROW(mf.initialize(parms));
     EXPECT_NO_THROW(mf.setSignal(wave.size(), wave.data()));
+    const double *waveDataPtr;
+    EXPECT_NO_THROW(waveDataPtr = mf.getSignalPointer());
+    auto error = infinityNorm(wave.size(), wave.data(), waveDataPtr);
+    EXPECT_LT(error, 1.e-14);
+
     EXPECT_NO_THROW(mf.apply());
     // Get the correlations 
     auto xc1 = mf.getMatchedFilteredSignal(0);
@@ -147,7 +152,7 @@ TEST(singleChannelMatchedFilter, testDouble)
     auto xcRef3 = naivePearsonCorrelation(static_cast<int> (tp3.size()), tp3.data(),
                                           signalSize, wave.data());
     // Compare
-    auto error = infinityNorm(xc1.size(), xc1.data(), xcRef1.data());
+    error = infinityNorm(xc1.size(), xc1.data(), xcRef1.data());
     EXPECT_LT(error, 1.e-12);
     error = infinityNorm(xc2.size(), xc2.data(), xcRef2.data());
     EXPECT_LT(error, 1.e-12);
