@@ -86,7 +86,7 @@ TEST(matchedFilter, basicTestDouble)
     mf.initialize(options);
     auto templateSpectra = mf.getSpectraOfTemplate(0);
     EXPECT_NO_THROW(mf.setSignal(0, signalSize, x.data()));
-    const double *waveDataPtr;
+    const double *waveDataPtr = nullptr;
     EXPECT_NO_THROW(waveDataPtr = mf.getSignalPointer(0));
     auto error = infinityNorm(x.size(), x.data(), waveDataPtr); 
     EXPECT_LT(error, 1.e-14);
