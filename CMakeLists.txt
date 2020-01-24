@@ -109,6 +109,7 @@ target_include_directories(matchedFilter PRIVATE ${PRIVATE_HEADER_FILES})
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
+               python/singleChannel/detection.cpp 
                python/singleChannel/matchedFilterParameters.cpp
                python/singleChannel/matchedFilter.cpp
                python/singleChannel/relativeMagnitude.cpp

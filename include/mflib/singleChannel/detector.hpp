@@ -66,7 +66,7 @@ public:
      * @brief Gets a reference to the last detection.
      */ 
     //const MFLib::SingleChannel::Detection<T>& end() const;
-    const MFLib::SingleChannel::Detection<T>& operator[](const size_t i) const;
+    const MFLib::SingleChannel::Detection<T>& operator[](size_t i) const;
 private:
     class DetectorImpl;
     std::unique_ptr<DetectorImpl> pImpl;

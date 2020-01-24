@@ -5,7 +5,7 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/enums.hpp"
 #include "pyWaveformTemplate.hpp"
-#include "pySingleChannelRelativeMagnitude.hpp"
+#include "singleChannel/pyRelativeMagnitude.hpp"
 
 using namespace PBMFLib::SingleChannel;
 
@@ -25,7 +25,7 @@ RelativeMagnitude<T>::RelativeMagnitude(const RelativeMagnitude &rmag)
 
 /// Copy assignment operator
 template<class T>
-RelativeMagnitude<T>
+RelativeMagnitude<T>& 
 RelativeMagnitude<T>::operator=(const RelativeMagnitude &rmag)
 {
     if (&rmag == this){return *this;}

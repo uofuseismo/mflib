@@ -26,7 +26,7 @@ public:
     /// Copy c'tor
     RelativeMagnitude(const RelativeMagnitude &rmag);
     /// Copy assignment operator
-    RelativeMagnitude operator=(const RelativeMagnitude &rmag);
+    RelativeMagnitude& operator=(const RelativeMagnitude &rmag);
     /// Destructor
     ~RelativeMagnitude();
     /// Initialize

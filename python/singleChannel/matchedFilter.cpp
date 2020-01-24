@@ -3,8 +3,8 @@
 #include "mflib/singleChannel/matchedFilter.hpp"
 #include "mflib/singleChannel/matchedFilterParameters.hpp"
 #include "mflib/enums.hpp"
-#include "pySingleChannelMatchedFilter.hpp"
-#include "pySingleChannelMatchedFilterParameters.hpp"
+#include "singleChannel/pyMatchedFilter.hpp"
+#include "singleChannel/pyMatchedFilterParameters.hpp"
 
 using namespace PBMFLib::SingleChannel;
 

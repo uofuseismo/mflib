@@ -4,7 +4,7 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "pyWaveformTemplate.hpp"
-#include "pySingleChannelMatchedFilterParameters.hpp"
+#include "singleChannel/pyMatchedFilterParameters.hpp"
 
 using namespace PBMFLib::SingleChannel;
 

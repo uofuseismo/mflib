@@ -269,9 +269,46 @@ def test_single_channel_relative_magnitude():
     mag2Ref = 1./2.*np.log10(np.dot(ytd, ytd)/(np.dot(xtd, xtd)))
     assert np.abs(mag1Ref - mag1) < 1.e-14, 'gibbons-ringdal failed'
     assert np.abs(mag2Ref - mag2) < 1.e-14, 'schaff-richards failed'
+
+def test_single_channel_detection():
+    print("Single channel detection test...")
+    onset_time = 4
+    detection_time = 2
+    signal_size = 400
+    xt = np.random.uniform( 5, 7, signal_size) 
+    detection = pymflib.SingleChannelDetection()
+ 
+    assert not detection.have_phase_onset_time(), 'onset time bool not failed'
+    detection.set_phase_onset_time(onset_time)
+    assert detection.have_phase_onset_time(), 'onset time bool failed'
+    assert detection.get_phase_onset_time() == onset_time, 'phase onset time failed'
+
+    assert not detection.have_detection_time(), 'detection bool not failed'
+    detection.set_detection_time(detection_time)
+    assert detection.have_detection_time(), 'detection time bool failed'
+    assert detection.get_detection_time() == detection_time, 'detection time failed'
+
+    assert not detection.have_detected_signal(), 'detection signal bool not failed'
+    detection.set_detected_signal(xt)
+    assert detection.have_detected_signal(), 'detected signal bool failed'
+    xback = detection.get_detected_signal()
+    assert np.max(np.abs(xback - xt)) < 1.e-14, 'detected signal not recovered'
+
+    # Test copy c'tor
+    det_copy = detection
+    assert det_copy.have_phase_onset_time(), 'copy onset time bool failed'
+    assert det_copy.get_phase_onset_time() == onset_time, 'copy phase onset time failed'
+    assert det_copy.have_detection_time(), 'copy detection time bool failed'
+    assert det_copy.get_detection_time() == detection_time, 'copy detection time failed'
+    xback = det_copy.get_detected_signal()
+    assert np.max(np.abs(xback - xt)) < 1.e-14, 'copy detected signal not recovered'
+
+
+    #assert np.max(np.abs(xback - xb)) < 1.e-14, 'detected signal not recovered'
  
 if __name__ == "__main__":
     test_matched_filter_parameters()
     test_matched_filtering()
     test_single_channel_matched_filtering()
     test_single_channel_relative_magnitude()
+    test_single_channel_detection()
