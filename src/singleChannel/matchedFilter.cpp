@@ -47,6 +47,14 @@ void MatchedFilter<T>::initialize(
     pImpl->mMF.initialize(parms);    
 }
 
+/// Gets a template
+template<class T>
+MFLib::WaveformTemplate
+MatchedFilter<T>::getWaveformTemplate(const int it) const
+{
+    return pImpl->mMF.getWaveformTemplate(it);
+}
+
 /// Sets a signal
 template<class T>
 void MatchedFilter<T>::setSignal(

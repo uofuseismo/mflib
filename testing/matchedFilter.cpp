@@ -78,8 +78,8 @@ TEST(matchedFilter, basicTestDouble)
     bt2.setSamplingRate(1);
     bt.setTravelTime(0);
     bt2.setTravelTime(0);
-    bt.setOnsetTime(0);
-    bt2.setOnsetTime(0);
+    bt.setPhaseOnsetTime(0);
+    bt2.setPhaseOnsetTime(0);
     options.addTemplate(bt); //b.size(), b.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 1);
     // Initialize the matched filter
@@ -192,8 +192,8 @@ TEST(matchedFilter, basicTestFloat)
     bt2.setSamplingRate(1);
     bt.setTravelTime(0);
     bt2.setTravelTime(0);
-    bt.setOnsetTime(0);
-    bt2.setOnsetTime(0);
+    bt.setPhaseOnsetTime(0);
+    bt2.setPhaseOnsetTime(0);
     options.addTemplate(bt); //b.size(), b.data());
     EXPECT_EQ(options.getNumberOfTemplates(), 1);
     // Initialize the matched filter
@@ -331,9 +331,9 @@ TEST(matchedFilter, shiftAndStack)
     bt1.setTravelTime(tt1);
     bt2.setTravelTime(tt2);
     bt3.setTravelTime(tt3);
-    bt1.setOnsetTime(toff1);
-    bt2.setOnsetTime(toff2);
-    bt3.setOnsetTime(toff3);
+    bt1.setPhaseOnsetTime(toff1);
+    bt2.setPhaseOnsetTime(toff2);
+    bt3.setPhaseOnsetTime(toff3);
 
     options.setMatchedFilterImplementation(MatchedFilterImplementation::AUTO);
     options.setSignalSize(signalSize);

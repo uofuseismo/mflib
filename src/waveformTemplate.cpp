@@ -27,7 +27,7 @@ public:
         if (&tplate == this){return *this;}
         mShiftAndStackWeight = tplate.mShiftAndStackWeight;
         mSamplingRate = tplate.mSamplingRate;
-        mOnsetTime = tplate.mOnsetTime;
+        mPhaseOnsetTime = tplate.mPhaseOnsetTime;
         mTravelTime = tplate.mTravelTime;
         mMagnitude = tplate.mMagnitude;
         mIdentifier = tplate.mIdentifier;
@@ -59,7 +59,7 @@ public:
         mSignal = nullptr;
         mSamplingRate = 0;
         mShiftAndStackWeight = 1;
-        mOnsetTime =-1;
+        mPhaseOnsetTime =-1;
         mTravelTime =-1;
         mMagnitude = 0;
         mSignalLength = 0;
@@ -76,7 +76,7 @@ public:
     /// The shift and stack weight.
     double mShiftAndStackWeight = 1;
     /// The waveform onset time.
-    double mOnsetTime =-1;
+    double mPhaseOnsetTime =-1;
     /// The travel time.
     double mTravelTime =-1;
     /// The magnitude.
@@ -144,7 +144,7 @@ void WaveformTemplate::setSamplingRate(const double samplingRate)
                                   + std::to_string(samplingRate)
                                   + " must be positive\n");
     }
-    pImpl->mOnsetTime =-1;
+    pImpl->mPhaseOnsetTime =-1;
     pImpl->mSamplingRate = samplingRate;
 }
 
@@ -191,7 +191,7 @@ void WaveformTemplate::setSignal(const int npts,
         if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
         throw std::invalid_argument("x is NULL");
     }
-    pImpl->mOnsetTime =-1;
+    pImpl->mPhaseOnsetTime =-1;
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
@@ -210,7 +210,7 @@ void WaveformTemplate::setSignal(const int npts,
         if (npts < 1){throw std::invalid_argument("npts must be positive\n");}
         throw std::invalid_argument("x is NULL");
     }
-    pImpl->mOnsetTime =-1;
+    pImpl->mPhaseOnsetTime =-1;
     pImpl->mSignalLength = npts;
     if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
     pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
@@ -271,7 +271,7 @@ bool WaveformTemplate::haveSignal() const noexcept
 }
 
 /// Sets the onset time
-void WaveformTemplate::setOnsetTime(const double onsetTime)
+void WaveformTemplate::setPhaseOnsetTime(const double onsetTime)
 {
     if (onsetTime < 0)
     {
@@ -289,23 +289,23 @@ void WaveformTemplate::setOnsetTime(const double onsetTime)
                                   + " cannot exceed maxOnsetTime = "
                                   + std::to_string(maxOnsetTime) + "\n");
     }
-    pImpl->mOnsetTime = onsetTime;
+    pImpl->mPhaseOnsetTime = onsetTime;
 }
 
 /// Gets the onset time
-double WaveformTemplate::getOnsetTime() const
+double WaveformTemplate::getPhaseOnsetTime() const
 {
-    if (!haveOnsetTime())
+    if (!havePhaseOnsetTime())
     {
         throw std::runtime_error("Onset time not set\n");
     }
-    return pImpl->mOnsetTime;
+    return pImpl->mPhaseOnsetTime;
 }
 
 /// Do I have the onset time?
-bool WaveformTemplate::haveOnsetTime() const noexcept
+bool WaveformTemplate::havePhaseOnsetTime() const noexcept
 {
-    if (pImpl->mOnsetTime < 0){return false;}
+    if (pImpl->mPhaseOnsetTime < 0){return false;}
     return true;
 }
 

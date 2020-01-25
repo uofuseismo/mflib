@@ -575,9 +575,9 @@ void MatchedFilter<double>::initialize(
         double df = t.getSamplingRate(); 
         if (lCanStack)
         {
-            if (t.haveOnsetTime() && t.haveTravelTime())
+            if (t.havePhaseOnsetTime() && t.haveTravelTime())
             {
-                auto tdiff = t.getTravelTime() - t.getOnsetTime();
+                auto tdiff = t.getTravelTime() - t.getPhaseOnsetTime();
                 auto nshift = static_cast<int> (tdiff*df + 0.5);
                 double wt = t.getShiftAndStackWeight();
                 pImpl->mShiftAndWeight.push_back(std::pair(nshift, wt));
@@ -725,9 +725,9 @@ void MatchedFilter<float>::initialize(
         double df = t.getSamplingRate();
         if (lCanStack)
         {
-            if (t.haveOnsetTime() && t.haveTravelTime())
+            if (t.havePhaseOnsetTime() && t.haveTravelTime())
             {
-                auto tdiff = t.getTravelTime() - t.getOnsetTime();
+                auto tdiff = t.getTravelTime() - t.getPhaseOnsetTime();
                 auto nshift = static_cast<int> (tdiff*df + 0.5);
                 double wt = t.getShiftAndStackWeight();
                 pImpl->mShiftAndWeight.push_back(std::pair(nshift, wt));
@@ -839,6 +839,21 @@ void MatchedFilter<T>::zeroSignal(const int it)
     std::fill(ptr, ptr+ns, 0);
 #endif
     pImpl->mSkipZeroSignal[it] = true;
+}
+
+/// Gets the waveform template for the it'th signal
+template<class T>
+MFLib::WaveformTemplate
+MatchedFilter<T>::getWaveformTemplate(const int it) const
+{
+    auto nt = getNumberOfTemplates(); // throws
+    if (it < 0 || it >= nt)
+    {
+        throw std::invalid_argument("it = " + std::to_string(it)
+                                  + " must be in the range [0,"
+                                  + std::to_string(nt-1) + "]\n");
+    }
+    return pImpl->mParameters.getTemplate(it);
 }
 
 /// Sets the it'th signal

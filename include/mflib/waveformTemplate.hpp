@@ -146,8 +146,8 @@ public:
      * @{
      */
     /*!
-     * @brief Sets the time in seconds relative to the trace where the onset
-     *        occurs.  
+     * @brief Sets the time in seconds relative to the trace where the
+     *        phase onset occurs.  
      * @param[in] onsetTime  The onset time in seconds where the pick occurs.
      *                       For example, if the pick is 2 seconds into the
      *                       the trace, i.e., there is `noise' 2 seconds prior
@@ -158,21 +158,21 @@ public:
      * @sa \c haveSignal(), \c haveSamplingRate().
      * @note This is invalidated whenever the sampling period or signal is set.
      */ 
-    void setOnsetTime(double onsetTime);
+    void setPhaseOnsetTime(double onsetTime);
     /*!
-     * @brief Gets the onset time.
+     * @brief Gets the phase onset time.
      * @result The time, relative to the trace start, where the pick occurs.
      *         For example, if 2, then 2 seconds into the trace is where the
      *         pick was made.
      * @throws std::runtime_error if the onset time was not set.
-     * @sa \c haveOnsetTime()
+     * @sa \c havePhaseOnsetTime()
      */
-    double getOnsetTime() const;
+    double getPhaseOnsetTime() const;
     /*!
      * @brief Determines if the onset time was set.
      * @result True indicates that the onset time was set.
      */
-    bool haveOnsetTime() const noexcept;
+    bool havePhaseOnsetTime() const noexcept;
     /*!@ } */
 
     /*! @brief Travel Time (Required for Shifting)

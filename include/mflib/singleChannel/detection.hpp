@@ -141,6 +141,7 @@ public:
      * @result The time of the detection relative to the start of the trace
      *         in seconds.
      * @throws std::runtime_error if the detection time was not set.
+     * @sa \c haveDetectionTime()
      */
     double getDetectionTime() const;
     /*!
@@ -149,6 +150,30 @@ public:
      * @throws std::runtime_error if the detection time was not set.
      */
     bool haveDetectionTime() const noexcept;
+
+    /*! 
+     * @brief The interpolated time corresponding to the detection.
+     *        This time can have subsample resolution.
+     * @param[in] time  The interpolated time of the detection relative
+     *                  to the trace start in seconds.
+     * @throws std::invalid_argument if the detection time is negative.
+     */
+    void setInterpolatedDetectionTime(double time);    
+    /*! 
+     * @brief Gets the interpolated time corresponding to the detection.
+     *        This time can have subsample resolution.
+     * @result The interpolated time of the detection relative to the start of
+     *         the trace in seconds.
+     * @throws std::runtime_error if the detection time was not set.
+     * @sa \c haveInterpolatedDetectionTime()
+     */
+    double getInterpolatedDetectionTime() const;
+    /*! 
+     * @brief Determines if the interpolated detection time was set.
+     * @result True indicates that the detection time was set.
+     * @throws std::runtime_error if the detection time was not set.
+     */
+    bool haveInterpolatedDetectionTime() const noexcept; 
     /*! @} */
 
     /*! @brief Phase Onset Time
@@ -174,6 +199,29 @@ public:
      * @result True indicates that the phase onset time was set.
      */
     bool havePhaseOnsetTime() const noexcept;
+
+    /*!
+     * @brief Sets the interpolated phase onset time.  This time can have
+     *        subsample resolution.
+     * @param[in] onsetTime   The onset time of the phase relative to the
+     *                        start of the trace in seconds.
+     * @throws std::invalid_argument if the onset time is negative.
+     */
+    void setInterpolatedPhaseOnsetTime(double onsetTime);
+    /*!
+     * @brief Gets the interpolated onset time of the phase.  This time can
+     *        have subsample resolution.
+     * @result The phase onset time relative to the start of the trace
+     *         in seconds.
+     * @throws std::runtime_error if the phase onset time was not set.
+     * @sa \c haveInterpolatedPhaseOnsetTime()
+     */
+    double getInterpolatedPhaseOnsetTime() const;
+    /*!
+     * @brief Determines if the phase onset time was set.
+     * @result True indicates that the phase onset time was set.
+     */
+    bool haveInteroplatedPhaseOnsetTime() const noexcept;
     /*! @} */
 
     /*! 

@@ -19,6 +19,7 @@ void MFLib::MPI::Broadcast(WaveformTemplate &tplate, const int root,
     double *signalPtr = nullptr;
     double samplingRate = 0;
     double weight =-1;
+    double onsetTime =-1;
     int nSamples = 0;
     // Have root extract data
     if (root == myid)
@@ -34,10 +35,15 @@ void MFLib::MPI::Broadcast(WaveformTemplate &tplate, const int root,
             signalPtr = signal.data();
             tplate.getSignal(nSamples, &signalPtr);
         }
+        if (tplate.havePhaseOnsetTime())
+        {
+            onsetTime = tplate.getPhaseOnsetTime();
+        }
         weight = tplate.getShiftAndStackWeight();
     }
     MPI_Bcast(&samplingRate, 1, MPI_DOUBLE_PRECISION, root, comm);
     MPI_Bcast(&weight,       1, MPI_DOUBLE_PRECISION, root, comm);
+    MPI_Bcast(&onsetTime,    1, MPI_DOUBLE_PRECISION, root, comm);
     MPI_Bcast(&nSamples,     1, MPI_INTEGER, root, comm);
     if (nSamples > 0)
     {
@@ -51,5 +57,6 @@ void MFLib::MPI::Broadcast(WaveformTemplate &tplate, const int root,
         if (samplingRate > 0){tplate.setSamplingRate(samplingRate);}
         tplate.setShiftAndStackWeight(weight);
         if (nSamples > 0){tplate.setSignal(nSamples, signal.data());}
+        if (onsetTime > 0){tplate.setPhaseOnsetTime(onsetTime);}
     }
 }

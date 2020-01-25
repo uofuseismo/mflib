@@ -36,8 +36,8 @@ def test_waveform_template():
     assert wt.get_phase_travel_time() == travel_time, "Travel time failed"
 
     # Test the onset time
-    wt.set_onset_time_in_signal(onset_time)
-    assert wt.get_onset_time_in_signal() == onset_time, "Onset time failed"
+    wt.set_phase_onset_time_in_signal(onset_time)
+    assert wt.get_phase_onset_time_in_signal() == onset_time, "Onset time failed"
  
     # Test the magnitude
     wt.set_magnitude(magnitude)
@@ -53,7 +53,7 @@ def test_waveform_template():
     assert wt_copy.get_sampling_rate() == sampling_rate, "Copy sampling rate failed"
     assert wt_copy.get_shift_and_stack_weight() == shift_and_stack_weight, "Copy shift and stack weight failed"
     assert wt_copy.get_phase_travel_time() == travel_time, "Travel time failed"
-    assert wt_copy.get_onset_time_in_signal() == onset_time, "Onset time failed"
+    assert wt_copy.get_phase_onset_time_in_signal() == onset_time, "Onset time failed"
     assert wt_copy.get_magnitude() == magnitude, "Magnitude failed"
     assert wt_copy.get_identifier() == identifier, "Identifier failed"
 
@@ -87,12 +87,12 @@ def test_matched_filter_parameters():
     onset_time = 0.05
     sas_weight = 0.8
     wf1.set_shift_and_stack_weight(sas_weight)
-    wf1.set_onset_time_in_signal(onset_time)
+    wf1.set_phase_onset_time_in_signal(onset_time)
     wf1.set_shift_and_stack_weight(sas_weight)
     wf1.set_phase_travel_time(travel_time)
 
     wf2.set_shift_and_stack_weight(sas_weight)
-    wf2.set_onset_time_in_signal(onset_time)
+    wf2.set_phase_onset_time_in_signal(onset_time)
     wf2.set_shift_and_stack_weight(sas_weight)
     wf2.set_phase_travel_time(travel_time)
 
@@ -110,7 +110,7 @@ def test_matched_filter_parameters():
         wt_back = mf_parameters.get_template(i)
         assert wt_back.get_sampling_rate() == sampling_rate, "sampling rate copy failed"
         assert wt_back.get_shift_and_stack_weight() == sas_weight, "sas weight copy failed"
-        assert wt_back.get_onset_time_in_signal() == onset_time, "onset time copy failed"
+        assert wt_back.get_phase_onset_time_in_signal() == onset_time, "onset time copy failed"
         assert wt_back.get_phase_travel_time() == travel_time, "ttime copy failed"
         t_back = wt_back.get_signal()
         if (i == 0):

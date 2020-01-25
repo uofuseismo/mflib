@@ -61,7 +61,7 @@ TEST(peakFinder, peakFinder)
     auto peakPtr = peakIndices.data();
     // Should have 3*3 + 2*2 = 13 peaks
     EXPECT_EQ(npeaks, 13);
-    peaks.getPeaks(npeaks, &peakPtr);
+    peaks.getPeakIndices(npeaks, &peakPtr);
     // The first and last peak should be at the end points.
     // The other peaks should be the main and second side lobes
     std::vector<int> ref1(13);
@@ -96,7 +96,7 @@ TEST(peakFinder, peakFinder)
     peaks.apply();
     // 5*3 + 2*3 = 21 peaks
     EXPECT_EQ(peaks.getNumberOfPeaks(), 21);
-    peaks.getPeaks(peaks.getNumberOfPeaks(), &peakPtr);
+    peaks.getPeakIndices(peaks.getNumberOfPeaks(), &peakPtr);
     std::vector<int> ref2(21);
     ref2[0] = 0;
     ref2[1] = 33;

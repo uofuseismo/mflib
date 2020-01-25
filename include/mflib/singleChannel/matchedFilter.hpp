@@ -3,6 +3,7 @@
 #include <memory>
 #include <complex>
 #include <vector>
+#include "mflib/waveformTemplate.hpp"
 namespace MFLib
 {
 namespace SingleChannel
@@ -54,6 +55,16 @@ public:
      */
     void initialize(const MFLib::SingleChannel::MatchedFilterParameters &parameters);
 
+    /*! 
+     * @brief Gets the it'th waveform template.
+     * @param[in] it   The template index.
+     * @throws std::runtime_error if the class is not initialized.
+     * @throws std::invalid_argument if the it'the template is not in the
+     *         range [0, \c getNumberOfTemplates()-1].
+     * @result The waveform template corresponding to the it'th template.
+     * @sa \c getNumberOfTemplates()
+     */
+    MFLib::WaveformTemplate getWaveformTemplate(int it) const;
     /*!
      * @brief Sets the signal to matched filter.
      * @param[in] nSamples  The number of samples in the signal.

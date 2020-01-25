@@ -111,7 +111,7 @@ double WaveformTemplate::getShiftAndStackWeight() const
 }
 
 /// Setters/getters for onset time
-void WaveformTemplate::setOnsetTime(const double onsetTime)
+void WaveformTemplate::setPhaseOnsetTime(const double onsetTime)
 {
     if (onsetTime < 0)
     {
@@ -119,12 +119,12 @@ void WaveformTemplate::setOnsetTime(const double onsetTime)
                                   + std::to_string(onsetTime)
                                   + " must be positive\n");
     }
-    mWaveformTemplate->setOnsetTime(onsetTime);
+    mWaveformTemplate->setPhaseOnsetTime(onsetTime);
 }
 
-double WaveformTemplate::getOnsetTime() const
+double WaveformTemplate::getPhaseOnsetTime() const
 {
-    return mWaveformTemplate->getOnsetTime();
+    return mWaveformTemplate->getPhaseOnsetTime();
 }
 
 /// Setters/getters for travel time
@@ -195,11 +195,11 @@ void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
            &PBMFLib::WaveformTemplate::setShiftAndStackWeight,
            "Weight used when shifting and stacking correlations.  This must be in the range of [0,1].  By default this is unity.  This parameter need only be set if you are shifting and stacking waveforms.");
     /// The arrival onset (relative to the trace start)
-    wt.def("get_onset_time_in_signal",
-           &PBMFLib::WaveformTemplate::getOnsetTime,
+    wt.def("get_phase_onset_time_in_signal",
+           &PBMFLib::WaveformTemplate::getPhaseOnsetTime,
            "The phase onset time of the relative to the signal start in seconds.");
-    wt.def("set_onset_time_in_signal",
-           &PBMFLib::WaveformTemplate::setOnsetTime,
+    wt.def("set_phase_onset_time_in_signal",
+           &PBMFLib::WaveformTemplate::setPhaseOnsetTime,
            "This defines the arrival onset time in seconds relative to the template signal start.  For example, if this is 2, then 2 seconds into the template signal is the expected arrival onset.  This is only necessary if you are shifting and stacking waveforms.  Note - the signal and sampling rate should be set prior to setting this property.");
     /// The travel time 
     wt.def("get_phase_travel_time",

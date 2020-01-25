@@ -287,7 +287,7 @@ int PeakFinder<T>::getNumberOfPeaks() const noexcept
 
 /// Get the peaks
 template<class T>
-void PeakFinder<T>::getPeaks(const int maxx, int *peaksIn[]) const
+void PeakFinder<T>::getPeakIndices(const int maxx, int *peaksIn[]) const
 {
     int *peaks = *peaksIn;
     auto nPeaks = getNumberOfPeaks();
@@ -302,7 +302,16 @@ void PeakFinder<T>::getPeaks(const int maxx, int *peaksIn[]) const
         throw std::invalid_argument("peaks is NULL\n");
     }
     if (nPeaks < 1){return;} // Nothing to do
-    copy(nPeaks, pImpl->mPeakIndices, peaks);
+    auto peaksIndicesPtr = getPeakIndicesPointer();
+    copy(nPeaks, peaksIndicesPtr, peaks);
+}
+
+template<class T>
+const int *PeakFinder<T>::getPeakIndicesPointer() const
+{
+    auto nPeaks = getNumberOfPeaks();
+    if (nPeaks < 1){return nullptr;} // Nothing to do
+    return pImpl->mPeakIndices;
 }
 
 /// Does the hardwork of computing the peaks.

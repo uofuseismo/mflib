@@ -3,6 +3,7 @@
 #include <memory>
 #include <complex>
 #include <vector>
+#include "mflib/waveformTemplate.hpp"
 namespace MFLib
 {
 class MatchedFilterParameters;
@@ -47,6 +48,17 @@ public:
      */
     void initialize(const MatchedFilterParameters &parameters);
 
+    /*!
+     * @brief Gets the it'th waveform template corresponding to the it'th
+     *        signal..
+     * @param[in] it   The template index.
+     * @throws std::runtime_error if the class is not initialized.
+     * @throws std::invalid_argument if the it'the template is not in the
+     *         range [0, \c getNumberOfTemplates()-1].
+     * @result The waveform template corresponding to the it'th template.
+     * @sa \c getNumberOfTemplates()
+     */
+    MFLib::WaveformTemplate getWaveformTemplate(int it) const;
     /*!
      * @brief Sets the signal corresponding to the it'th template.
      * @param[in] it        The signal corresponds to the it'th template.

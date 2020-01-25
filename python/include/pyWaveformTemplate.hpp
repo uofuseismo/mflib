@@ -30,8 +30,8 @@ public:
     void setSamplingRate(double samplingRate);
     double getSamplingRate() const;
     /// Onset time
-    void setOnsetTime(double onsetTime);
-    double getOnsetTime() const;
+    void setPhaseOnsetTime(double onsetTime);
+    double getPhaseOnsetTime() const;
     /// Travel time
     void setTravelTime(double travelTime);
     double getTravelTime() const; 
