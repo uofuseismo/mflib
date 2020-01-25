@@ -231,14 +231,17 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &xc)
                                          peakIndex,
                                          dt,
                                          pImpl->mUseAbsoluteValue);
-        auto refinedDetectionTime = detectionTime + shift;
+        auto intDetTime = detectionTime + shift;
         pImpl->mDetections[i].setDetectionTime(detectionTime);
-        //pImpl->mDetections[i].setInterpolatedDetectionTime(refinedDetectionTime);
+        pImpl->mDetections[i].setInterpolatedDetectionTime(intDetTime);
         // Try getting the phase onset time
         if (templates[it].havePhaseOnsetTime())
         {
             auto pickTime = detectionTime + templates[it].getPhaseOnsetTime();
+            auto intPickTime = intDetTime
+                             + templates[it].getPhaseOnsetTime();
             pImpl->mDetections[i].setPhaseOnsetTime(pickTime);
+            pImpl->mDetections[i].setInterpolatedPhaseOnsetTime(intPickTime);
         }
     }
     // Cleanup
