@@ -22,19 +22,23 @@ TEST(singleChannelDetection, detection)
     double intDetectionTime = 2;
     double onsetTime = 3;
     double intOnsetTime = 4; 
+    uint64_t id = 20;
 
+    EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
     EXPECT_FALSE(det.haveDetectionTime());
     EXPECT_FALSE(det.haveInterpolatedDetectionTime());
     EXPECT_FALSE(det.havePhaseOnsetTime());
     EXPECT_FALSE(det.haveInterpolatedPhaseOnsetTime());
 
+    EXPECT_NO_THROW(det.setTemplateIdentifier(id));
     EXPECT_NO_THROW(det.setDetectedSignal(signal.size(), signal.data()));
     EXPECT_NO_THROW(det.setDetectionTime(detectionTime));
     EXPECT_NO_THROW(det.setInterpolatedDetectionTime(intDetectionTime));
     EXPECT_NO_THROW(det.setPhaseOnsetTime(onsetTime));
     EXPECT_NO_THROW(det.setInterpolatedPhaseOnsetTime(intOnsetTime));
- 
+
+    EXPECT_EQ(det.getTemplateIdentifier(), id); 
     EXPECT_EQ(det.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(det.getDetectedSignal(npts, &sigPtr));
     error = infinityNorm(npts, sigPtr, signal.data());
@@ -45,6 +49,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(det.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14); 
 
     Detection detCopy(det);
+    EXPECT_EQ(detCopy.getTemplateIdentifier(), id);
     EXPECT_EQ(detCopy.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(detCopy.getDetectedSignal(npts, &sigPtr));
     error = infinityNorm(npts, sigPtr, signal.data());
@@ -56,6 +61,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(detCopy.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14);
 
     det.clear();
+    EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
     EXPECT_FALSE(det.haveDetectionTime());
     EXPECT_FALSE(det.haveInterpolatedDetectionTime());

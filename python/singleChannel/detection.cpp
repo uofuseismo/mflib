@@ -164,6 +164,29 @@ bool Detection<T>::haveDetectionTime() const noexcept
     return mDetection->haveDetectionTime();
 }
 
+// Interpolated detection time
+template<class T>
+void Detection<T>::setInterpolatedDetectionTime(const double time)
+{
+    if (time < 0)
+    {
+        throw std::invalid_argument("Detection time must be positive\n");
+    }   
+    mDetection->setInterpolatedDetectionTime(time);
+}
+
+template<class T>
+double Detection<T>::getInterpolatedDetectionTime() const
+{
+    return mDetection->getInterpolatedDetectionTime();
+}
+
+template<class T>
+bool Detection<T>::haveInterpolatedDetectionTime() const noexcept
+{
+    return mDetection->haveInterpolatedDetectionTime();
+}
+
 /// Onset time
 template<class T>
 void Detection<T>::setPhaseOnsetTime(const double time) 
@@ -186,6 +209,30 @@ bool Detection<T>::havePhaseOnsetTime() const noexcept
 {
     return mDetection->havePhaseOnsetTime();
 }
+
+/// Interpolated onset time
+template<class T>
+void Detection<T>::setInterpolatedPhaseOnsetTime(const double time) 
+{
+    if (time < 0)
+    {
+        throw std::invalid_argument("Onset time must be positive\n");
+    }
+    mDetection->setInterpolatedPhaseOnsetTime(time);
+}
+
+template<class T>
+double Detection<T>::getInterpolatedPhaseOnsetTime() const
+{
+    return mDetection->getInterpolatedPhaseOnsetTime();
+}
+
+template<class T>
+bool Detection<T>::haveInterpolatedPhaseOnsetTime() const noexcept
+{
+    return mDetection->haveInterpolatedPhaseOnsetTime();
+}
+
 
 /// Gets the native class
 template<class T>
@@ -223,6 +270,16 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_detection_time",
                    &PBMFLib::SingleChannel::Detection<double>::haveDetectionTime,
                    "Determines if the detection time was set.");
+    /// Interpolated detection time 
+    mDetDouble.def("get_interpolated_detection_time",
+                   &PBMFLib::SingleChannel::Detection<double>::getInterpolatedDetectionTime,
+                   "Gets the interpolated detection time in seconds relative to the trace start.  This can have subsampling-rate resolution.");
+    mDetDouble.def("set_interpolated_detection_time",
+                   &PBMFLib::SingleChannel::Detection<double>::setInterpolatedDetectionTime,
+                   "Sets the detection time in seconds relative to the trace start.  This can ahve subsampling-rate resolution.");
+    mDetDouble.def("have_interpolated_detection_time",
+                   &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedDetectionTime,
+                   "Determines if the interpolated detection time was set.");
     // Phase onset time
     mDetDouble.def("get_phase_onset_time",
                    &PBMFLib::SingleChannel::Detection<double>::getPhaseOnsetTime,
@@ -233,6 +290,16 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_phase_onset_time",
                    &PBMFLib::SingleChannel::Detection<double>::havePhaseOnsetTime,
                    "Determines if the phase onset time is set.");
+    // Phase onset time
+    mDetDouble.def("get_interpolated_phase_onset_time",
+                   &PBMFLib::SingleChannel::Detection<double>::getInterpolatedPhaseOnsetTime,
+                   "Gets the interpolated phase onset time in seconds relative to the trace start.  This time can have subsampling-rate resolution.  This likely will only be accessible if the phase onsets were set in the waveform templates.");
+    mDetDouble.def("set_interpolated_phase_onset_time",
+                   &PBMFLib::SingleChannel::Detection<double>::setInterpolatedPhaseOnsetTime,
+                   "Sets the phase onset time in seconds relative to the trace start.  This time can have subsampling-rate resolution.");
+    mDetDouble.def("have_interpolated_phase_onset_time",
+                   &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedPhaseOnsetTime,
+                   "Determines if the interpolated phase onset time is set.");
     // Clears
     mDetDouble.def("clear",
                    &PBMFLib::SingleChannel::Detection<double>::clear,

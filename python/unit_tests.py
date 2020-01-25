@@ -273,7 +273,10 @@ def test_single_channel_relative_magnitude():
 def test_single_channel_detection():
     print("Single channel detection test...")
     onset_time = 4
+    onset_int_time = 9
     detection_time = 2
+    det_int_time = 3
+    phase_int_time = 6
     signal_size = 400
     xt = np.random.uniform( 5, 7, signal_size) 
     detection = pymflib.SingleChannelDetection()
@@ -283,10 +286,20 @@ def test_single_channel_detection():
     assert detection.have_phase_onset_time(), 'onset time bool failed'
     assert detection.get_phase_onset_time() == onset_time, 'phase onset time failed'
 
+    assert not detection.have_interpolated_phase_onset_time(), 'int onset time bool not failed'
+    detection.set_interpolated_phase_onset_time(onset_int_time)
+    assert detection.have_interpolated_phase_onset_time(), 'int onset time bool failed'
+    assert detection.get_interpolated_phase_onset_time() == onset_int_time, 'int phase onset time failed'
+
     assert not detection.have_detection_time(), 'detection bool not failed'
     detection.set_detection_time(detection_time)
     assert detection.have_detection_time(), 'detection time bool failed'
     assert detection.get_detection_time() == detection_time, 'detection time failed'
+
+    assert not detection.have_interpolated_detection_time(), 'interp detection bool not failed'
+    detection.set_interpolated_detection_time(det_int_time)
+    assert detection.have_interpolated_detection_time(), 'interp detection time bool failed'
+    assert detection.get_interpolated_detection_time() == det_int_time, 'interp detection time failed'
 
     assert not detection.have_detected_signal(), 'detection signal bool not failed'
     detection.set_detected_signal(xt)
@@ -297,9 +310,12 @@ def test_single_channel_detection():
     # Test copy c'tor
     det_copy = detection
     assert det_copy.have_phase_onset_time(), 'copy onset time bool failed'
+    assert det_copy.have_interpolated_phase_onset_time(), 'copy int time bool failed'
     assert det_copy.get_phase_onset_time() == onset_time, 'copy phase onset time failed'
+    assert det_copy.get_interpolated_phase_onset_time(), 'copy int phase onset time failed'
     assert det_copy.have_detection_time(), 'copy detection time bool failed'
     assert det_copy.get_detection_time() == detection_time, 'copy detection time failed'
+    assert det_copy.get_interpolated_detection_time() == det_int_time, 'copy int detection time failed'
     xback = det_copy.get_detected_signal()
     assert np.max(np.abs(xback - xt)) < 1.e-14, 'copy detected signal not recovered'
 

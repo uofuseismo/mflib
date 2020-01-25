@@ -31,7 +31,7 @@ public:
     /// Operators
     Detection& operator=(const Detection &parms);
     Detection& operator=(Detection &&parms) noexcept;
-    //p Waveform identifier
+    /// Waveform identifier
     void setTemplateIdentifier(uint64_t id) noexcept;
     uint64_t getTemplateIdentifier() const;
     bool haveTemplateIdentifier() const noexcept;
@@ -44,10 +44,18 @@ public:
     void setDetectionTime(double time);
     double getDetectionTime() const;
     bool haveDetectionTime() const noexcept;
+    /// Onset time
+    void setInterpolatedDetectionTime(double time);
+    double getInterpolatedDetectionTime() const;
+    bool haveInterpolatedDetectionTime() const noexcept;
     /// Phase onset time
     void setPhaseOnsetTime(double onsetTime);
     double getPhaseOnsetTime() const;
     bool havePhaseOnsetTime() const noexcept; 
+    /// Phase onset time
+    void setInterpolatedPhaseOnsetTime(double onsetTime);
+    double getInterpolatedPhaseOnsetTime() const;
+    bool haveInterpolatedPhaseOnsetTime() const noexcept;
     ///
     MFLib::SingleChannel::Detection<T> getNativeClass() const;
 private:
