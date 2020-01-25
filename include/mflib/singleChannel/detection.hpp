@@ -221,7 +221,7 @@ public:
      * @brief Determines if the phase onset time was set.
      * @result True indicates that the phase onset time was set.
      */
-    bool haveInteroplatedPhaseOnsetTime() const noexcept;
+    bool haveInterpolatedPhaseOnsetTime() const noexcept;
     /*! @} */
 
     /*! 

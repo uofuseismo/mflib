@@ -13,11 +13,15 @@ class Detection<T>::DetectionImpl
 public:
     std::vector<T> mDetectedSignal;
     double mDetectionTime = 0;
+    double mInterpolatedDetectionTime = 0;
     double mPhaseOnsetTime = 0;
+    double mInterpolatedPhaseOnsetTime = 0;
     uint64_t mTemplateID = 0;
     bool mHaveDetectedSignal = false;
     bool mHaveDetectionTime = false;
+    bool mHaveInterpolatedDetectionTime = false;
     bool mHavePhaseOnsetTime = false;
+    bool mHaveInterpolatedPhaseOnsetTime = false;
     bool mHaveTemplateID = false;
     bool mHaveDetection = false;
 };
@@ -71,10 +75,14 @@ void Detection<T>::clear() noexcept
 {
     pImpl->mDetectedSignal.clear();
     pImpl->mDetectionTime = 0;
+    pImpl->mInterpolatedDetectionTime = 0;
     pImpl->mPhaseOnsetTime = 0;
+    pImpl->mInterpolatedPhaseOnsetTime = 0;
     pImpl->mTemplateID = 0;
     pImpl->mHaveDetectionTime = false;
+    pImpl->mHaveInterpolatedDetectionTime = false;
     pImpl->mHavePhaseOnsetTime = false;
+    pImpl->mHaveInterpolatedPhaseOnsetTime = false;
     pImpl->mHaveTemplateID = false;
     pImpl->mHaveDetectedSignal = false;
     pImpl->mHaveDetection = false;
@@ -201,6 +209,35 @@ bool Detection<T>::haveDetectionTime() const noexcept
     return pImpl->mHaveDetectionTime;
 }
 
+/// The interpolated detection time
+template<class T>
+void Detection<T>::setInterpolatedDetectionTime(const double time)
+{
+    pImpl->mHaveInterpolatedDetectionTime = false;
+    if (time < 0)
+    {
+        throw std::invalid_argument("Detection onset time must be positive\n");
+    }
+    pImpl->mInterpolatedDetectionTime = time;
+    pImpl->mHaveInterpolatedDetectionTime = true;
+}
+
+template<class T>
+double Detection<T>::getInterpolatedDetectionTime() const
+{
+    if (!haveInterpolatedDetectionTime())
+    {
+        throw std::invalid_argument("Detection time not yet set\n");
+    }
+    return pImpl->mInterpolatedDetectionTime;
+}
+
+template<class T>
+bool Detection<T>::haveInterpolatedDetectionTime() const noexcept
+{
+    return pImpl->mHaveInterpolatedDetectionTime;
+}
+
 /// The phase onset time
 template<class T>
 void Detection<T>::setPhaseOnsetTime(const double time)
@@ -230,6 +267,34 @@ bool Detection<T>::havePhaseOnsetTime() const noexcept
     return pImpl->mHavePhaseOnsetTime;
 }
 
+/// The interpolated phase onset time
+template<class T>
+void Detection<T>::setInterpolatedPhaseOnsetTime(const double time)
+{
+    pImpl->mHaveInterpolatedPhaseOnsetTime = false;
+    if (time < 0)
+    {
+        throw std::invalid_argument("Phase onset time must be positive\n");
+    }
+    pImpl->mInterpolatedPhaseOnsetTime = time;
+    pImpl->mHaveInterpolatedPhaseOnsetTime = true;
+}
+
+template<class T>
+double Detection<T>::getInterpolatedPhaseOnsetTime() const
+{
+    if (!haveInterpolatedPhaseOnsetTime())
+    {
+        throw std::invalid_argument("Phase onset time not yet set\n");
+    }
+    return pImpl->mInterpolatedPhaseOnsetTime;
+}
+
+template<class T>
+bool Detection<T>::haveInterpolatedPhaseOnsetTime() const noexcept
+{
+    return pImpl->mHaveInterpolatedPhaseOnsetTime;
+}
 /// Determines if I have a detection
 /*
 template<class T>

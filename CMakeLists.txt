@@ -136,6 +136,7 @@ add_executable(unitTests
                testing/singleChannel.cpp
                testing/relativeMagnitude.cpp
                testing/peakFinder.cpp
+               testing/detection.cpp
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
