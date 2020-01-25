@@ -134,7 +134,7 @@ TEST(singleChannelMatchedFilter, testDouble)
     // Recover it
     EXPECT_NO_THROW(mf.initialize(parms));
     EXPECT_NO_THROW(mf.setSignal(wave.size(), wave.data()));
-    const double *waveDataPtr;
+    const double *waveDataPtr = nullptr;
     EXPECT_NO_THROW(waveDataPtr = mf.getSignalPointer());
     auto error = infinityNorm(wave.size(), wave.data(), waveDataPtr);
     EXPECT_LT(error, 1.e-14);
