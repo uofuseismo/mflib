@@ -105,7 +105,7 @@ template<class T>
 void Detection<T>::clear() noexcept
 {
     pImpl->mDetectedSignal.clear();
-    for (int i=0; i<pImpl->mAmplitudes.size(); ++i)
+    for (int i=0; i<static_cast<int> (pImpl->mAmplitudes.size()); ++i)
     {
         pImpl->mAmplitudes[i].clear();
     }

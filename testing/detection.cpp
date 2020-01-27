@@ -63,17 +63,15 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(det.getAmplitudeScalingFactor(
                 MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
                 alphaGR, 1.e-14);
-    EXPECT_NEAR(det.getAmplitudeScalingFactor(
-                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
-                alphaSR, 1.e-14);
-    /*
     EXPECT_NEAR(det.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
                 magGR, 1.e-14);
+    EXPECT_NEAR(det.getAmplitudeScalingFactor(
+                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
+                alphaSR, 1.e-14);
     EXPECT_NEAR(det.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
                 magSR, 1.e-14);
-    */
 
     Detection detCopy(det);
     EXPECT_EQ(detCopy.getTemplateIdentifier(), id);
@@ -92,14 +90,13 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(detCopy.getAmplitudeScalingFactor(
                 MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
                 alphaSR, 1.e-14);
-    /*
     EXPECT_NEAR(detCopy.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
                 magGR, 1.e-14);
     EXPECT_NEAR(detCopy.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
                 magSR, 1.e-14);
-    */
+
     det.clear();
     EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
