@@ -3,15 +3,46 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <array>
 #include "mflib/singleChannel/detection.hpp"
+#include "mflib/singleChannel/relativeMagnitude.hpp"
 
 using namespace MFLib::SingleChannel;
+
+namespace 
+{
+
+int magTypeToIndex(const MFLib::RelativeMagnitudeType type)
+{
+    if (type == MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006)
+    {
+        return 0;
+    }
+    return 1;
+}
+ 
+template<class T>
+struct Amplitude
+{
+    void clear() noexcept
+    {
+        mScalingFactor = 0;
+        mMagnitudePerturbation = 0;
+        mSet = false;
+    }
+    T mScalingFactor = 0;
+    T mMagnitudePerturbation = 0;
+    bool mSet = false;
+};
+
+}
 
 template<class T>
 class Detection<T>::DetectionImpl
 {
 public:
     std::vector<T> mDetectedSignal;
+    std::array<Amplitude<T>, 2> mAmplitudes;
     double mDetectionTime = 0;
     double mInterpolatedDetectionTime = 0;
     double mPhaseOnsetTime = 0;
@@ -74,6 +105,10 @@ template<class T>
 void Detection<T>::clear() noexcept
 {
     pImpl->mDetectedSignal.clear();
+    for (int i=0; i<pImpl->mAmplitudes.size(); ++i)
+    {
+        pImpl->mAmplitudes[i].clear();
+    }
     pImpl->mDetectionTime = 0;
     pImpl->mInterpolatedDetectionTime = 0;
     pImpl->mPhaseOnsetTime = 0;
@@ -295,6 +330,71 @@ bool Detection<T>::haveInterpolatedPhaseOnsetTime() const noexcept
 {
     return pImpl->mHaveInterpolatedPhaseOnsetTime;
 }
+
+/// Sets the amplitude scaling factor
+template<class T>
+void Detection<T>::setAmplitudeScalingFactor(
+    const T value,
+    const MFLib::RelativeMagnitudeType type)
+{
+    auto idx = magTypeToIndex(type);
+    pImpl->mAmplitudes[idx].mScalingFactor = 1;
+    pImpl->mAmplitudes[idx].mMagnitudePerturbation = 0;
+    pImpl->mAmplitudes[idx].mSet = false;
+    if (value <= 0)
+    {
+        throw std::invalid_argument("Scaling factor = "
+                                  + std::to_string(value)
+                                  + " must be positive\n");
+    }
+    pImpl->mAmplitudes[idx].mScalingFactor = value;
+    pImpl->mAmplitudes[idx].mMagnitudePerturbation
+        = convertAmplitudeScalingFactorToMagnitudePerturbation(value);
+    pImpl->mAmplitudes[idx].mSet = true;
+}
+
+template<class T>
+T Detection<T>::getAmplitudeScalingFactor(
+    const MFLib::RelativeMagnitudeType type) const
+{
+    if (!haveAmplitudeScalingFactor(type))
+    {
+        throw std::runtime_error("Scaling factor not yet set for this type\n");
+    }
+    auto idx = magTypeToIndex(type);
+    return pImpl->mAmplitudes[idx].mScalingFactor;
+}
+
+template<class T>
+T Detection<T>::getMagnitudePerturbation(
+    const MFLib::RelativeMagnitudeType type) const
+{
+    if (!haveMagnitudePerturbation(type))
+    {
+        throw std::runtime_error("Mag pert not yet set for this type\n");
+    }
+    auto idx = magTypeToIndex(type);
+    return pImpl->mAmplitudes[idx].mMagnitudePerturbation;
+}
+
+/// Determines if this amplitude perturbation is set
+template<class T>
+bool Detection<T>::haveAmplitudeScalingFactor(
+    const MFLib::RelativeMagnitudeType type) const noexcept
+{
+    return haveMagnitudePerturbation(type);
+}
+
+/// Determines if this magnitude perturbation is set
+template<class T>
+bool Detection<T>::haveMagnitudePerturbation(
+    const MFLib::RelativeMagnitudeType type) const noexcept
+{
+    auto idx = magTypeToIndex(type);
+    return pImpl->mAmplitudes[idx].mSet;
+}
+
+
 /// Determines if I have a detection
 /*
 template<class T>

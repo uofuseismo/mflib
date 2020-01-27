@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include "mflib/singleChannel/detection.hpp"
+#include "mflib/singleChannel/relativeMagnitude.hpp"
 #include "utilities.hpp"
 #include <gtest/gtest.h>
 
@@ -22,6 +23,10 @@ TEST(singleChannelDetection, detection)
     double intDetectionTime = 2;
     double onsetTime = 3;
     double intOnsetTime = 4; 
+    double alphaGR = 10;  // Scaling factor
+    double alphaSR = 100; 
+    auto magGR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaGR);
+    auto magSR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaSR);
     uint64_t id = 20;
 
     EXPECT_FALSE(det.haveTemplateIdentifier());
@@ -30,6 +35,10 @@ TEST(singleChannelDetection, detection)
     EXPECT_FALSE(det.haveInterpolatedDetectionTime());
     EXPECT_FALSE(det.havePhaseOnsetTime());
     EXPECT_FALSE(det.haveInterpolatedPhaseOnsetTime());
+    EXPECT_FALSE(det.haveAmplitudeScalingFactor(
+        MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
+    EXPECT_FALSE(det.haveAmplitudeScalingFactor(
+        MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 
     EXPECT_NO_THROW(det.setTemplateIdentifier(id));
     EXPECT_NO_THROW(det.setDetectedSignal(signal.size(), signal.data()));
@@ -37,6 +46,10 @@ TEST(singleChannelDetection, detection)
     EXPECT_NO_THROW(det.setInterpolatedDetectionTime(intDetectionTime));
     EXPECT_NO_THROW(det.setPhaseOnsetTime(onsetTime));
     EXPECT_NO_THROW(det.setInterpolatedPhaseOnsetTime(intOnsetTime));
+    EXPECT_NO_THROW(det.setAmplitudeScalingFactor(alphaGR,
+                    MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
+    EXPECT_NO_THROW(det.setAmplitudeScalingFactor(alphaSR,
+                    MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 
     EXPECT_EQ(det.getTemplateIdentifier(), id); 
     EXPECT_EQ(det.getDetectedSignalLength(), npts);
@@ -47,6 +60,20 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(det.getInterpolatedDetectionTime(), intDetectionTime, 1.e-14);
     EXPECT_NEAR(det.getPhaseOnsetTime(), onsetTime, 1.e-14);
     EXPECT_NEAR(det.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14); 
+    EXPECT_NEAR(det.getAmplitudeScalingFactor(
+                MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
+                alphaGR, 1.e-14);
+    EXPECT_NEAR(det.getAmplitudeScalingFactor(
+                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
+                alphaSR, 1.e-14);
+    /*
+    EXPECT_NEAR(det.getMagnitudePerturbation(
+                MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
+                magGR, 1.e-14);
+    EXPECT_NEAR(det.getMagnitudePerturbation(
+                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
+                magSR, 1.e-14);
+    */
 
     Detection detCopy(det);
     EXPECT_EQ(detCopy.getTemplateIdentifier(), id);
@@ -59,7 +86,20 @@ TEST(singleChannelDetection, detection)
                 intDetectionTime, 1.e-14);
     EXPECT_NEAR(detCopy.getPhaseOnsetTime(), onsetTime, 1.e-14);
     EXPECT_NEAR(detCopy.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14);
-
+    EXPECT_NEAR(detCopy.getAmplitudeScalingFactor(
+                MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
+                alphaGR, 1.e-14);
+    EXPECT_NEAR(detCopy.getAmplitudeScalingFactor(
+                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
+                alphaSR, 1.e-14);
+    /*
+    EXPECT_NEAR(detCopy.getMagnitudePerturbation(
+                MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
+                magGR, 1.e-14);
+    EXPECT_NEAR(detCopy.getMagnitudePerturbation(
+                MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
+                magSR, 1.e-14);
+    */
     det.clear();
     EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
@@ -67,6 +107,10 @@ TEST(singleChannelDetection, detection)
     EXPECT_FALSE(det.haveInterpolatedDetectionTime());
     EXPECT_FALSE(det.havePhaseOnsetTime());
     EXPECT_FALSE(det.haveInterpolatedPhaseOnsetTime());
+    EXPECT_FALSE(det.haveAmplitudeScalingFactor(
+        MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
+    EXPECT_FALSE(det.haveAmplitudeScalingFactor(
+        MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 }
 
 }

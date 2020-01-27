@@ -388,10 +388,33 @@ T RelativeMagnitude<T>::computeMagnitudePerturbation(
     const MFLib::RelativeMagnitudeType type) const
 {
     auto alpha = computeAmplitudeScalingFactor(type); 
-    return std::log10(alpha); 
+    return convertAmplitudeScalingFactorToMagnitudePerturbation(alpha);
+}
+
+template<>
+double MFLib::SingleChannel::convertAmplitudeScalingFactorToMagnitudePerturbation(const double alpha)
+{
+    if (alpha <= 0)
+    { 
+        throw std::invalid_argument("Scaling factor = "
+                                  + std::to_string(alpha)
+                                  + " must be positive\n");
+    }
+    return std::log10(alpha);
+}
+
+template<>
+float MFLib::SingleChannel::convertAmplitudeScalingFactorToMagnitudePerturbation(const float alpha)
+{
+    if (alpha <= 0)
+    {   
+        throw std::invalid_argument("Scaling factor = "
+                                  + std::to_string(alpha)
+                                  + " must be positive\n");
+    }   
+    return std::log10(alpha);
 }
 
 /// Template class instantiation
 template class MFLib::SingleChannel::RelativeMagnitude<double>;
 template class MFLib::SingleChannel::RelativeMagnitude<float>;
-

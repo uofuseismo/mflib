@@ -36,14 +36,23 @@ enum class MatchedFilterDetectionMode
  */
 enum class RelativeMagnitudeType
 {
-    GIBBONS_RINGDAL_2006, /*!< This finds the optimal scalar to match the 
-                                amplitude of the template waveform to the
-                                detected waveform. */
-    SCHAFF_RICHARDS_2014  /*!< This finds a scalar to match the amplitude
-                               of the template waveform to the detected
-                               waveform whilst including a correction for
-                               the fact that the template and detected event
-                               have a noise contribution. */
+    GIBBONS_RINGDAL_2006 = 0, /*!< This finds the optimal scalar to match the 
+                                   amplitude of the template waveform to the
+                                   detected waveform. */
+    SCHAFF_RICHARDS_2014 = 1 /*!< This finds a scalar to match the amplitude
+                                  of the template waveform to the detected
+                                  waveform whilst including a correction for
+                                  the fact that the template and detected event
+                                  have a noise contribution. */
+};
+
+enum class MaximumMatchedFilterPolicy
+{
+    MAXIMUM = 0,          /*!< Selects the optima of the matched filtered
+                               signals by locating the maximum values. */
+    ABSOLUTE_MAXIMUM = 1  /*!< Selects the optima of the matched filtered
+                               signals by first computing the absolute value
+                               and then locating the maximum values. */
 };
 
 

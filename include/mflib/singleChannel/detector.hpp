@@ -38,8 +38,14 @@ public:
     void clear() noexcept;
     /*!
      * @brief Initializes the detector class.
+     * @param[in] parameters  The detector parameters.
+     * @param[in] mf          The class containing the matched-filtered signals.
+     *                        This must be initialized.
+     * @throws std::invalid_argument if the parameters are invalid or the
+     *         matched filtering class is not initialized.
      */ 
-//    void initialize(std::shared_ptr<const MFLib::SingleChannel::MatchedFilter<T>> xc);
+    void initialize(const MFLib::SingleChannel::DetectorParameters &parameters,
+                    const MFLib::SingleChannel::MatchedFilter<T> &mf);
     /*!
      * @brief Converts the correlation coefficients from the matched filter
      *        to detections.

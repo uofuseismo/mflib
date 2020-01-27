@@ -133,7 +133,7 @@ public:
      *         detected waveform has not been set.
      * @sa \c isInitialized(), \c haveDetectedSignal()
      */
-    T computeAmplitudeScalingFactor(const MFLib::RelativeMagnitudeType type) const;
+    T computeAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const;
     /*! 
      * @brief Computes the magnitude perturbation.  For example, if using
      *        the Gibbons and Ringdal, 2006 method this will compute 
@@ -145,12 +145,25 @@ public:
      *         detected waveform has not been set.
      * @sa \c isInitialized(), \c haveDetectedSignal()
      */
-    T computeMagnitudePerturbation(const MFLib::RelativeMagnitudeType type) const;
+    T computeMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;
     /*! @} */
 private:
     class RelativeMagnitudeImpl;
     mutable std::unique_ptr<RelativeMagnitudeImpl> pImpl;
 };
+/*!
+ * @brief Converts an amplitude scaling factor to a magnitude perturbation.
+ *        This works by computing the \f$ \log_{10} \alpha \f$ of the input
+ *        value.
+ * @param[in] alpha   The amplitude scaling factor from which to compute the
+ *                    corresponding magnitude perturbation.  This perturbation
+ *                    should be added to the original magnitude to compute a
+ *                    relative magnitude.
+ * @throws std::invalid_argument if \f$ \alpha \f$ is not positive. 
+ * @result The corresponding magnitude perturbation.
+ */
+template<class T>
+T convertAmplitudeScalingFactorToMagnitudePerturbation(T alpha);
 }
 }
 #endif

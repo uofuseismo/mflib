@@ -1,6 +1,7 @@
 #ifndef MFLIB_SINGLECHANNEL_DETECTION_HPP
 #define MFLIB_SINGLECHANNEL_DETECTION_HPP
 #include <memory>
+#include "mflib/enums.hpp"
 namespace MFLib
 {
 namespace SingleChannel
@@ -222,6 +223,54 @@ public:
      * @result True indicates that the phase onset time was set.
      */
     bool haveInterpolatedPhaseOnsetTime() const noexcept;
+    /*! @} */
+
+    /*! @name Relative Amplitudes and Magnitudes
+     * @{ 
+     */
+    /*!
+     * @brief Sets the amplitude scaling factor for the given magnitude type.
+     * @param[in] value   The amplitude scaling factor that best scales the
+     *                    template waveform to the detected waveform.
+     * @param[in] type    The corresponding amplitude/magnitude type.
+     * @throws std::invalid_argument if value is not positive.
+     */
+    void setAmplitudeScalingFactor(T value,
+                                   MFLib::RelativeMagnitudeType type);
+    /*!
+     * @brief Gets the amplitude scaling factor corresponding to the given 
+     *        magnitude type.
+     * @param[in] type   The desired amplitude/magnitude type.
+     * @result The amplitude scaling factor that best scales the template
+     *         waveform to the detected waveform.
+     * @throws std::runtime_error if the amplitude corresponding to this
+     *         magnitude type was not set. 
+     * @sa \c haveRelativeAmplitude()
+     */ 
+    T getAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const;
+    /*! 
+     * @brief Gets the magnitude perturbation corresponding to the given 
+     *        magnitude type.
+     * @param[in] type   The desired amplitude/magnitude type.
+     * @result The magnitude perturbation that should be added to the original
+     *         magnitude to compute a relative magnitude.
+     * @throws std::runtime_error if the amplitude corresponding to this
+     *         magnitude type was not set. 
+     * @sa \c haveMagnitudePerturbation()
+     */ 
+    T getMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;
+    /*!
+     * @brief Determines if the given relative amplitude scaling factor is set.
+     * @aram[in] type    The desired amplitude/magnitude type.
+     * @result True indicates that the given magnitude type is set.
+     */
+    bool haveAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const noexcept;
+    /*! 
+     * @brief Determines if the given magnitude perturbation is set.
+     * @aram[in] type    The desired amplitude/magnitude type.
+     * @result True indicates that the given magnitude type is set.
+     */
+    bool haveMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const noexcept;
     /*! @} */
 
     /*! 
