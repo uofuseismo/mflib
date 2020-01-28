@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(mflib VERSION 0.2.0 LANGUAGES CXX)
+project(mflib VERSION 0.2.1 LANGUAGES CXX)
 enable_testing()
 
 include(CheckCXXCompilerFlag)
