@@ -6,6 +6,7 @@
 #include "singleChannel/pyMatchedFilter.hpp"
 #include "singleChannel/pyRelativeMagnitude.hpp"
 #include "singleChannel/pyDetection.hpp"
+#include "singleChannel/pyDetectorParameters.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
@@ -20,6 +21,7 @@ PYBIND11_MODULE(pymflib, m)
     PBMFLib::SingleChannel::initializeMatchedFilter(scModule);
     PBMFLib::SingleChannel::initializeRelativeMagnitude(scModule);
     PBMFLib::SingleChannel::initializeDetection(scModule);
+    PBMFLib::SingleChannel::initializeDetectorParameters(scModule);
 
     pybind11::module mcModule = m.def_submodule("MultiChannel");
     PBMFLib::initializeMultiChannelMatchedFilterParameters(mcModule);

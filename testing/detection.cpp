@@ -19,6 +19,7 @@ TEST(singleChannelDetection, detection)
     for (int i=1; i<npts+1; ++i){signal[i-1] = i;}
     double error;
     double *sigPtr = sigTest.data();
+    double similarity = 0.8;
     double detectionTime = 1;
     double intDetectionTime = 2;
     double onsetTime = 3;
@@ -29,6 +30,7 @@ TEST(singleChannelDetection, detection)
     auto magSR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaSR);
     uint64_t id = 20;
 
+    EXPECT_FALSE(det.haveCorrelationCoefficient());
     EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
     EXPECT_FALSE(det.haveDetectionTime());
@@ -40,6 +42,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_FALSE(det.haveAmplitudeScalingFactor(
         MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 
+    EXPECT_NO_THROW(det.setCorrelationCoefficient(similarity));
     EXPECT_NO_THROW(det.setTemplateIdentifier(id));
     EXPECT_NO_THROW(det.setDetectedSignal(signal.size(), signal.data()));
     EXPECT_NO_THROW(det.setDetectionTime(detectionTime));
@@ -51,6 +54,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NO_THROW(det.setAmplitudeScalingFactor(alphaSR,
                     MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 
+    EXPECT_NEAR(det.getCorrelationCoefficient(), similarity, 1.e-14);
     EXPECT_EQ(det.getTemplateIdentifier(), id); 
     EXPECT_EQ(det.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(det.getDetectedSignal(npts, &sigPtr));
@@ -74,6 +78,7 @@ TEST(singleChannelDetection, detection)
                 magSR, 1.e-14);
 
     Detection detCopy(det);
+    EXPECT_NEAR(detCopy.getCorrelationCoefficient(), similarity, 1.e-14);
     EXPECT_EQ(detCopy.getTemplateIdentifier(), id);
     EXPECT_EQ(detCopy.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(detCopy.getDetectedSignal(npts, &sigPtr));
@@ -98,6 +103,7 @@ TEST(singleChannelDetection, detection)
                 magSR, 1.e-14);
 
     det.clear();
+    EXPECT_FALSE(det.haveCorrelationCoefficient());
     EXPECT_FALSE(det.haveTemplateIdentifier());
     EXPECT_FALSE(det.haveDetectedSignal());
     EXPECT_FALSE(det.haveDetectionTime());

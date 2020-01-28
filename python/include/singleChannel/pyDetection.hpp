@@ -31,6 +31,10 @@ public:
     /// Operators
     Detection& operator=(const Detection &parms);
     Detection& operator=(Detection &&parms) noexcept;
+    /// Correlation coefficient
+    void setCorrelationCoefficient(double xc);
+    double getCorrelationCoefficient() const;
+    bool haveCorrelationCoefficient() const noexcept;
     /// Waveform identifier
     void setTemplateIdentifier(uint64_t id) noexcept;
     uint64_t getTemplateIdentifier() const;

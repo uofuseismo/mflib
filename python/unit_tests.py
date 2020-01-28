@@ -273,13 +273,25 @@ def test_single_channel_relative_magnitude():
 def test_single_channel_detection():
     print("Single channel detection test...")
     onset_time = 4
+    template_id = 204
     onset_int_time = 9
     detection_time = 2
+    xc_val = 0.3
     det_int_time = 3
     phase_int_time = 6
     signal_size = 400
     xt = np.random.uniform( 5, 7, signal_size) 
     detection = pymflib.SingleChannel.Detection()
+
+    assert not detection.have_template_identifier(), 'template id bool not failed'
+    detection.set_template_identifier(template_id)
+    assert detection.have_template_identifier(), 'template id bool failed'
+    assert detection.get_template_identifier() == template_id, 'template id failed'
+
+    assert not detection.have_correlation_coefficient(), 'xc coeff bool not failed'
+    detection.set_correlation_coefficient(xc_val)
+    assert detection.have_correlation_coefficient(), 'onset xc coeff bool failed'
+    assert detection.get_correlation_coefficient() == xc_val, 'xc val failed'
  
     assert not detection.have_phase_onset_time(), 'onset time bool not failed'
     detection.set_phase_onset_time(onset_time)
@@ -309,6 +321,10 @@ def test_single_channel_detection():
 
     # Test copy c'tor
     det_copy = detection
+    assert det_copy.have_template_identifier(), 'copy template id bool failed'
+    assert det_copy.get_template_identifier() == template_id, 'copy template id failed'
+    assert det_copy.have_correlation_coefficient(), 'copy xc val bool failed'
+    assert det_copy.get_correlation_coefficient(), 'copy xc val failed'
     assert det_copy.have_phase_onset_time(), 'copy onset time bool failed'
     assert det_copy.have_interpolated_phase_onset_time(), 'copy int time bool failed'
     assert det_copy.get_phase_onset_time() == onset_time, 'copy phase onset time failed'
@@ -319,12 +335,37 @@ def test_single_channel_detection():
     xback = det_copy.get_detected_signal()
     assert np.max(np.abs(xback - xt)) < 1.e-14, 'copy detected signal not recovered'
 
-
     #assert np.max(np.abs(xback - xb)) < 1.e-14, 'detected signal not recovered'
- 
+
+def test_single_channel_detector_parameters():
+    print("Single channel detector parameters test...")
+    parms = pymflib.SingleChannel.DetectorParameters()
+    min_spacing = 5 # samples
+    det_tol = 0.5 # detection tolerance
+    get_wave = True
+
+    parms.set_maxima_policy(parms.MaxmimumMatchedFilterPolicy.absolute_maximum)
+    parms.set_minimum_detection_spacing(min_spacing)
+    parms.set_detection_threshold(det_tol)
+    parms.toggle_get_detected_waveform(get_wave)
+
+    assert parms.get_maxima_policy() == parms.MaxmimumMatchedFilterPolicy.absolute_maximum, 'max policy failed'
+    assert parms.get_minimum_detection_spacing() == min_spacing, 'min spacing failed'
+    assert parms.get_detection_threshold() == det_tol, 'det tol failed'
+    assert parms.get_detected_waveform(), 'get det wave failed'
+
+    # Test copy c'tor
+    parms_copy = parms 
+    assert parms_copy.get_maxima_policy() == parms.MaxmimumMatchedFilterPolicy.absolute_maximum, 'copy max policy failed'
+    assert parms_copy.get_minimum_detection_spacing() == min_spacing, 'copy min spacing failed'
+    assert parms_copy.get_detection_threshold() == det_tol, 'copy det tol failed'
+    assert parms_copy.get_detected_waveform(), 'copy get det wave failed'
+
+
 if __name__ == "__main__":
     test_matched_filter_parameters()
     test_matched_filtering()
     test_single_channel_matched_filtering()
     test_single_channel_relative_magnitude()
     test_single_channel_detection()
+    test_single_channel_detector_parameters()

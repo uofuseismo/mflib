@@ -87,6 +87,29 @@ public:
     bool haveTemplateIdentifier() const noexcept;
     /*! @} */
 
+    /*! @name Similarity Score
+     * @{
+     */
+    /*!
+     * @brief Sets the correlation coefficient of the detection.
+     * @param[in] value  The value of the correlation coefficient.
+     * @throws std::invalid_argument if value is not in the range [-1,1].
+     */
+    void setCorrelationCoefficient(double value);
+    /*!
+     * @brief Gets the correlation coefficient.
+     * @result The correlation coefficient.
+     * @throws std::runtime_error if the similarity score was not set.
+     * @sa \c haveCorrelationCoefficient()
+     */
+    double getCorrelationCoefficient() const;
+    /*!
+     * @brief Determines whether or not the correlation coefficient was set.
+     * @result True indicates that the correlation coefficient was set.
+     */
+    bool haveCorrelationCoefficient() const noexcept;
+    /*! @} */
+
     /*! @name Detected Signal
      * @{
      */

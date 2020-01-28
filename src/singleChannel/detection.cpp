@@ -43,11 +43,13 @@ class Detection<T>::DetectionImpl
 public:
     std::vector<T> mDetectedSignal;
     std::array<Amplitude<T>, 2> mAmplitudes;
+    double mCorrelationCoefficient = 0;
     double mDetectionTime = 0;
     double mInterpolatedDetectionTime = 0;
     double mPhaseOnsetTime = 0;
     double mInterpolatedPhaseOnsetTime = 0;
     uint64_t mTemplateID = 0;
+    bool mHaveCorrelationCoefficient = false;
     bool mHaveDetectedSignal = false;
     bool mHaveDetectionTime = false;
     bool mHaveInterpolatedDetectionTime = false;
@@ -109,11 +111,13 @@ void Detection<T>::clear() noexcept
     {
         pImpl->mAmplitudes[i].clear();
     }
+    pImpl->mCorrelationCoefficient = 0;
     pImpl->mDetectionTime = 0;
     pImpl->mInterpolatedDetectionTime = 0;
     pImpl->mPhaseOnsetTime = 0;
     pImpl->mInterpolatedPhaseOnsetTime = 0;
     pImpl->mTemplateID = 0;
+    pImpl->mHaveCorrelationCoefficient = false;
     pImpl->mHaveDetectionTime = false;
     pImpl->mHaveInterpolatedDetectionTime = false;
     pImpl->mHavePhaseOnsetTime = false;
@@ -121,6 +125,37 @@ void Detection<T>::clear() noexcept
     pImpl->mHaveTemplateID = false;
     pImpl->mHaveDetectedSignal = false;
     pImpl->mHaveDetection = false;
+}
+
+/// Similarity score
+template<class T>
+void Detection<T>::setCorrelationCoefficient(const double val)
+{
+    pImpl->mHaveCorrelationCoefficient = false;
+    if (val < -1 || val > 1)
+    {
+        throw std::invalid_argument("Correlation coefficient = "
+                                 + std::to_string(val)
+                                 + " must be in range [-1,1]\n");
+    }
+    pImpl->mCorrelationCoefficient = val;
+    pImpl->mHaveCorrelationCoefficient = true;
+}
+
+template<class T>
+double Detection<T>::getCorrelationCoefficient() const
+{
+    if (!haveCorrelationCoefficient())
+    {
+        throw std::runtime_error("Similarity score not yet set\n");
+    }
+    return pImpl->mCorrelationCoefficient;
+}
+
+template<class T>
+bool Detection<T>::haveCorrelationCoefficient() const noexcept
+{
+   return pImpl->mCorrelationCoefficient;
 }
 
 /// The template identifier

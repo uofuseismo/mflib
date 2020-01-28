@@ -3,7 +3,14 @@
 #include <string>
 #include <vector>
 #include <numeric>
+#include <algorithm>
+#include <set>
 #include <mkl.h>
+
+#include <pstl/algorithm>
+#include <pstl/execution>
+#define USE_PSTL
+
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/detector.hpp"
 #include "mflib/singleChannel/detectorParameters.hpp"
@@ -78,7 +85,42 @@ T quadraticRefinement(const int n,
         return 0;
     }
 } 
-                      
+
+std::vector<int> getUniqueTemplateIDs(const int nDetections,
+                                      const int detectionIndex[],
+                                      const int nSamples,
+                                      const int ids[])
+{
+    std::vector<int> uniqueIDs(nDetections+1);
+    #pragma omp simd
+    for (int i=0; i<nDetections; ++i)
+    {
+        int index = detectionIndex[i];
+        uniqueIDs[i] = ids[index];
+    }
+    // Sort
+    std::sort(std::execution::unseq, uniqueIDs.begin(), uniqueIDs.end());
+    uniqueIDs[nDetections] = uniqueIDs[0] - 1; 
+    // Count the unique indices
+    int n = 0;
+    for (int i=0; i<nDetections; ++i)
+    {
+        if (uniqueIDs[i+1] != uniqueIDs[i]){n = n + 1;}
+    }
+    // Make a set of unique IDs
+    std::vector<int> result(n);
+    int j = 0;
+    for (int i=0; i<nDetections; ++i)
+    {
+        if (uniqueIDs[i+1] != uniqueIDs[i])
+        {
+            result[j] = uniqueIDs[i];
+            j = j + 1;
+        }
+    }
+    return result;
+}
+ 
 
 }
 
@@ -119,7 +161,7 @@ public:
     T *__attribute__((aligned(64))) mSignal = nullptr;
     /// Holds the template index at each sample corresponding to mMaxMF.
     /// This is an array whose dimension is [mDetectionLength].
-    T *__attribute__((aligned(64))) mMaxTemplate = nullptr;
+    int *__attribute__((aligned(64))) mMaxTemplate = nullptr;
     std::vector<MFLib::SingleChannel::Detection<T>> mDetections;
     std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> mMagnitudes;
     std::vector<MFLib::WaveformTemplate> mTemplates;
@@ -208,6 +250,7 @@ void Detector<T>::initialize(
 }
 
 /// Sets the matched filtered signal
+/*
 template<class T>
 void Detector<T>::setMatchedFilteredSignals(
     const MFLib::SingleChannel::MatchedFilter<T> &mf)
@@ -254,7 +297,7 @@ void Detector<T>::setMatchedFilteredSignals(
         auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
         pImpl->mMaxMF = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
         nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
-        pImpl->mMaxTemplate = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
+        pImpl->mMaxTemplate = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
     }
     pImpl->mDetectionLength = detectionLength;
     auto det = pImpl->mMaxMF;
@@ -292,20 +335,22 @@ void Detector<T>::setMatchedFilteredSignals(
     }
     pImpl->mHaveMatchedFilteredSignals = true;
 }
+*/
 
 /// Compute the detections
 template<class T>
-void Detector<T>::detect()
+void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
 {
     pImpl->mDetections.clear();
     if (!isInitialized())
     {
         throw std::invalid_argument("Detector class not initialized\n");
     }
+
     auto nt = static_cast<int> (pImpl->mTemplates.size());
     auto detectionLength = pImpl->mDetectionLength;
     const T *det = pImpl->mMaxMF;
-    const T *id = pImpl->mMaxTemplate;
+    const int *id = pImpl->mMaxTemplate;
     // Compute the peaks which are the detections
     pImpl->mPeakFinder.setSignal(detectionLength, det);
     pImpl->mPeakFinder.apply();
@@ -313,7 +358,17 @@ void Detector<T>::detect()
     if (nDetections < 1){return;} // Swing and a miss
     // Get the detection indices
     auto peaksIndices = pImpl->mPeakFinder.getPeakIndicesPointer();
-    // Create detections
+    // Figure out which templates I'll need and copy them
+    auto uniqueTemplateIDs
+        = getUniqueTemplateIDs(nDetections, peaksIndices, detectionLength, id);
+    std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
+    for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
+    {
+        auto it = uniqueTemplateIDs[i];
+        templates[i] = mf.getWaveformTemplate(it);
+    } 
+    // Create detections (i.e., make the products)
+    auto getWaveforms = pImpl->mParameters.getDetectedWaveform();
     pImpl->mDetections.resize(0);
     pImpl->mDetections.reserve(nDetections); 
 
@@ -336,8 +391,11 @@ void Detector<T>::detect()
             computeAmplitude = false;
         }
         const T *detectedSignalPtr = signalPtr + peakIndex;
-        pImpl->mDetections[i].setDetectedSignal(templateLength,
-                                                detectedSignalPtr);
+        if (getWaveforms)
+        {
+            pImpl->mDetections[i].setDetectedSignal(templateLength,
+                                                    detectedSignalPtr);
+        }
         // Compute the onset time
         auto dt = 1/pImpl->mTemplates[it].getSamplingRate(); // Required
         auto detectionTime = peakIndex*dt;

@@ -233,6 +233,24 @@ bool Detection<T>::haveInterpolatedPhaseOnsetTime() const noexcept
     return mDetection->haveInterpolatedPhaseOnsetTime();
 }
 
+/// Detection time
+template<class T>
+void Detection<T>::setCorrelationCoefficient(const double xc)
+{
+    mDetection->setCorrelationCoefficient(xc);
+}
+
+template<class T>
+double Detection<T>::getCorrelationCoefficient() const
+{
+    return mDetection->getCorrelationCoefficient();
+}
+
+template<class T>
+bool Detection<T>::haveCorrelationCoefficient() const noexcept
+{
+    return mDetection->haveCorrelationCoefficient();
+}
 
 /// Gets the native class
 template<class T>
@@ -250,6 +268,26 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
         mDetDouble(m, "Detection");
     /// The default constructor:
     mDetDouble.def(pybind11::init<> ());
+    /// Correlation score
+    mDetDouble.def("get_correlation_coefficient",
+                   &PBMFLib::SingleChannel::Detection<double>::getCorrelationCoefficient,
+                   "Gets the correlation coefficient associated with the detection.");
+    mDetDouble.def("set_correlation_coefficient",
+                   &PBMFLib::SingleChannel::Detection<double>::setCorrelationCoefficient,
+                   "Sets the correlation coefficient associated with the detection.  This must be in the range [-1,1]");
+    mDetDouble.def("have_correlation_coefficient",
+                   &PBMFLib::SingleChannel::Detection<double>::haveCorrelationCoefficient,
+                   "Determines if the correlation coefficient was set.");
+    /// Template identifier
+    mDetDouble.def("get_template_identifier",
+                   &PBMFLib::SingleChannel::Detection<double>::getTemplateIdentifier,
+                   "Gets the template identifier associated with the detection.");
+    mDetDouble.def("set_template_identifier",
+                   &PBMFLib::SingleChannel::Detection<double>::setTemplateIdentifier,
+                   "Sets the template identifier associated with the detection.");
+    mDetDouble.def("have_template_identifier",
+                   &PBMFLib::SingleChannel::Detection<double>::haveTemplateIdentifier,
+                   "Determines if the template identifier was set.");
     /// Detected signal
     mDetDouble.def("get_detected_signal",
                    &PBMFLib::SingleChannel::Detection<double>::getDetectedSignal,

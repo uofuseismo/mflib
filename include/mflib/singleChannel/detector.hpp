@@ -69,7 +69,7 @@ public:
      * @brief Converts the correlation coefficients from the matched filter
      *        to detections.
      */
-    void detect();
+    void detect(const MFLib::SingleChannel::MatchedFilter<T> &mf);
     /*!
      * @brief Gets the number of detections.
      */
