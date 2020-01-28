@@ -131,7 +131,7 @@ bool RelativeMagnitude<T>::haveDetectedSignal() const noexcept
 void PBMFLib::SingleChannel::initializeRelativeMagnitude(pybind11::module &m) 
 {
     pybind11::class_<PBMFLib::SingleChannel::RelativeMagnitude<double>>
-        mRmagDouble(m, "SingleChannelRelativeMagnitude");
+        mRmagDouble(m, "RelativeMagnitude");
     /// The default constructor:
     mRmagDouble.def(pybind11::init<> ());
     mRmagDouble.doc() = "This is class is used for computing relative magnitudes and amplitudes between detected and template events on a channel-by-channel basis.";

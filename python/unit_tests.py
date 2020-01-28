@@ -69,7 +69,7 @@ def test_matched_filter_parameters():
     """
     wf1 = pymflib.WaveformTemplate()
     wf2 = pymflib.WaveformTemplate()
-    mf_parameters = pymflib.MultiChannelMatchedFilterParameters()
+    mf_parameters = pymflib.MultiChannel.MatchedFilterParameters()
 
     signal_size = 1024  # Signal size
     sampling_rate = 100 # Sampling rate of templates and signal
@@ -169,13 +169,13 @@ def test_matched_filtering():
     wf2.set_sampling_rate(sampling_rate)
 
     # Attached the templates to the parameters
-    mf_parameters = pymflib.MultiChannelMatchedFilterParameters()
+    mf_parameters = pymflib.MultiChannel.MatchedFilterParameters()
     mf_parameters.add_template(wf1)
     mf_parameters.add_template(wf2)
     mf_parameters.set_signal_size(signal_size)
 
     # Initialize the multi-channel matched filter
-    mf = pymflib.MultiChannelMatchedFilter()
+    mf = pymflib.MultiChannel.MatchedFilter()
     mf.initialize(mf_parameters)
     # Attach the signals for this run
     mf.set_signal(0, signal1)
@@ -215,13 +215,13 @@ def test_single_channel_matched_filtering():
     wf2.set_signal(signal[i2:i2+template_size])
     wf3.set_signal(signal[i3:i3+template_size])
     # Initialize the parameters
-    mf_parms = pymflib.SingleChannelMatchedFilterParameters() 
+    mf_parms = pymflib.SingleChannel.MatchedFilterParameters() 
     mf_parms.set_signal_size(signal_size)
     mf_parms.add_template(wf1)
     mf_parms.add_template(wf2)
     mf_parms.add_template(wf3)
     assert mf_parms.get_number_of_templates() == 3, 'failed to set templates'
-    mf = pymflib.SingleChannelMatchedFilter()
+    mf = pymflib.SingleChannel.MatchedFilter()
     mf.initialize(mf_parms)
     mf.set_signal(signal)
     mf.apply()
@@ -247,7 +247,7 @@ def test_single_channel_relative_magnitude():
     print("Single channel relative magnitude test...")
     signal_size = 355
     sampling_rate = 100.0
-    rmag = pymflib.SingleChannelRelativeMagnitude()
+    rmag = pymflib.SingleChannel.RelativeMagnitude()
     wt = pymflib.WaveformTemplate()
     xt = np.random.uniform( 5, 7, signal_size)
     yt = np.random.uniform(-2, 1, signal_size)
@@ -279,7 +279,7 @@ def test_single_channel_detection():
     phase_int_time = 6
     signal_size = 400
     xt = np.random.uniform( 5, 7, signal_size) 
-    detection = pymflib.SingleChannelDetection()
+    detection = pymflib.SingleChannel.Detection()
  
     assert not detection.have_phase_onset_time(), 'onset time bool not failed'
     detection.set_phase_onset_time(onset_time)

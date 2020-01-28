@@ -145,7 +145,7 @@ MatchedFilter<T>::getMatchedFilteredSignal(const int it) const
 /// Creates the class
 void PBMFLib::SingleChannel::initializeMatchedFilter(pybind11::module &m)
 {
-    pybind11::class_<PBMFLib::SingleChannel::MatchedFilter<double>> scmf(m, "SingleChannelMatchedFilter");
+    pybind11::class_<PBMFLib::SingleChannel::MatchedFilter<double>> scmf(m, "MatchedFilter");
     scmf.def(pybind11::init<> ());
     scmf.doc() = "Utilities for applying multiple templates to a single channel waveform.";
     /// Initialize

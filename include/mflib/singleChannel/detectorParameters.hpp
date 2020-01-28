@@ -70,7 +70,7 @@ public:
     void clear() noexcept;
     /*! @} */
 
-    /*! @name Maximum Policy
+    /*! @name Detector Behavior
      * @{
      */
     /*!
@@ -87,11 +87,7 @@ public:
      *         filtered signals.
      */
     MaximumMatchedFilterPolicy getMaximaPolicy() const noexcept;
-    /*! @} */
 
-    /*! @name Minimum Detection Sample Spacing
-     * @{
-     */
     /*!
      * @brief Sets the minimum number of samples required between detections.
      * @param[in] nSamples  The minimum number of samples between detections. 
@@ -106,11 +102,7 @@ public:
      * @result The minimum number of samples required between detections.
      */
     int getMinimumDetectionSpacing() const noexcept;
-    /*! @} */
 
-    /*! @name Detection Threshold
-     * @{
-     */
     /*!
      * @brief Sets the minimum correlation value for a candidate detection.  
      * @param[in] tol  The minimum correlation-score above which a detection
@@ -123,6 +115,26 @@ public:
      * @result The minimum threshold above which a detection can be declared.
      */
     double getDetectionThreshold() const noexcept; 
+    /*! @} */
+
+    /*! @name Output Parameters
+     * @{
+     */
+    /*!
+     * @brief Toggles whether the detected waveform snippet corresponding to
+     *        the template will be returned in the detections.  This can be
+     *        useful for debugging.
+     * @param[in] lget   If true then the detected waveform will be returned
+     *                   in the detection.   
+     */
+    void toggleGetDetectedWaveform(bool lget) noexcept;
+    /*!
+     * @brief Determines whether or not the detected waveform is desired
+     *        in the output detection.
+     * @result True indicates that the detected waveform snippet corresponding
+     *         to the detection will be returned.
+     */
+    bool getDetectedWaveform() const noexcept;
     /*! @} */
 private:
     class DetectorParametersImpl;

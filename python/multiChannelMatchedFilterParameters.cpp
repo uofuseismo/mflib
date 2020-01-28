@@ -130,7 +130,7 @@ MultiChannelMatchedFilterParameters::getNativeClass() const
 void PBMFLib::initializeMultiChannelMatchedFilterParameters(pybind11::module &m)
 {
     pybind11::class_<PBMFLib::MultiChannelMatchedFilterParameters>
-        mfParameters(m, "MultiChannelMatchedFilterParameters");
+        mfParameters(m, "MatchedFilterParameters");
     /// The default constructor:
     mfParameters.def(pybind11::init<> ());
     mfParameters.doc() = "Defines the options class for matched filtering.";

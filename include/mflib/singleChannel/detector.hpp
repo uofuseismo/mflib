@@ -39,18 +39,37 @@ public:
     /*!
      * @brief Initializes the detector class.
      * @param[in] parameters  The detector parameters.
-     * @param[in] mf          The class containing the matched-filtered signals.
-     *                        This must be initialized.
-     * @throws std::invalid_argument if the parameters are invalid or the
-     *         matched filtering class is not initialized.
      */ 
-    void initialize(const MFLib::SingleChannel::DetectorParameters &parameters,
-                    const MFLib::SingleChannel::MatchedFilter<T> &mf);
+    void initialize(const MFLib::SingleChannel::DetectorParameters &parameters);
+
+    /*!
+     * @brief Gets the number of templates.
+     * @returns The number of templates.
+     */
+    int getNumberOfTemplates() const noexcept;
+    /*!
+     * @brief Returns the length of the matched filtered signal.
+     */
+    int getMatchedFilteredSignalLength() const noexcept;
+
+    /*!
+     * @brief This will extract the matched filtered signals from the matched
+     *        filtering class and reduce these matched filtered signals into one
+     *        signal.  The reduction policy is defined in the parameters.
+     *        From this reduced signal the detections will be created.
+     * @param[in] mf    The matched filtering class.
+     * @throws std::invalid_argument if the matched filtered signals are not
+     *         yet computed or the number of templates in the matched filtering
+     *         class does not match the \c getNumberOfTemplates(). 
+     * @throws std::runtime_error if the class is not initialized.
+     * @sa \c getNumberOfTemplates(), \c isInitialized()
+     */
+    void setMatchedFilteredSignals(const MFLib::SingleChannel::MatchedFilter<T> &mf);
     /*!
      * @brief Converts the correlation coefficients from the matched filter
      *        to detections.
      */
-    void detect(const MFLib::SingleChannel::MatchedFilter<T> &xc);
+    void detect();
     /*!
      * @brief Gets the number of detections.
      */

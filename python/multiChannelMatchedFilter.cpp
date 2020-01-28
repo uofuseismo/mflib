@@ -157,7 +157,7 @@ MultiChannelMatchedFilter<T>::getMatchedFilteredSignal(const int it) const
 /// Initialize
 void PBMFLib::initializeMultiChannelMatchedFilter(pybind11::module &m)
 {
-    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> dmcmf(m, "MultiChannelMatchedFilter");
+    pybind11::class_<PBMFLib::MultiChannelMatchedFilter<double>> dmcmf(m, "MatchedFilter");
     dmcmf.def(pybind11::init<> ());
     dmcmf.doc() = "Applies matched filtering to multiple channels where each channel has a specific template.";
     /// Initialize

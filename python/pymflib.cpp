@@ -14,10 +14,14 @@ PYBIND11_MODULE(pymflib, m)
     m.attr("__version__") = MFLIB_VERSION; 
    
     PBMFLib::initializeWaveformTemplate(m);
-    PBMFLib::SingleChannel::initializeMatchedFilterParameters(m);
-    PBMFLib::SingleChannel::initializeMatchedFilter(m);
-    PBMFLib::SingleChannel::initializeRelativeMagnitude(m);
-    PBMFLib::SingleChannel::initializeDetection(m);
-    PBMFLib::initializeMultiChannelMatchedFilterParameters(m);
-    PBMFLib::initializeMultiChannelMatchedFilter(m);
+
+    pybind11::module scModule = m.def_submodule("SingleChannel");
+    PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);
+    PBMFLib::SingleChannel::initializeMatchedFilter(scModule);
+    PBMFLib::SingleChannel::initializeRelativeMagnitude(scModule);
+    PBMFLib::SingleChannel::initializeDetection(scModule);
+
+    pybind11::module mcModule = m.def_submodule("MultiChannel");
+    PBMFLib::initializeMultiChannelMatchedFilterParameters(mcModule);
+    PBMFLib::initializeMultiChannelMatchedFilter(mcModule);
 }

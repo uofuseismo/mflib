@@ -126,7 +126,7 @@ MatchedFilterParameters::getNativeClass() const
 void PBMFLib::SingleChannel::initializeMatchedFilterParameters(pybind11::module &m)
 {
     pybind11::class_<PBMFLib::SingleChannel::MatchedFilterParameters>
-        mfParameters(m, "SingleChannelMatchedFilterParameters");
+        mfParameters(m, "MatchedFilterParameters");
     /// The default constructor:
     mfParameters.def(pybind11::init<> ());
     mfParameters.doc() = "Defines the options class for matched filtering.";

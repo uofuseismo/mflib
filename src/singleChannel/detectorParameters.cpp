@@ -15,6 +15,7 @@ public:
     double mThreshold = DEFAULT_THRESHOLD;
     MaximumMatchedFilterPolicy mMaxPolicy = DEFAULT_POLICY;
     int mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
+    bool mGetDetectedWaveform = false;
 };
 
 /// Constructor
@@ -62,6 +63,7 @@ void DetectorParameters::clear() noexcept
     pImpl->mThreshold = DEFAULT_THRESHOLD;
     pImpl->mMaxPolicy = DEFAULT_POLICY;
     pImpl->mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
+    pImpl->mGetDetectedWaveform = false;
 }
 
 /// Get/set the threshold
@@ -106,3 +108,13 @@ DetectorParameters::getMaximaPolicy() const noexcept
     return pImpl->mMaxPolicy;
 }
 
+/// Get/set detected waveform
+void DetectorParameters::toggleGetDetectedWaveform(const bool lget) noexcept
+{
+    pImpl->mGetDetectedWaveform = lget;
+}
+
+bool DetectorParameters::getDetectedWaveform() const noexcept
+{
+    return pImpl->mGetDetectedWaveform;
+}

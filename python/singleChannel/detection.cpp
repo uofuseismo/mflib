@@ -247,7 +247,7 @@ Detection<T>::getNativeClass() const
 void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m) 
 {
     pybind11::class_<PBMFLib::SingleChannel::Detection<double>>
-        mDetDouble(m, "SingleChannelDetection");
+        mDetDouble(m, "Detection");
     /// The default constructor:
     mDetDouble.def(pybind11::init<> ());
     /// Detected signal

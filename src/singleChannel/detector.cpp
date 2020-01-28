@@ -95,28 +95,41 @@ public:
     void clear() noexcept
     {
         if (mMaxMF){MKL_free(mMaxMF);}
+        if (mSignal){MKL_free(mSignal);}
         if (mMaxTemplate){MKL_free(mMaxTemplate);}
         mMaxMF = nullptr;
+        mSignal = nullptr;
         mMaxTemplate = nullptr; 
         mDetections.clear();
         mMagnitudes.clear();
         mTemplates.clear();
         mPeakFinder.clear(); 
         mParameters.clear();
-        mMaxSizeXC = 0;
+        mDetectionLength = 0;
         mUseAbsoluteValue = false;
+        mHaveMatchedFilteredSignals = false;
         mInitialized = false;
     }
 
+    /// Holds the max of the matched filtered signals.
+    /// This is an array whose dimension is [mDetectionLength].
     T *__attribute__((aligned(64))) mMaxMF = nullptr;
+    /// This holds the signal which was matched filtered.  
+    /// This is an array whose dimension is [mSignalLength].
+    T *__attribute__((aligned(64))) mSignal = nullptr;
+    /// Holds the template index at each sample corresponding to mMaxMF.
+    /// This is an array whose dimension is [mDetectionLength].
     T *__attribute__((aligned(64))) mMaxTemplate = nullptr;
     std::vector<MFLib::SingleChannel::Detection<T>> mDetections;
     std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> mMagnitudes;
     std::vector<MFLib::WaveformTemplate> mTemplates;
     MFLib::PeakFinder<T> mPeakFinder;
     MFLib::SingleChannel::DetectorParameters mParameters;
-    int mMaxSizeXC = 0;
+ 
+    int mDetectionLength = 0;
+    int mSignalLength = 0;
     bool mUseAbsoluteValue = false;
+    bool mHaveMatchedFilteredSignals = false;
     bool mInitialized = false;
 };
 
@@ -152,14 +165,9 @@ const MFLib::SingleChannel::Detection<T>& Detector<T>::operator[]
 /// Initialize
 template<class T>
 void Detector<T>::initialize(
-    const MFLib::SingleChannel::DetectorParameters &parameters,
-    const MFLib::SingleChannel::MatchedFilter<T> &mf)
+    const MFLib::SingleChannel::DetectorParameters &parameters)
 {
     clear();
-    if (!mf.isInitialized())
-    {
-        throw std::invalid_argument("Matched filter class not initialized\n");
-    }
     // Copy the parameters
     pImpl->mParameters = parameters;
     pImpl->mUseAbsoluteValue = true;
@@ -176,6 +184,7 @@ void Detector<T>::initialize(
     // Set minimum spacing between detections
     int minSpacing = pImpl->mParameters.getMinimumDetectionSpacing();
     pImpl->mPeakFinder.setMinimumPeakDistance(minSpacing);
+/*
     // Copy the templates
     auto nTemplates = mf.getNumberOfTemplates();
     if (nTemplates < 1)
@@ -193,17 +202,19 @@ void Detector<T>::initialize(
     {
         pImpl->mMagnitudes[it].initialize(pImpl->mTemplates[it]);
     } 
+*/
     // Class is ready to go
     pImpl->mInitialized = true;
 }
 
-
-/// Compute the detections
+/// Sets the matched filtered signal
 template<class T>
-void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
+void Detector<T>::setMatchedFilteredSignals(
+    const MFLib::SingleChannel::MatchedFilter<T> &mf)
 {
+    pImpl->mHaveMatchedFilteredSignals = false;
     pImpl->mDetections.clear();
-    if (isInitialized())
+    if (!isInitialized())
     {
         throw std::invalid_argument("Detector class not initialized\n");
     }
@@ -219,15 +230,35 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                                   + std::to_string(nt)
                                   + " must = " + std::to_string(ntRef) + "\n");
     }
-    // Compute the detections
+    // Copy the signal to filter
+    auto signalLength = mf.getSignalLength();
+    if (signalLength > pImpl->mSignalLength)
+    {
+        if (pImpl->mSignal){MKL_free(pImpl->mSignal);}
+        auto nbytes = sizeof(T)*static_cast<size_t> (signalLength);
+        pImpl->mSignal = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
+    } 
+    auto signalToCopy = mf.getSignalPointer();
+    std::copy(signalToCopy, signalToCopy+signalLength, pImpl->mSignal);
+    pImpl->mSignalLength = signalLength;
+    // Resize
     auto detectionLength = mf.getFilteredSignalLength();
-    // Set space for results
-    auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
-    T *__attribute__((aligned(64))) det
-        = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
-    nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
-    int *__attribute__((aligned(64))) id
-        = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
+    if (detectionLength < 1)
+    {
+        throw std::invalid_argument("Matched filtered signals are length 0\n");
+    }
+    if (detectionLength > pImpl->mDetectionLength)
+    {
+        if (pImpl->mMaxMF){MKL_free(pImpl->mMaxMF);}
+        if (pImpl->mMaxTemplate){MKL_free(pImpl->mMaxTemplate);}
+        auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
+        pImpl->mMaxMF = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
+        nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
+        pImpl->mMaxTemplate = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
+    }
+    pImpl->mDetectionLength = detectionLength;
+    auto det = pImpl->mMaxMF;
+    auto id = pImpl->mMaxTemplate;
     // For detections we only care about the top performers of all the templates
     for (int it=0; it<nt; ++it)
     {
@@ -259,6 +290,22 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             }
         }
     }
+    pImpl->mHaveMatchedFilteredSignals = true;
+}
+
+/// Compute the detections
+template<class T>
+void Detector<T>::detect()
+{
+    pImpl->mDetections.clear();
+    if (!isInitialized())
+    {
+        throw std::invalid_argument("Detector class not initialized\n");
+    }
+    auto nt = static_cast<int> (pImpl->mTemplates.size());
+    auto detectionLength = pImpl->mDetectionLength;
+    const T *det = pImpl->mMaxMF;
+    const T *id = pImpl->mMaxTemplate;
     // Compute the peaks which are the detections
     pImpl->mPeakFinder.setSignal(detectionLength, det);
     pImpl->mPeakFinder.apply();
@@ -270,8 +317,8 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     pImpl->mDetections.resize(0);
     pImpl->mDetections.reserve(nDetections); 
 
-    auto signalPtr = mf.getSignalPointer();
-    auto signalLength = mf.getSignalLength();
+    auto signalPtr = pImpl->mSignal;
+    auto signalLength = pImpl->mSignalLength;
     for (int i=0; i<nDetections; ++i)
     {
         // Get the detection index in the signal and the corresponding template
@@ -296,6 +343,7 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         auto detectionTime = peakIndex*dt;
         pImpl->mDetections[i].setDetectionTime(detectionTime);
         // Compute the interpolated onset time
+/*
         auto mfPtr = mf.getMatchedFilterSignalPointer(it);
         auto shift = quadraticRefinement(detectionLength,
                                          mfPtr,
@@ -330,10 +378,8 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                 = pImpl->mMagnitudes[it].computeAmplitudeScalingFactor(magType);
             pImpl->mDetections[it].setAmplitudeScalingFactor(alpha, magType);
         }
+*/
     }
-    // Cleanup
-    MKL_free(det);
-    MKL_free(id);
 }
 
 /// Determines if class is initialized
