@@ -2,7 +2,10 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+#include "mflib/waveformTemplate.hpp"
+#include "mflib/singleChannel/detector.hpp"
 #include "mflib/singleChannel/detectorParameters.hpp"
+#include "mflib/singleChannel/matchedFilter.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -31,7 +34,12 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_NEAR(parmsCopy.getDetectionThreshold(), thresh, 1.e-14);
     EXPECT_EQ(parmsCopy.getMaximaPolicy(), policy);
     EXPECT_TRUE(parmsCopy.getDetectedWaveform());
+}
 
+TEST(singleChannelDetection, detector)
+{
+    // Embed a few templates
+    
 }
 
 }
