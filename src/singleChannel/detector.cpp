@@ -86,6 +86,62 @@ T quadraticRefinement(const int n,
     }
 } 
 
+#pragma omp declare simd
+template<class T> T sinc(const T x)
+{
+    const T tol = std::numeric_limits<T>::epsilon()*100;
+    T result = 1;
+    if (std::abs(x) > 1.e-11) //tol)
+    {
+        T pix = M_PI*x;
+        result = std::sin(pix)/pix;
+    }
+    return result;
+} 
+
+#pragma omp declare simd
+template<class T> T lanczos(const T x, const int a)
+{
+    T result = 0;
+    if (static_cast<int> (std::abs(x)) <= a){result = sinc(x)*sinc(x/a);}
+    return result;
+}
+
+template<class T>
+T lanczosRefinement(const int n,
+                    const T xc[],
+                    const int optIndex,
+                    const double dt, 
+                    const bool lAbs,
+                    const int alpha = 19)
+{
+    const int nrefine = 50;
+    const T pi2 = M_PI*M_PI;
+    T dtWork = 1/static_cast<double> (nrefine);
+    T optShift = 0;
+    T yIntMax =-std::numeric_limits<T>::max();
+    for (int idx=1; idx<=2*nrefine-1; idx++)
+    {
+        T shift =-1 + dtWork*idx;
+        T x = optIndex + shift;
+        T yInt = 0;
+        for (int a=-alpha; a<=alpha; ++a)
+        {
+            int i = static_cast<int> (std::floor(x)) - a + 1;
+            auto xi = x - i;
+            if (i >= 0 && i < n){yInt = yInt + xc[i]*lanczos(xi, alpha);}
+        }
+        if (yInt > yIntMax)
+        { 
+            optShift = dt*shift;
+            yIntMax = yInt;
+        }
+//printf("%d, %lf, %lf, (%lf,%lf,%lf), %lf\n", idx, x, shift, xc[optIndex-1], xc[optIndex], xc[optIndex+1], yInt);
+    }
+//printf("%lf\n", optShift);
+    return optShift;
+}
+
 std::vector<int> getUniqueTemplateIDs(const int nDetections,
                                       const int detectionIndex[],
                                       const int nSamples,
@@ -154,7 +210,6 @@ public:
         mDetections.clear();
         mPeakFinder.clear(); 
         mParameters.clear();
-        mDetectionLength = 0;
         mUseAbsoluteValue = false;
         mHaveMatchedFilteredSignals = false;
         mInitialized = false;
@@ -164,7 +219,6 @@ public:
     MFLib::PeakFinder<T> mPeakFinder;
     MFLib::SingleChannel::DetectorParameters mParameters;
  
-    int mDetectionLength = 0;
     int mSignalLength = 0;
     bool mUseAbsoluteValue = false;
     bool mHaveMatchedFilteredSignals = false;
@@ -189,13 +243,25 @@ void Detector<T>::clear() noexcept
     pImpl->clear();
 }
 
+/// Operator
 template<class T>
-const MFLib::SingleChannel::Detection<T>& Detector<T>::operator[]
-    (const size_t i) const
+const MFLib::SingleChannel::Detection<T>&
+Detector<T>::operator[](const size_t i) const
 {
-    if (i >= pImpl->mDetections.size())
+    auto nDetections = static_cast<size_t> (getNumberOfDetections());
+    if (i >= nDetections)
     {
-        throw std::invalid_argument("i is out of bounds\n");
+        std::string errmsg;
+        if (i == 0)
+        {
+            errmsg = "No detections\n";
+        }
+        else
+        {
+            errmsg = "i = " + std::to_string(i) + " cannot exceed "
+                  + std::to_string(nDetections) + "\n";
+        }
+        throw std::invalid_argument(errmsg);
     }
     return pImpl->mDetections[i];
 }
@@ -222,116 +288,17 @@ void Detector<T>::initialize(
     // Set minimum spacing between detections
     int minSpacing = pImpl->mParameters.getMinimumDetectionSpacing();
     pImpl->mPeakFinder.setMinimumPeakDistance(minSpacing);
-/*
-    // Copy the templates
-    auto nTemplates = mf.getNumberOfTemplates();
-    if (nTemplates < 1)
-    {
-        throw std::invalid_argument("No templates on detector\n");
-    }
-    pImpl->mTemplates.resize(nTemplates);
-    for (int it=0; it<nTemplates; ++it)
-    {
-        pImpl->mTemplates[it] = mf.getWaveformTemplate(it);
-    }
-    // Initialize the corresponding relative amplitude classes
-    pImpl->mMagnitudes.resize(nTemplates);
-    for (int it=0; it<nTemplates; ++it)
-    {
-        pImpl->mMagnitudes[it].initialize(pImpl->mTemplates[it]);
-    } 
-*/
     // Class is ready to go
     pImpl->mInitialized = true;
 }
 
-/// Sets the matched filtered signal
-/*
+/// Gets the number of detections
 template<class T>
-void Detector<T>::setMatchedFilteredSignals(
-    const MFLib::SingleChannel::MatchedFilter<T> &mf)
+int Detector<T>::getNumberOfDetections() const noexcept
 {
-    pImpl->mHaveMatchedFilteredSignals = false;
-    pImpl->mDetections.clear();
-    if (!isInitialized())
-    {
-        throw std::invalid_argument("Detector class not initialized\n");
-    }
-    if (!mf.haveMatchedFilteredSignals())    
-    {
-        throw std::invalid_argument("Matched filtered signals not computed\n");
-    }
-    auto nt = mf.getNumberOfTemplates();
-    auto ntRef = static_cast<int> (pImpl->mTemplates.size());
-    if (nt != ntRef)
-    {
-        throw std::invalid_argument("Number of templates in matched filter = "
-                                  + std::to_string(nt)
-                                  + " must = " + std::to_string(ntRef) + "\n");
-    }
-    // Copy the signal to filter
-    auto signalLength = mf.getSignalLength();
-    if (signalLength > pImpl->mSignalLength)
-    {
-        if (pImpl->mSignal){MKL_free(pImpl->mSignal);}
-        auto nbytes = sizeof(T)*static_cast<size_t> (signalLength);
-        pImpl->mSignal = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
-    } 
-    auto signalToCopy = mf.getSignalPointer();
-    std::copy(signalToCopy, signalToCopy+signalLength, pImpl->mSignal);
-    pImpl->mSignalLength = signalLength;
-    // Resize
-    auto detectionLength = mf.getFilteredSignalLength();
-    if (detectionLength < 1)
-    {
-        throw std::invalid_argument("Matched filtered signals are length 0\n");
-    }
-    if (detectionLength > pImpl->mDetectionLength)
-    {
-        if (pImpl->mMaxMF){MKL_free(pImpl->mMaxMF);}
-        if (pImpl->mMaxTemplate){MKL_free(pImpl->mMaxTemplate);}
-        auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
-        pImpl->mMaxMF = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
-        nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
-        pImpl->mMaxTemplate = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
-    }
-    pImpl->mDetectionLength = detectionLength;
-    auto det = pImpl->mMaxMF;
-    auto id = pImpl->mMaxTemplate;
-    // For detections we only care about the top performers of all the templates
-    for (int it=0; it<nt; ++it)
-    {
-        const T *__attribute__((aligned(64))) 
-        mfPtr = mf.getMatchedFilterSignalPointer(it);
-        if (pImpl->mUseAbsoluteValue)
-        {
-            #pragma omp simd aligned(mfPtr, det, id: 64)
-            for (int i=0; i<detectionLength; ++i) 
-            {
-                auto absXC = std::abs(mfPtr[i]);
-                if (absXC > det[i])
-                {
-                    det[i] = absXC;
-                    id[i] = it;
-                }
-            }
-        }
-        else
-        {
-            #pragma omp simd aligned(mfPtr, det, id: 64)
-            for (int i=0; i<detectionLength; ++i) 
-            {
-                if (mfPtr[i] > det[i])
-                {
-                    det[i] = mfPtr[i];
-                    id[i] = it;
-                }
-            }
-        }
-    }
-    pImpl->mHaveMatchedFilteredSignals = true;
+    return static_cast<int> (pImpl->mDetections.size());
 }
-*/
+
 
 /// Compute the detections
 template<class T>
@@ -354,14 +321,17 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         throw std::invalid_argument("No templates on matched filter class\n");
     }
     // Reduce the detections (by taking the maximum)
-    auto detectionLength = pImpl->mDetectionLength;
+    auto detectionLength = mf.getFilteredSignalLength();
+    if (detectionLength < 1)
+    {
+        throw std::invalid_argument("Matched filtered signal length is 0\n");
+    }
     auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
     auto det = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
     auto id = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
     // Initialize
-    const T *__attribute__((aligned(64))) 
-    mfPtr = mf.getMatchedFilterSignalPointer(0);
+    auto mfPtr = mf.getMatchedFilterSignalPointer(0);
     if (pImpl->mUseAbsoluteValue)
     {
         #pragma omp simd aligned(mfPtr, det: 64)
@@ -378,10 +348,11 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     // Now reduce
     for (int it=1; it<nt; ++it)
     {
+        mfPtr = mf.getMatchedFilterSignalPointer(it);
         if (pImpl->mUseAbsoluteValue)
         {
             #pragma omp simd aligned(mfPtr, det, id: 64)
-            for (int i=0; i<detectionLength; ++i) 
+            for (int i=0; i<detectionLength; ++i)
             {
                 auto absXC = std::abs(mfPtr[i]);
                 if (absXC > det[i])
@@ -404,6 +375,13 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             }
         }
     } // Loop on templates
+    // And clean
+    const T one = 1;
+    #pragma omp simd aligned(det: 64)
+    for (int i=0; i<detectionLength; ++i)
+    {
+        det[i] = std::max(-one, std::min(one, det[i]));
+    }
     // Compute the peaks which are the detections
     pImpl->mPeakFinder.setSignal(detectionLength, det);
     pImpl->mPeakFinder.apply();
@@ -417,24 +395,46 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     }
     // Get the detection indices
     auto peaksIndices = pImpl->mPeakFinder.getPeakIndicesPointer();
+/*
+FILE *fout = fopen("reduced_xc.txt", "w");
+for (int i=0; i<detectionLength; ++i)
+{
+fprintf(fout, "%f, %f\n", i*0.01, det[i]);
+}
+fclose(fout);
+fout = fopen("detect_loc.txt", "w");
+for (int i=0; i<nDetections; ++i)
+{
+fprintf(fout, "%f, %d, %e\n", peaksIndices[i]*0.01, id[peaksIndices[i]], det[peaksIndices[i]]); 
+}
+fclose(fout);
+*/
     // Figure out which templates I'll need and copy them
     auto uniqueTemplateIDs
         = getUniqueTemplateIDs(nDetections, peaksIndices, detectionLength, id);
     std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
-    std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;
-    std::vector<T> templateSignal;
+    std::vector<T> templateSignal(uniqueTemplateIDs.size());
     for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
     {
         auto it = uniqueTemplateIDs[i];
         templates[i] = mf.getWaveformTemplate(it);
         // Ensure we can pair this template to something
         if (!templates[i].haveIdentifier()){templates[i].setIdentifier(it);}
-        magnitudes[i].initialize(templates[i]);
+    }
+    // Initialize the relative magnitudes?
+    std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;
+    bool lWantMagnitudes = true;
+    if (lWantMagnitudes)
+    {
+        magnitudes.resize(templates.size());
+        for (int i=0; i<static_cast<int> (templates.size()); ++i)
+        {
+            magnitudes[i].initialize(templates[i]);
+        }
     }
     // Create detections (i.e., make the products)
-    auto getWaveforms = pImpl->mParameters.getDetectedWaveform();
-    pImpl->mDetections.resize(0);
-    pImpl->mDetections.reserve(nDetections); 
+    auto lGetWaveforms = pImpl->mParameters.getDetectedWaveform();
+    pImpl->mDetections.resize(nDetections); 
     auto signalLength = mf.getSignalLength();
     auto signalPtr = mf.getSignalPointer();
     // Extract the detections
@@ -452,15 +452,15 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         pImpl->mDetections[i].setCorrelationCoefficient(det[peakIndex]);
         // Get the detected chunk of signal
         int templateLength = templates[jt].getSignalLength();
-        bool computeAmplitude = true;
+        auto lComputeAmplitude = lWantMagnitudes;
         if (peakIndex + templateLength > signalLength)
         {
             fprintf(stderr, "Cannot compute amplitude for detection %d\n", i+1);
             templateLength = signalLength - peakIndex;
-            computeAmplitude = false;
+            lComputeAmplitude = false;
         }
         const T *detectedSignalPtr = signalPtr + peakIndex;
-        if (getWaveforms)
+        if (lGetWaveforms)
         {
             pImpl->mDetections[i].setDetectedSignal(templateLength,
                                                     detectedSignalPtr);
@@ -476,6 +476,8 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                                          peakIndex,
                                          dt,
                                          pImpl->mUseAbsoluteValue);
+        // printf("%lf, %d, %lf\n", detectionTime, it, shift);
+        shift = lanczosRefinement(detectionLength, mfPtr, peakIndex, dt, pImpl->mUseAbsoluteValue, 15);
         auto intDetTime = detectionTime + shift;
         pImpl->mDetections[i].setDetectionTime(detectionTime);
         pImpl->mDetections[i].setInterpolatedDetectionTime(intDetTime);
@@ -490,18 +492,21 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             pImpl->mDetections[i].setInterpolatedPhaseOnsetTime(intPickTime);
         }
         // Compute the relative amplitudes / magnitudes
-        if (computeAmplitude)
+        if (lComputeAmplitude)
         {
             magnitudes[jt].setDetectedSignal(templateLength, detectedSignalPtr);
             auto magType = MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006;
             T alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-            pImpl->mDetections[it].setAmplitudeScalingFactor(alpha, magType);
+            pImpl->mDetections[i].setAmplitudeScalingFactor(alpha, magType);
 
             magType = MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014;
             alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-            pImpl->mDetections[it].setAmplitudeScalingFactor(alpha, magType);
+            pImpl->mDetections[i].setAmplitudeScalingFactor(alpha, magType);
         }
     }
+    // Clean up
+    MKL_free(det);
+    MKL_free(id);
 }
 
 /// Determines if class is initialized

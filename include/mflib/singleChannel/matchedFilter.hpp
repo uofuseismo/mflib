@@ -22,7 +22,7 @@ namespace SingleChannel
  *        to the same signal.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-template<class T>
+template<class T = double>
 class MatchedFilter
 {
 public:

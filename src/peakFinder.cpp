@@ -136,6 +136,8 @@ public:
         if (mSign){MKL_free(mSign);}
         if (mPeakIndices){MKL_free(mPeakIndices);}
         mX = nullptr;
+        mDiffX = nullptr;
+        mSign = nullptr;
         mPeakIndices = nullptr;
         mThreshold = DEFAULT_THRESH;
         mMinPeakDistance = 0;

@@ -153,7 +153,7 @@ void normalizeSignal(const int n, const int lent,
             T newNum = scalNum*yn[j];
             yn[j] = newNum/std::max(tol, den); // Avoid divide by zero
             // In case this is nonsensical
-            if (yn[j] > tooBig){yn[j] = zero;}
+            if (std::abs(yn[j]) > tooBig){yn[j] = zero;}
         }
     } // End loop
     // Release space on all processes

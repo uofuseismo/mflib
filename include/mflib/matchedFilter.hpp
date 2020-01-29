@@ -15,7 +15,7 @@ class MatchedFilterParameters;
  *        classes easier to use.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-template<class T>
+template<class T = double>
 class MatchedFilter
 {
 public:
