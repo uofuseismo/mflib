@@ -39,6 +39,7 @@ public:
     pybind11::array_t<T, pybind11::array::c_style | pybind11::array::forcecast>
     getMatchedFilteredSignal(int it) const;
 
+    const MFLib::SingleChannel::MatchedFilter<T>* getNativeClassPointer() const;
 private:
     std::unique_ptr<MFLib::SingleChannel::MatchedFilter<T>> scmf; 
 };

@@ -19,6 +19,14 @@ MatchedFilter<T>::MatchedFilter() :
 template<class T>
 MatchedFilter<T>::~MatchedFilter() = default;
 
+/// Get handle to underlying class
+template<class T>
+const MFLib::SingleChannel::MatchedFilter<T>*
+MatchedFilter<T>::getNativeClassPointer() const
+{
+    return scmf.get();
+}
+
 /// Initialize
 template<class T>
 void MatchedFilter<T>::initialize(

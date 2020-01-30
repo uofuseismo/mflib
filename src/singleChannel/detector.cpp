@@ -266,6 +266,28 @@ Detector<T>::operator[](const size_t i) const
     return pImpl->mDetections[i];
 }
 
+template<class T>
+MFLib::SingleChannel::Detection<T>
+Detector<T>::getDetection(const int id) const
+{
+    auto nDetections = getNumberOfDetections();
+    if (id >= nDetections)
+    {
+        std::string errmsg;
+        if (id == 0)
+        {
+            errmsg = "No detections\n";
+        }
+        else
+        {
+            errmsg = "i = " + std::to_string(id) + " cannot exceed "
+                  + std::to_string(nDetections) + "\n";
+        }
+        throw std::invalid_argument(errmsg);
+    }
+    return pImpl->mDetections[id];
+}
+
 /// Initialize
 template<class T>
 void Detector<T>::initialize(

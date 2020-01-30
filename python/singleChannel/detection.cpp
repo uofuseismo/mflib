@@ -21,6 +21,12 @@ Detection<T>::Detection(const Detection &detection)
     *this = detection;
 }
 
+template<class T>
+Detection<T>::Detection(const MFLib::SingleChannel::Detection<T> &detection)
+{
+    *this = detection;
+}
+
 /// Move c'tor
 template<class T>
 Detection<T>::Detection(Detection &&detection) noexcept
@@ -35,6 +41,14 @@ Detection<T>& Detection<T>::operator=(const Detection &det)
     if (&det == this){return *this;}
     mDetection = std::make_unique<MFLib::SingleChannel::Detection<T>>
                  (*det.mDetection);
+    return *this;
+}
+
+template<class T>
+Detection<T>& Detection<T>::operator=(
+    const MFLib::SingleChannel::Detection<T> &det)
+{
+    mDetection = std::make_unique<MFLib::SingleChannel::Detection<T>> (det);
     return *this;
 }
 

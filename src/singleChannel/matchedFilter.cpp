@@ -139,6 +139,5 @@ bool MatchedFilter<T>::haveMatchedFilteredSignals() const noexcept
 }
 
 /// Template instantiation
-/// Template class instantiation
 template class MFLib::SingleChannel::MatchedFilter<double>;
 template class MFLib::SingleChannel::MatchedFilter<float>;

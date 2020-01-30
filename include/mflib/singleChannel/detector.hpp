@@ -92,6 +92,7 @@ public:
      */ 
     //const MFLib::SingleChannel::Detection<T>& end() const;
     const MFLib::SingleChannel::Detection<T>& operator[](size_t i) const;
+    MFLib::SingleChannel::Detection<T> getDetection(const int id) const;
 private:
     class DetectorImpl;
     std::unique_ptr<DetectorImpl> pImpl;

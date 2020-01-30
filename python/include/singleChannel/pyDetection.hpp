@@ -24,12 +24,14 @@ class Detection
 public:
     /// Constructor
     Detection();
-    Detection(const Detection &parms);
-    Detection(Detection  &&parms) noexcept;
+    Detection(const Detection &det);
+    Detection(const MFLib::SingleChannel::Detection<T> &det);
+    Detection(Detection &&det) noexcept;
     ~Detection();
     void clear() noexcept;
     /// Operators
-    Detection& operator=(const Detection &parms);
+    Detection& operator=(const Detection &det);
+    Detection& operator=(const MFLib::SingleChannel::Detection<T> &det);
     Detection& operator=(Detection &&parms) noexcept;
     /// Correlation coefficient
     void setCorrelationCoefficient(double xc);
