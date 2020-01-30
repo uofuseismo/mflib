@@ -30,7 +30,6 @@ TEST(singleChannelDetection, detectorParameters)
     DetectorParameters parms;
     int minSamples = 50;
     double thresh = 0.8;
-    bool getWaveform = true;
     auto policy = MFLib::MaximumMatchedFilterPolicy::ABSOLUTE_MAXIMUM; 
     EXPECT_NO_THROW(parms.setMinimumDetectionSpacing(minSamples));
     EXPECT_NO_THROW(parms.setDetectionThreshold(thresh));

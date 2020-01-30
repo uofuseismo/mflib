@@ -344,23 +344,25 @@ def test_single_channel_detector_parameters():
     det_tol = 0.5 # detection tolerance
     get_wave = True
 
-    parms.set_maxima_policy(parms.MaxmimumMatchedFilterPolicy.absolute_maximum)
+    parms.set_maxima_policy(pymflib.MaxmimumMatchedFilterPolicy.absolute_maximum)
     parms.set_minimum_detection_spacing(min_spacing)
     parms.set_detection_threshold(det_tol)
-    parms.toggle_get_detected_waveform(get_wave)
+    parms.enable_save_detected_waveform()
+    parms.disable_save_amplitude_scaling_factor()
 
-    assert parms.get_maxima_policy() == parms.MaxmimumMatchedFilterPolicy.absolute_maximum, 'max policy failed'
+    assert parms.get_maxima_policy() == pymflib.MaxmimumMatchedFilterPolicy.absolute_maximum, 'max policy failed'
     assert parms.get_minimum_detection_spacing() == min_spacing, 'min spacing failed'
     assert parms.get_detection_threshold() == det_tol, 'det tol failed'
-    assert parms.get_detected_waveform(), 'get det wave failed'
+    assert parms.want_detected_waveform(), 'get det wave failed'
+    assert not parms.want_amplitude_scaling_factor(), 'get det amp failed'
 
     # Test copy c'tor
     parms_copy = parms 
-    assert parms_copy.get_maxima_policy() == parms.MaxmimumMatchedFilterPolicy.absolute_maximum, 'copy max policy failed'
+    assert parms_copy.get_maxima_policy() == pymflib.MaxmimumMatchedFilterPolicy.absolute_maximum, 'copy max policy failed'
     assert parms_copy.get_minimum_detection_spacing() == min_spacing, 'copy min spacing failed'
     assert parms_copy.get_detection_threshold() == det_tol, 'copy det tol failed'
-    assert parms_copy.get_detected_waveform(), 'copy get det wave failed'
-
+    assert parms_copy.want_detected_waveform(), 'copy get det wave failed'
+    assert not parms_copy.want_amplitude_scaling_factor(), 'copy get the det amp failed'
 
 if __name__ == "__main__":
     test_matched_filter_parameters()
