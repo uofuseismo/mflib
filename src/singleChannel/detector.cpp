@@ -91,7 +91,7 @@ template<class T> T sinc(const T x)
 {
     const T tol = std::numeric_limits<T>::epsilon()*100;
     T result = 1;
-    if (std::abs(x) > 1.e-11) //tol)
+    if (std::abs(x) > tol)
     {
         T pix = M_PI*x;
         result = std::sin(pix)/pix;
@@ -116,7 +116,6 @@ T lanczosRefinement(const int n,
                     const int alpha = 19)
 {
     const int nrefine = 50;
-    const T pi2 = M_PI*M_PI;
     T dtWork = 1/static_cast<double> (nrefine);
     T optShift = 0;
     T yIntMax =-std::numeric_limits<T>::max();
