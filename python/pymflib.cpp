@@ -17,6 +17,12 @@ PYBIND11_MODULE(pymflib, m)
    
     PBMFLib::initializeWaveformTemplate(m);
 
+    pybind11::enum_<MFLib::RelativeMagnitudeType> (m, "RelativeMagnitudeType")
+        .value("gibbons_ringdal_2006", MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006,
+               "Computes the relative magnitude using the methodology of Gibbons and Ringdal, 2006.  This method assumes the the template waveform is noise-free.")
+        .value("schaff_richards_2014", MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014,
+               "Computes the relative magnitude using the methodology of Schaff and Richards, 2014.  This method accomodates noise in both the detected and template waveform.");
+
     pybind11::module scModule = m.def_submodule("SingleChannel");
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);
     PBMFLib::SingleChannel::initializeMatchedFilter(scModule);

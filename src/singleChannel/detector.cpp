@@ -144,7 +144,6 @@ T lanczosRefinement(const int n,
 
 std::vector<int> getUniqueTemplateIDs(const int nDetections,
                                       const int detectionIndex[],
-                                      const int nSamples,
                                       const int ids[])
 {
     std::vector<int> uniqueIDs(nDetections+1);
@@ -433,7 +432,7 @@ fclose(fout);
 */
     // Figure out which templates I'll need and copy them
     auto uniqueTemplateIDs
-        = getUniqueTemplateIDs(nDetections, peaksIndices, detectionLength, id);
+        = getUniqueTemplateIDs(nDetections, peaksIndices, id);//detectionLength, id);
     std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
     std::vector<T> templateSignal(uniqueTemplateIDs.size());
     for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)

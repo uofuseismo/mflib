@@ -62,6 +62,10 @@ public:
     void setInterpolatedPhaseOnsetTime(double onsetTime);
     double getInterpolatedPhaseOnsetTime() const;
     bool haveInterpolatedPhaseOnsetTime() const noexcept;
+    /// Amplitude sclaing factor
+    double getMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;
+    double getAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const;
+    bool haveAmplitudeScalingFactor() const noexcept;
     ///
     MFLib::SingleChannel::Detection<T> getNativeClass() const;
 private:

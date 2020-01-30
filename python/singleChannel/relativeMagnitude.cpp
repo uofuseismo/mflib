@@ -157,12 +157,13 @@ void PBMFLib::SingleChannel::initializeRelativeMagnitude(pybind11::module &m)
     mRmagDouble.def("compute_magnitude_perturbation",
                     &PBMFLib::SingleChannel::RelativeMagnitude<double>::computeMagnitudePerturbation,
                     "Computes the magnitude perturbation to apply to the reference magnitude as to obtain the magnitude for the detected event.  The class must be initialized and the detected signal must be set prior to calling this function.");
+    /*
     pybind11::enum_<MFLib::RelativeMagnitudeType> (mRmagDouble, "RelativeMagnitudeType")
         .value("gibbons_ringdal_2006", MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006,
                "Computes the relative magnitude using the methodology of Gibbons and Ringdal, 2006.  This method assumes the the template waveform is noise-free.")
         .value("schaff_richards_2014", MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014,
                "Computes the relative magnitude using the methodology of Schaff and Richards, 2014.  This method accomodates noise in both the detected and template waveform.");
-  
+    */
 }
 
 /// Instantiation

@@ -260,8 +260,8 @@ def test_single_channel_relative_magnitude():
     rmag.set_detected_signal(yt)
     assert rmag.have_detected_signal(), 'signal not set'
 
-    mag1 = rmag.compute_magnitude_perturbation(rmag.RelativeMagnitudeType.gibbons_ringdal_2006)
-    mag2 = rmag.compute_magnitude_perturbation(rmag.RelativeMagnitudeType.schaff_richards_2014)
+    mag1 = rmag.compute_magnitude_perturbation(pymflib.RelativeMagnitudeType.gibbons_ringdal_2006)
+    mag2 = rmag.compute_magnitude_perturbation(pymflib.RelativeMagnitudeType.schaff_richards_2014)
     # Compute reference solutions
     xtd = xt - np.mean(xt)
     ytd = yt - np.mean(yt)

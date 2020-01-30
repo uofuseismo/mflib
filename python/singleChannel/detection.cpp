@@ -266,6 +266,32 @@ bool Detection<T>::haveCorrelationCoefficient() const noexcept
     return mDetection->haveCorrelationCoefficient();
 }
 
+template<class T>
+double Detection<T>::getMagnitudePerturbation(
+    const MFLib::RelativeMagnitudeType type) const
+{
+    return mDetection->getMagnitudePerturbation(type);
+}
+
+template<class T>
+double Detection<T>::getAmplitudeScalingFactor(
+    const MFLib::RelativeMagnitudeType type) const
+{
+    return mDetection->getAmplitudeScalingFactor(type);
+}
+ 
+template<class T>
+bool Detection<T>::haveAmplitudeScalingFactor() const noexcept
+{
+
+    if (mDetection->haveAmplitudeScalingFactor(MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006) &&
+        mDetection->haveAmplitudeScalingFactor(MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014))
+    {
+        return true;
+    }
+    return false;
+}
+
 /// Gets the native class
 template<class T>
 MFLib::SingleChannel::Detection<T> 
@@ -352,6 +378,16 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_interpolated_phase_onset_time",
                    &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedPhaseOnsetTime,
                    "Determines if the interpolated phase onset time is set.");
+    // 
+    mDetDouble.def("get_amplitude_scaling_factor",
+                   &PBMFLib::SingleChannel::Detection<double>::getAmplitudeScalingFactor,
+                   "Gets the amplitude scaling factor to best match the template to the detected signal.");
+    mDetDouble.def("get_magnitude_perturbation",
+                   &PBMFLib::SingleChannel::Detection<double>::getMagnitudePerturbation,
+                   "GEts the magnitude perturbation that should be added to the template magnitude to obtain the relative magnitude.");
+    mDetDouble.def("have_amplitude_scaling_factor",
+                   &PBMFLib::SingleChannel::Detection<double>::haveAmplitudeScalingFactor,
+                   "Determines if the amplitude scaling factors were computed");
     // Clears
     mDetDouble.def("clear",
                    &PBMFLib::SingleChannel::Detection<double>::clear,
