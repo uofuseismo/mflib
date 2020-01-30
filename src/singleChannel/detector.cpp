@@ -130,6 +130,7 @@ T lanczosRefinement(const int n,
             auto xi = x - i;
             if (i >= 0 && i < n){yInt = yInt + xc[i]*lanczos(xi, alpha);}
         }
+        if (lAbs){yInt = std::abs(yInt);}
         if (yInt > yIntMax)
         { 
             optShift = dt*shift;
