@@ -22,8 +22,14 @@ PYBIND11_MODULE(pymflib, m)
                "Computes the relative magnitude using the methodology of Gibbons and Ringdal, 2006.  This method assumes the the template waveform is noise-free.")
         .value("schaff_richards_2014", MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014,
                "Computes the relative magnitude using the methodology of Schaff and Richards, 2014.  This method accomodates noise in both the detected and template waveform.");
+    pybind11::enum_<MFLib::MaximumMatchedFilterPolicy> (m, "MaxmimumMatchedFilterPolicy")
+        .value("maximum", MFLib::MaximumMatchedFilterPolicy::MAXIMUM,
+               "Selects the maxima of the matched filtered signals.")
+        .value("absolute_maximum", MFLib::MaximumMatchedFilterPolicy::ABSOLUTE_MAXIMUM,
+               "Selects the maxima of the absolute value of the matched filtered signals.");
 
     pybind11::module scModule = m.def_submodule("SingleChannel");
+
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);
     PBMFLib::SingleChannel::initializeMatchedFilter(scModule);
     PBMFLib::SingleChannel::initializeRelativeMagnitude(scModule);

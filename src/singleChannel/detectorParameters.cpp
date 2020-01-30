@@ -15,7 +15,8 @@ public:
     double mThreshold = DEFAULT_THRESHOLD;
     MaximumMatchedFilterPolicy mMaxPolicy = DEFAULT_POLICY;
     int mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
-    bool mGetDetectedWaveform = false;
+    bool mWantDetectedWaveform = false;
+    bool mWantAmplitude = true;
 };
 
 /// Constructor
@@ -63,7 +64,8 @@ void DetectorParameters::clear() noexcept
     pImpl->mThreshold = DEFAULT_THRESHOLD;
     pImpl->mMaxPolicy = DEFAULT_POLICY;
     pImpl->mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
-    pImpl->mGetDetectedWaveform = false;
+    pImpl->mWantDetectedWaveform = false;
+    pImpl->mWantAmplitude = true;
 }
 
 /// Get/set the threshold
@@ -109,12 +111,33 @@ DetectorParameters::getMaximaPolicy() const noexcept
 }
 
 /// Get/set detected waveform
-void DetectorParameters::toggleGetDetectedWaveform(const bool lget) noexcept
+void DetectorParameters::enableSaveDetectedWaveform() noexcept
 {
-    pImpl->mGetDetectedWaveform = lget;
+    pImpl->mWantDetectedWaveform = true;
 }
 
-bool DetectorParameters::getDetectedWaveform() const noexcept
+void DetectorParameters::disableSaveDetectedWaveform() noexcept
 {
-    return pImpl->mGetDetectedWaveform;
+    pImpl->mWantDetectedWaveform = false;
+}
+
+bool DetectorParameters::wantDetectedWaveform() const noexcept
+{
+    return pImpl->mWantDetectedWaveform;
+}
+
+/// Get/set the amplitudes
+void DetectorParameters::enableSaveAmplitudeScalingFactor() noexcept
+{
+    pImpl->mWantAmplitude = true;
+}
+
+void DetectorParameters::disableSaveAmplitudeScalingFactor() noexcept
+{
+    pImpl->mWantAmplitude = false;
+}
+
+bool DetectorParameters::wantAmplitudeScalingFactor() const noexcept
+{
+    return pImpl->mWantAmplitude;
 }

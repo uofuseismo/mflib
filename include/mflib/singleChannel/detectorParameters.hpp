@@ -121,20 +121,38 @@ public:
      * @{
      */
     /*!
-     * @brief Toggles whether the detected waveform snippet corresponding to
-     *        the template will be returned in the detections.  This can be
-     *        useful for debugging.
-     * @param[in] lget   If true then the detected waveform will be returned
-     *                   in the detection.   
+     * @brief This will cause the detector to save the detected waveform.
+     *        This can have high memory overhead but is useful for debugging.
      */
-    void toggleGetDetectedWaveform(bool lget) noexcept;
+    void enableSaveDetectedWaveform() noexcept;
+    /*!
+     * @brief This will caus the detector to not save the detected waveform.
+     *        This has lower memory overhead.
+     */
+    void disableSaveDetectedWaveform() noexcept;
     /*!
      * @brief Determines whether or not the detected waveform is desired
      *        in the output detection.
      * @result True indicates that the detected waveform snippet corresponding
      *         to the detection will be returned.
      */
-    bool getDetectedWaveform() const noexcept;
+    bool wantDetectedWaveform() const noexcept;
+
+    /*!
+     * @brief This will cause the amplitude scaling factors and relative
+     *        magnitudes to be computed.
+     */
+    void enableSaveAmplitudeScalingFactor() noexcept;
+    /*!
+     * @brief This will prevent the amplitude scaling factors and relative
+     *        magnitudes from being computed.
+     */
+    void disableSaveAmplitudeScalingFactor() noexcept;
+    /*!
+     * @brief Determines if the corresponding amplitude scaling factors and
+     *        corresponding magnitude perturbations should be computed.
+     */ 
+    bool wantAmplitudeScalingFactor() const noexcept;
     /*! @} */
 private:
     class DetectorParametersImpl;

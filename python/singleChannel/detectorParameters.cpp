@@ -93,15 +93,36 @@ double DetectorParameters::getDetectionThreshold() const noexcept
     return mParameters->getDetectionThreshold();
 }
 
-/// Get/set get detected waveform
-void DetectorParameters::toggleGetDetectedWaveform(const bool lget) noexcept
+/// Get/set detected waveform
+void DetectorParameters::enableSaveDetectedWaveform() noexcept
 {
-    mParameters->toggleGetDetectedWaveform(lget);
+    mParameters->enableSaveDetectedWaveform();
 }
 
-bool DetectorParameters::getDetectedWaveform() const noexcept
+void DetectorParameters::disableSaveDetectedWaveform() noexcept
 {
-    return mParameters->getDetectedWaveform();
+    mParameters->disableSaveDetectedWaveform();
+}
+
+bool DetectorParameters::wantDetectedWaveform() const noexcept
+{
+    return mParameters->wantDetectedWaveform();
+}
+
+/// Get/set amplitude scaling factor
+void DetectorParameters::enableSaveAmplitudeScalingFactor() noexcept
+{
+    mParameters->enableSaveAmplitudeScalingFactor();
+}
+
+void DetectorParameters::disableSaveAmplitudeScalingFactor() noexcept
+{
+    mParameters->disableSaveAmplitudeScalingFactor();
+}
+
+bool DetectorParameters::wantAmplitudeScalingFactor() const noexcept
+{
+    return mParameters->wantAmplitudeScalingFactor();
 }
 
 void PBMFLib::SingleChannel::initializeDetectorParameters(pybind11::module &m)
@@ -135,16 +156,24 @@ void PBMFLib::SingleChannel::initializeDetectorParameters(pybind11::module &m)
               &PBMFLib::SingleChannel::DetectorParameters::setDetectionThreshold,
               "Sets the minimum value of a candidate detection.  This must be in the range (0,1].");
               
-    parms.def("toggle_get_detected_waveform",
-              &PBMFLib::SingleChannel::DetectorParameters::toggleGetDetectedWaveform,
-              "By setting this to true, the detections will contain the snippet of detected waveform.  While this can be useful for visualation this also comes with memory overhead.");
-    parms.def("get_detected_waveform",
-              &PBMFLib::SingleChannel::DetectorParameters::getDetectedWaveform,
+    parms.def("enable_save_detected_waveform",
+              &PBMFLib::SingleChannel::DetectorParameters::enableSaveDetectedWaveform,
+              "This will cause the detected waveforms to save a copy of the detected waveform.  While this can be useful for visualation this also comes with memory overhead.");
+    parms.def("disable_save_detected_waveform",
+              &PBMFLib::SingleChannel::DetectorParameters::disableSaveDetectedWaveform,
+              "This will prevent the detections from containing the detected waveform.");
+    parms.def("want_detected_waveform",
+              &PBMFLib::SingleChannel::DetectorParameters::wantDetectedWaveform,
               "Determines if the detections will contain the corresponding snippet of detected waveform.");
 
-    pybind11::enum_<MFLib::MaximumMatchedFilterPolicy> (parms, "MaxmimumMatchedFilterPolicy")
-        .value("maximum", MFLib::MaximumMatchedFilterPolicy::MAXIMUM,
-               "Selects the maxima of the matched filtered signals.")
-        .value("absolute_maximum", MFLib::MaximumMatchedFilterPolicy::ABSOLUTE_MAXIMUM,
-               "Selects the maxima of the absolute value of the matched filtered signals."); 
+    parms.def("enable_save_amplitude_scaling_factor",
+              &PBMFLib::SingleChannel::DetectorParameters::enableSaveAmplitudeScalingFactor,
+              "This will cause the detector to compute the amplitude scaling factors and the corresponding relative magnitudes.");
+    parms.def("disable_save_amplitude_scaling_factor",
+              &PBMFLib::SingleChannel::DetectorParameters::disableSaveAmplitudeScalingFactor,
+              "This will prevent the detections from containing the amplitude scaling factors and relative magnitudes.");
+    parms.def("want_amplitude_scaling_factor",
+              &PBMFLib::SingleChannel::DetectorParameters::wantAmplitudeScalingFactor,
+              "Determines if the detections will contain the the amplitude scaling factors and relative magnitudes.");
+
 }

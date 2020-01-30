@@ -38,8 +38,14 @@ public:
     void setDetectionThreshold(double tol);
     double getDetectionThreshold() const noexcept;
     /// Return values
-    void toggleGetDetectedWaveform(bool lget) noexcept;
-    bool getDetectedWaveform() const noexcept; 
+    void enableSaveDetectedWaveform() noexcept;
+    void disableSaveDetectedWaveform() noexcept;
+    bool wantDetectedWaveform() const noexcept; 
+
+    void enableSaveAmplitudeScalingFactor() noexcept;
+    void disableSaveAmplitudeScalingFactor() noexcept;
+    bool wantAmplitudeScalingFactor() const noexcept;
+
 private:
     std::unique_ptr<MFLib::SingleChannel::DetectorParameters> mParameters;
 };

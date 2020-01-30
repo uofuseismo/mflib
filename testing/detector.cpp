@@ -35,18 +35,28 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_NO_THROW(parms.setMinimumDetectionSpacing(minSamples));
     EXPECT_NO_THROW(parms.setDetectionThreshold(thresh));
     EXPECT_NO_THROW(parms.setMaximaPolicy(policy));
-    parms.toggleGetDetectedWaveform(getWaveform);
+ 
+    parms.disableSaveDetectedWaveform();
+    EXPECT_FALSE(parms.wantDetectedWaveform());
+    parms.enableSaveDetectedWaveform();
+
+    parms.disableSaveAmplitudeScalingFactor();
+    EXPECT_FALSE(parms.wantAmplitudeScalingFactor());
+    parms.enableSaveAmplitudeScalingFactor();
 
     EXPECT_EQ(parms.getMinimumDetectionSpacing(), minSamples);
     EXPECT_NEAR(parms.getDetectionThreshold(), thresh, 1.e-14);
     EXPECT_EQ(parms.getMaximaPolicy(), policy);
-    EXPECT_TRUE(parms.getDetectedWaveform());
+    EXPECT_TRUE(parms.wantDetectedWaveform());
 
     DetectorParameters parmsCopy(parms);
     EXPECT_EQ(parmsCopy.getMinimumDetectionSpacing(), minSamples);
     EXPECT_NEAR(parmsCopy.getDetectionThreshold(), thresh, 1.e-14);
     EXPECT_EQ(parmsCopy.getMaximaPolicy(), policy);
-    EXPECT_TRUE(parmsCopy.getDetectedWaveform());
+    EXPECT_TRUE(parmsCopy.wantDetectedWaveform());
+    EXPECT_EQ(parmsCopy.wantDetectedWaveform(), parms.wantDetectedWaveform());
+    EXPECT_EQ(parmsCopy.wantAmplitudeScalingFactor(),
+              parms.wantAmplitudeScalingFactor());
 }
 
 TEST(singleChannelDetection, detector)
@@ -156,7 +166,8 @@ fclose(fout);
     // Now compute the detections
     DetectorParameters detParms;
     detParms.setMinimumDetectionSpacing(minSpacing);
-    detParms.toggleGetDetectedWaveform(true);
+    detParms.enableSaveDetectedWaveform();
+    detParms.enableSaveAmplitudeScalingFactor();
     Detector<double> detector;
     EXPECT_NO_THROW(detector.initialize(detParms));
     std::vector<Detection<double>> detections;

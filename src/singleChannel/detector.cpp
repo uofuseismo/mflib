@@ -444,7 +444,7 @@ fclose(fout);
     }
     // Initialize the relative magnitudes?
     std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;
-    bool lWantMagnitudes = true;
+    bool lWantMagnitudes = pImpl->mParameters.wantAmplitudeScalingFactor();
     if (lWantMagnitudes)
     {
         magnitudes.resize(templates.size());
@@ -454,7 +454,7 @@ fclose(fout);
         }
     }
     // Create detections (i.e., make the products)
-    auto lGetWaveforms = pImpl->mParameters.getDetectedWaveform();
+    auto lGetWaveforms = pImpl->mParameters.wantDetectedWaveform();
     pImpl->mDetections.resize(nDetections); 
     auto signalLength = mf.getSignalLength();
     auto signalPtr = mf.getSignalPointer();
