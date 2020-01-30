@@ -115,6 +115,10 @@ public:
      * @result The minimum threshold above which a detection can be declared.
      */
     double getDetectionThreshold() const noexcept; 
+
+    /*!
+     * @brief Defines the detection time interpolation strategy.
+     */
     /*! @} */
 
     /*! @name Output Parameters
@@ -153,6 +157,7 @@ public:
      *        corresponding magnitude perturbations should be computed.
      */ 
     bool wantAmplitudeScalingFactor() const noexcept;
+
     /*! @} */
 private:
     class DetectorParametersImpl;

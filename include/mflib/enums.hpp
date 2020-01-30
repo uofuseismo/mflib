@@ -39,22 +39,43 @@ enum class RelativeMagnitudeType
     GIBBONS_RINGDAL_2006 = 0, /*!< This finds the optimal scalar to match the 
                                    amplitude of the template waveform to the
                                    detected waveform. */
-    SCHAFF_RICHARDS_2014 = 1 /*!< This finds a scalar to match the amplitude
+    SCHAFF_RICHARDS_2014      /*!< This finds a scalar to match the amplitude
                                   of the template waveform to the detected
                                   waveform whilst including a correction for
                                   the fact that the template and detected event
                                   have a noise contribution. */
 };
 
+/*!
+ * @brief Defines whether we are seeking detections corresponding to maxima or
+ *        absolute maxima of the matched filtered time series.
+ */ 
 enum class MaximumMatchedFilterPolicy
 {
-    MAXIMUM = 0,          /*!< Selects the optima of the matched filtered
-                               signals by locating the maximum values. */
-    ABSOLUTE_MAXIMUM = 1  /*!< Selects the optima of the matched filtered
-                               signals by first computing the absolute value
-                               and then locating the maximum values. */
+    MAXIMUM = 0,      /*!< Selects the optima of the matched filtered
+                           signals by locating the maximum values. */
+    ABSOLUTE_MAXIMUM  /*!< Selects the optima of the matched filtered
+                           signals by first computing the absolute value
+                           and then locating the maximum values. */
 };
 
+/*!
+ * @brief Defines the interpolation policy for refining detections.
+ */
+enum class DetectionInterpolationPolicy
+{
+    LANCZOS = 0,   /*! Performs sinc interpolation (using a Lanczos window) on
+                       fine interval then selects a maxima.  This appears to
+                       be more stable but more computationally expensive. */
+    QUADRATIC,     /*! Fits a quadratic and then optimizes for a delay time
+                       which optimizes this quadratic.  This is computationally
+                       trivial but may be suboptimal for coarse sampling
+                       periods.  */
+    NONE           /*!< Do not interpolate the detection time.  This would be
+                        appropriate when the template is very long and the 
+                        detection is probably more akin to an S + surface wave
+                        detection. */
+};
 
 }
 #endif

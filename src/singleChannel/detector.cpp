@@ -113,22 +113,27 @@ T lanczosRefinement(const int n,
                     const int optIndex,
                     const double dt, 
                     const bool lAbs,
-                    const int alpha = 19)
+                    const int alpha = 19,
+                    const int nrefine = 51)
 {
-    const int nrefine = 50;
     T dtWork = 1/static_cast<double> (nrefine);
     T optShift = 0;
     T yIntMax =-std::numeric_limits<T>::max();
-    for (int idx=1; idx<=2*nrefine-1; idx++)
+    //for (int idx=1; idx<=2*nrefine-1; idx++)
+    for (int idx=1; idx<nrefine; idx++)
     {
-        T shift =-1 + dtWork*idx;
+        //T shift =-1 + dtWork*idx;
+        T shift =-0.5 + dtWork*idx;
         T x = optIndex + shift;
         T yInt = 0;
+        #pragma omp simd reduction(+:yInt)
         for (int a=-alpha; a<=alpha; ++a)
         {
             int i = static_cast<int> (std::floor(x)) - a + 1;
-            auto xi = x - i;
-            if (i >= 0 && i < n){yInt = yInt + xc[i]*lanczos(xi, alpha);}
+            auto xi = x - static_cast<T> (i);
+            T xcv = 0;
+            if (i >= 0 && i < n){xcv = xc[i];}
+            yInt = yInt + xcv*lanczos(xi, alpha);
         }
         if (lAbs){yInt = std::abs(yInt);}
         if (yInt > yIntMax)
@@ -492,13 +497,18 @@ fclose(fout);
         pImpl->mDetections[i].setDetectionTime(detectionTime);
         // Compute the interpolated onset time
         auto mfPtr = mf.getMatchedFilterSignalPointer(it);
+/*
         auto shift = quadraticRefinement(detectionLength,
                                          mfPtr,
                                          peakIndex,
                                          dt,
                                          pImpl->mUseAbsoluteValue);
+*/
         // printf("%lf, %d, %lf\n", detectionTime, it, shift);
-        shift = lanczosRefinement(detectionLength, mfPtr, peakIndex, dt, pImpl->mUseAbsoluteValue, 15);
+        auto shift = lanczosRefinement(detectionLength, mfPtr,
+                                       peakIndex, dt,
+                                       pImpl->mUseAbsoluteValue, 51, 100);
+
         auto intDetTime = detectionTime + shift;
         pImpl->mDetections[i].setDetectionTime(detectionTime);
         pImpl->mDetections[i].setInterpolatedDetectionTime(intDetTime);

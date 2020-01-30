@@ -73,7 +73,7 @@ TEST(singleChannelDetection, detector)
     std::array<double, nt>   amp({  1.0,   2.0,   0.5,  0.75,  3.0});
     std::array<double, nt>  freq({ 10.0,   5.0,   7.5,  12.5,  2.5});
     std::array<double, nt> decay({  2.8,   2.9,   2.6,   2.2,  2.3});
-    std::array<double, nt>   phi({0.001, -0.002, 0.004,-0.003,   0});
+    std::array<double, nt>   phi({0.001,  0.002, 0.004,-0.003, -0.002});
     std::vector<MFLib::WaveformTemplate> wts(nt);
     // Data needs to be noisy otherwise we just get a constant decay of spikes
     auto signal = generateUniformRandomNumbers(signalSize, -0.05, 0.05);
@@ -182,11 +182,14 @@ fclose(fout);
                     tonsets[i], 1.e-10);
         int id = detection.getTemplateIdentifier();
         auto intDetection = detection.getInterpolatedDetectionTime();
+        EXPECT_NEAR(std::abs(tonsetsShifted[i] - intDetection), 0.0, dt/2);
         auto alpha1 = detection.getAmplitudeScalingFactor(
             MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006);
         auto alpha2 = detection.getAmplitudeScalingFactor(
             MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014); 
- printf("%d, %lf, %lf, %lf\n", id, tonsetsShifted[i]- intDetection, alpha1, alpha2);
+ printf("%d, %lf, %lf, %lf, %lf, %lf\n", id,
+        tonsetsShifted[i]- intDetection,
+        tonsetsShifted[i], intDetection, alpha1, alpha2);
     }
 }
 
