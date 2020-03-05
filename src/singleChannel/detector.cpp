@@ -197,8 +197,105 @@ int getTemplateIndex(const int val, const std::vector<int> &v)
     return index;
 }
 
+template<class T>
+void cleanReducedTemplate(const int detectionLength, T *det)
+{
+    const T one = 1;
+    #pragma omp simd aligned(det: 64)
+    for (int i=0; i<detectionLength; ++i)
+    {
+        det[i] = std::max(-one, std::min(one, det[i]));
+    }
 }
 
+template<class T>
+void reduceAllCorrelations(
+    const bool mUseAbsoluteValue,
+    const MFLib::SingleChannel::MatchedFilter<T> &mf,
+    T *det, int *id)
+{
+    auto nt = mf.getNumberOfTemplates();
+    auto detectionLength = mf.getFilteredSignalLength();
+    auto mfPtr = mf.getMatchedFilterSignalPointer(0);
+    if (mUseAbsoluteValue)
+    {
+        #pragma omp simd aligned(mfPtr, det: 64)
+        for (int i=0; i<detectionLength; ++i){det[i] = std::abs(mfPtr[i]);}
+    }
+    else
+    {
+#ifdef USE_PSTL
+        std::copy(std::execution::unseq, mfPtr, mfPtr+detectionLength, det);
+#else
+        std::copy(mfPtr, mfPtr+detectionLength, det);
+#endif
+    }
+    // Now reduce
+    for (int it=1; it<nt; ++it)
+    {
+        mfPtr = mf.getMatchedFilterSignalPointer(it);
+        if (mUseAbsoluteValue)
+        {
+            #pragma omp simd aligned(mfPtr, det, id: 64)
+            for (int i=0; i<detectionLength; ++i)
+            {
+                auto absXC = std::abs(mfPtr[i]);
+                if (absXC > det[i])
+                {
+                    det[i] = absXC;
+                    id[i] = it;
+                }
+            }
+        }
+        else
+        {
+            #pragma omp simd aligned(mfPtr, det, id: 64)
+            for (int i=0; i<detectionLength; ++i) 
+            {
+                if (mfPtr[i] > det[i])
+                {
+                    det[i] = mfPtr[i];
+                    id[i] = it; 
+                }
+            }
+        }
+    } // Loop on templates
+    // And clean
+    cleanReducedTemplate(detectionLength, det);
+}
+
+template<class T>
+void setCorrelations(
+    const int it,
+    const bool mUseAbsoluteValue,
+    const MFLib::SingleChannel::MatchedFilter<T> &mf,
+    T *det, int *id)
+{
+    auto detectionLength = mf.getFilteredSignalLength();
+    auto mfPtr = mf.getMatchedFilterSignalPointer(it);
+    if (mUseAbsoluteValue)
+    {
+        #pragma omp simd aligned(mfPtr, det: 64)
+        for (int i=0; i<detectionLength; ++i){det[i] = std::abs(mfPtr[i]);}
+    }   
+    else
+    {   
+#ifdef USE_PSTL
+        std::copy(std::execution::unseq, mfPtr, mfPtr+detectionLength, det);
+#else
+        std::copy(mfPtr, mfPtr+detectionLength, det);
+#endif
+    }
+    std::fill(id, id+detectionLength, it);
+    // And clean
+    cleanReducedTemplate(detectionLength, det);
+}
+
+}
+
+///--------------------------------------------------------------------------///
+///                               Implementation                             ///
+///--------------------------------------------------------------------------/// 
 template<class T>
 class Detector<T>::DetectorImpl
 {
@@ -352,11 +449,41 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     {
         throw std::invalid_argument("Matched filtered signal length is 0\n");
     }
+    // Determine if I am making detections for each correlogram or a 
+    // a reduced corrrelogram
+    bool channelBased = false;
+    int nloop = 1;
+    if (channelBased){nloop = nt;}
+    // Set workspace
     auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
     auto det = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
     nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
     auto id = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
-    // Initialize
+    int nDetections = 0;
+    if (!channelBased)
+    {
+        // Initialize
+        reduceAllCorrelations(pImpl->mUseAbsoluteValue, mf, det, id);
+        // Compute the peaks which are the detections
+        pImpl->mPeakFinder.setSignal(detectionLength, det);
+        pImpl->mPeakFinder.apply();
+        nDetections = pImpl->mPeakFinder.getNumberOfPeaks();
+        // Swing and a miss
+        if (nDetections < 1)
+        {
+            MKL_free(det);
+            MKL_free(id);
+            return;
+        }
+    }
+    else
+    {
+        for (int it=0; it<nt; ++it)
+        {
+            setCorrelations(it, pImpl->mUseAbsoluteValue, mf, det, id);
+        }
+    }
+/*
     auto mfPtr = mf.getMatchedFilterSignalPointer(0);
     if (pImpl->mUseAbsoluteValue)
     {
@@ -419,6 +546,7 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         MKL_free(id);
         return;
     }
+*/
     // Get the detection indices
     auto peaksIndices = pImpl->mPeakFinder.getPeakIndicesPointer();
 /*
@@ -437,7 +565,7 @@ fclose(fout);
 */
     // Figure out which templates I'll need and copy them
     auto uniqueTemplateIDs
-        = getUniqueTemplateIDs(nDetections, peaksIndices, id);//detectionLength, id);
+        = getUniqueTemplateIDs(nDetections, peaksIndices, id);
     std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
     std::vector<T> templateSignal(uniqueTemplateIDs.size());
     for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
@@ -471,7 +599,11 @@ fclose(fout);
         int it = id[peakIndex];
         // Get the template ID
         auto jt = getTemplateIndex(it, uniqueTemplateIDs);
-        if (jt < 0){continue;} // Should never happen
+        if (jt < 0)
+        {
+            fprintf(stderr, "Algorithmic failure - negative ID\n");
+            continue;
+        }
         // Set the basics
         pImpl->mDetections[i].setTemplateIdentifier(
             templates[jt].getIdentifier());
@@ -497,13 +629,13 @@ fclose(fout);
         pImpl->mDetections[i].setDetectionTime(detectionTime);
         // Compute the interpolated onset time
         auto mfPtr = mf.getMatchedFilterSignalPointer(it);
-/*
+        /*
         auto shift = quadraticRefinement(detectionLength,
                                          mfPtr,
                                          peakIndex,
                                          dt,
                                          pImpl->mUseAbsoluteValue);
-*/
+        */
         // printf("%lf, %d, %lf\n", detectionTime, it, shift);
         auto shift = lanczosRefinement(detectionLength, mfPtr,
                                        peakIndex, dt,
