@@ -452,6 +452,11 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     // Determine if I am making detections for each correlogram or a 
     // a reduced corrrelogram
     bool channelBased = false;
+    if (pImpl->mParameters.getWaveformPolicy() == 
+        MFLib::DetectionWaveformPolicy::SINGLE_CORRELOGRAMS)
+    {
+        channelBased = true;
+    }
     int nloop = 1;
     if (channelBased){nloop = nt;}
     // Set workspace
@@ -460,85 +465,31 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     nbytes = sizeof(int)*static_cast<size_t> (detectionLength);
     auto id = static_cast<int *> (MKL_calloc(nbytes, 1, 64));
     int nDetections = 0;
+    std::vector<MFLib::PeakFinder<T>> peakFinders;
     if (!channelBased)
     {
+        peakFinders.resize(1);
+        peakFinders[0] = pImpl->mPeakFinder;
         // Initialize
         reduceAllCorrelations(pImpl->mUseAbsoluteValue, mf, det, id);
         // Compute the peaks which are the detections
-        pImpl->mPeakFinder.setSignal(detectionLength, det);
-        pImpl->mPeakFinder.apply();
-        nDetections = pImpl->mPeakFinder.getNumberOfPeaks();
-        // Swing and a miss
-        if (nDetections < 1)
-        {
-            MKL_free(det);
-            MKL_free(id);
-            return;
-        }
+        peakFinders[0].setSignal(detectionLength, det);
+        peakFinders[0].apply();
+        nDetections = peakFinders[0].getNumberOfPeaks();
     }
     else
     {
+        peakFinders.resize(nt);
         for (int it=0; it<nt; ++it)
         {
+            peakFinders[it] = pImpl->mPeakFinder;
             setCorrelations(it, pImpl->mUseAbsoluteValue, mf, det, id);
+            // Compute the peaks which are the detections
+            peakFinders[it].setSignal(detectionLength, det);
+            peakFinders[it].apply();
+            nDetections = nDetections + peakFinders[it].getNumberOfPeaks();
         }
     }
-/*
-    auto mfPtr = mf.getMatchedFilterSignalPointer(0);
-    if (pImpl->mUseAbsoluteValue)
-    {
-        #pragma omp simd aligned(mfPtr, det: 64)
-        for (int i=0; i<detectionLength; ++i){det[i] = std::abs(mfPtr[i]);}
-    }
-    else
-    {
-#ifdef USE_PSTL
-        std::copy(std::execution::unseq, mfPtr, mfPtr+detectionLength, det);
-#else
-        std::copy(mfPtr, mfPtr+detectionLength, det);
-#endif
-    }
-    // Now reduce
-    for (int it=1; it<nt; ++it)
-    {
-        mfPtr = mf.getMatchedFilterSignalPointer(it);
-        if (pImpl->mUseAbsoluteValue)
-        {
-            #pragma omp simd aligned(mfPtr, det, id: 64)
-            for (int i=0; i<detectionLength; ++i)
-            {
-                auto absXC = std::abs(mfPtr[i]);
-                if (absXC > det[i])
-                {
-                    det[i] = absXC;
-                    id[i] = it;
-                }
-            }
-        }
-        else
-        {
-            #pragma omp simd aligned(mfPtr, det, id: 64)
-            for (int i=0; i<detectionLength; ++i) 
-            {
-                if (mfPtr[i] > det[i])
-                {
-                    det[i] = mfPtr[i];
-                    id[i] = it;
-                }
-            }
-        }
-    } // Loop on templates
-    // And clean
-    const T one = 1;
-    #pragma omp simd aligned(det: 64)
-    for (int i=0; i<detectionLength; ++i)
-    {
-        det[i] = std::max(-one, std::min(one, det[i]));
-    }
-    // Compute the peaks which are the detections
-    pImpl->mPeakFinder.setSignal(detectionLength, det);
-    pImpl->mPeakFinder.apply();
-    auto nDetections = pImpl->mPeakFinder.getNumberOfPeaks();
     // Swing and a miss
     if (nDetections < 1)
     {
@@ -546,130 +497,136 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         MKL_free(id);
         return;
     }
-*/
-    // Get the detection indices
-    auto peaksIndices = pImpl->mPeakFinder.getPeakIndicesPointer();
-/*
-FILE *fout = fopen("reduced_xc.txt", "w");
-for (int i=0; i<detectionLength; ++i)
-{
-fprintf(fout, "%f, %f\n", i*0.01, det[i]);
-}
-fclose(fout);
-fout = fopen("detect_loc.txt", "w");
-for (int i=0; i<nDetections; ++i)
-{
-fprintf(fout, "%f, %d, %e\n", peaksIndices[i]*0.01, id[peaksIndices[i]], det[peaksIndices[i]]); 
-}
-fclose(fout);
-*/
-    // Figure out which templates I'll need and copy them
-    auto uniqueTemplateIDs
-        = getUniqueTemplateIDs(nDetections, peaksIndices, id);
-    std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
-    std::vector<T> templateSignal(uniqueTemplateIDs.size());
-    for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
+    // Loop on the number of templates
+    for (int ip=0; ip<static_cast<int> (peakFinders.size()); ++ip)
     {
-        auto it = uniqueTemplateIDs[i];
-        templates[i] = mf.getWaveformTemplate(it);
-        // Ensure we can pair this template to something
-        if (!templates[i].haveIdentifier()){templates[i].setIdentifier(it);}
-    }
-    // Initialize the relative magnitudes?
-    std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;
-    bool lWantMagnitudes = pImpl->mParameters.wantAmplitudeScalingFactor();
-    if (lWantMagnitudes)
-    {
-        magnitudes.resize(templates.size());
-        for (int i=0; i<static_cast<int> (templates.size()); ++i)
+        // Get the detection indices
+        auto peaksIndices = peakFinders[ip].getPeakIndicesPointer();
+        // Figure out which templates I'll need and copy them
+        auto uniqueTemplateIDs
+            = getUniqueTemplateIDs(nDetections, peaksIndices, id);
+        std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
+        std::vector<T> templateSignal(uniqueTemplateIDs.size());
+        for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
         {
-            magnitudes[i].initialize(templates[i]);
+            auto it = uniqueTemplateIDs[i];
+            templates[i] = mf.getWaveformTemplate(it);
+            // Ensure we can pair this template to something
+            if (!templates[i].haveIdentifier()){templates[i].setIdentifier(it);}
         }
-    }
-    // Create detections (i.e., make the products)
-    auto lGetWaveforms = pImpl->mParameters.wantDetectedWaveform();
-    pImpl->mDetections.resize(nDetections); 
-    auto signalLength = mf.getSignalLength();
-    auto signalPtr = mf.getSignalPointer();
-    // Extract the detections
-    for (int i=0; i<nDetections; ++i)
-    {
-        // Get the detection index in the signal and the corresponding template
-        int peakIndex = peaksIndices[i];
-        int it = id[peakIndex];
-        // Get the template ID
-        auto jt = getTemplateIndex(it, uniqueTemplateIDs);
-        if (jt < 0)
+        // Initialize the relative magnitudes?
+        std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;
+        bool lWantMagnitudes = pImpl->mParameters.wantAmplitudeScalingFactor();
+        if (lWantMagnitudes)
         {
-            fprintf(stderr, "Algorithmic failure - negative ID\n");
-            continue;
+            magnitudes.resize(templates.size());
+            for (int i=0; i<static_cast<int> (templates.size()); ++i)
+            {
+                magnitudes[i].initialize(templates[i]);
+            }
         }
-        // Set the basics
-        pImpl->mDetections[i].setTemplateIdentifier(
-            templates[jt].getIdentifier());
-        pImpl->mDetections[i].setCorrelationCoefficient(det[peakIndex]);
-        // Get the detected chunk of signal
-        int templateLength = templates[jt].getSignalLength();
-        auto lComputeAmplitude = lWantMagnitudes;
-        if (peakIndex + templateLength > signalLength)
+        // Create detections (i.e., make the products)
+        auto lGetWaveforms = pImpl->mParameters.wantDetectedWaveform();
+        pImpl->mDetections.resize(nDetections); 
+        auto signalLength = mf.getSignalLength();
+        auto signalPtr = mf.getSignalPointer();
+        // Extract the detections
+        for (int i=0; i<nDetections; ++i)
         {
-            fprintf(stderr, "Cannot compute amplitude for detection %d\n", i+1);
-            templateLength = signalLength - peakIndex;
-            lComputeAmplitude = false;
-        }
-        const T *detectedSignalPtr = signalPtr + peakIndex;
-        if (lGetWaveforms)
-        {
-            pImpl->mDetections[i].setDetectedSignal(templateLength,
-                                                    detectedSignalPtr);
-        }
-        // Compute the onset time
-        auto dt = 1/templates[jt].getSamplingRate(); // Required
-        auto detectionTime = peakIndex*dt;
-        pImpl->mDetections[i].setDetectionTime(detectionTime);
-        // Compute the interpolated onset time
-        auto mfPtr = mf.getMatchedFilterSignalPointer(it);
-        /*
-        auto shift = quadraticRefinement(detectionLength,
-                                         mfPtr,
-                                         peakIndex,
-                                         dt,
-                                         pImpl->mUseAbsoluteValue);
-        */
-        // printf("%lf, %d, %lf\n", detectionTime, it, shift);
-        auto shift = lanczosRefinement(detectionLength, mfPtr,
-                                       peakIndex, dt,
-                                       pImpl->mUseAbsoluteValue, 51, 100);
+            // For simplicity we'll create the detection then copy it later on
+            MFLib::SingleChannel::Detection<T> detection; 
+            // Get the detection index in the signal and the corresponding
+            // template
+            int peakIndex = peaksIndices[i];
+            int it = id[peakIndex];
+            // Get the template ID
+            auto jt = getTemplateIndex(it, uniqueTemplateIDs);
+            if (jt < 0)
+            {
+                fprintf(stderr, "Algorithmic failure - negative ID\n");
+                continue;
+            }
+            // Set the basics
+            detection.setTemplateIdentifier(templates[jt].getIdentifier());
+            detection.setCorrelationCoefficient(det[peakIndex]);
+            // Get the detected chunk of signal
+            int templateLength = templates[jt].getSignalLength();
+            auto lComputeAmplitude = lWantMagnitudes;
+            if (peakIndex + templateLength > signalLength)
+            {
+                fprintf(stderr, "Cannot compute amplitude for detection %d\n",
+                        i+1);
+                templateLength = signalLength - peakIndex;
+                lComputeAmplitude = false;
+            }
+            const T *detectedSignalPtr = signalPtr + peakIndex;
+            if (lGetWaveforms)
+            {
+                detection.setDetectedSignal(templateLength, detectedSignalPtr);
+            }
+            // Compute the onset time
+            auto dt = 1/templates[jt].getSamplingRate(); // Required
+            auto detectionTime = peakIndex*dt;
+            detection.setDetectionTime(detectionTime);
+            // Compute the interpolated onset time
+            auto mfPtr = mf.getMatchedFilterSignalPointer(it);
+            /*
+            auto shift = quadraticRefinement(detectionLength,
+                                             mfPtr,
+                                             peakIndex,
+                                             dt,
+                                             pImpl->mUseAbsoluteValue);
+            */
+            // printf("%lf, %d, %lf\n", detectionTime, it, shift);
+            // TODO 51 and 100 should be parameters
+            auto shift = lanczosRefinement(detectionLength, mfPtr,
+                                           peakIndex, dt,
+                                           pImpl->mUseAbsoluteValue, 51, 100);
+            auto intDetTime = detectionTime + shift;
+            detection.setDetectionTime(detectionTime);
+            detection.setInterpolatedDetectionTime(intDetTime);
+            // Try getting the phase onset time
+            if (templates[jt].havePhaseOnsetTime())
+            {
+                auto pickTime = detectionTime
+                              + templates[jt].getPhaseOnsetTime();
+                auto intPickTime = intDetTime
+                                 + templates[jt].getPhaseOnsetTime();
+                detection.setPhaseOnsetTime(pickTime);
+                detection.setInterpolatedPhaseOnsetTime(intPickTime);
+            }
+            // Compute the relative amplitudes / magnitudes
+            if (lComputeAmplitude)
+            {
+                MFLib::RelativeMagnitudeType magType;
+                magnitudes[jt].setDetectedSignal(templateLength,
+                                                 detectedSignalPtr);
+                magType = MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006;
+                T alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
+                detection.setAmplitudeScalingFactor(alpha, magType);
 
-        auto intDetTime = detectionTime + shift;
-        pImpl->mDetections[i].setDetectionTime(detectionTime);
-        pImpl->mDetections[i].setInterpolatedDetectionTime(intDetTime);
-        // Try getting the phase onset time
-        if (templates[jt].havePhaseOnsetTime())
-        {
-            auto pickTime = detectionTime
-                          + templates[jt].getPhaseOnsetTime();
-            auto intPickTime = intDetTime
-                             + templates[jt].getPhaseOnsetTime();
-            pImpl->mDetections[i].setPhaseOnsetTime(pickTime);
-            pImpl->mDetections[i].setInterpolatedPhaseOnsetTime(intPickTime);
-        }
-        // Compute the relative amplitudes / magnitudes
-        if (lComputeAmplitude)
-        {
-            magnitudes[jt].setDetectedSignal(templateLength, detectedSignalPtr);
-            auto magType = MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006;
-            T alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-            pImpl->mDetections[i].setAmplitudeScalingFactor(alpha, magType);
-
-            magType = MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014;
-            alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-            pImpl->mDetections[i].setAmplitudeScalingFactor(alpha, magType);
+                magType = MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014;
+                alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
+                detection.setAmplitudeScalingFactor(alpha, magType);
+            }
+            // Save this detection
+            pImpl->mDetections[i] = detection;
         }
     }
     // Clean up
     MKL_free(det);
     MKL_free(id);
+    // Sort the events by onset time if channel-by-channel.  Otherwise, these
+    // are already sorted in ascending order.
+    if (channelBased)
+    {
+        std::sort(pImpl->mDetections.begin(), pImpl->mDetections.end(),
+                  [](const MFLib::SingleChannel::Detection<T> &a,
+                     const MFLib::SingleChannel::Detection<T> &b)
+                  {
+                     return a.getDetectionTime() < b.getDetectionTime();
+                  });
+    }
 }
 
 /// Determines if class is initialized

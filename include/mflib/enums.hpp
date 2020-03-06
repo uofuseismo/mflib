@@ -60,6 +60,25 @@ enum class MaximumMatchedFilterPolicy
 };
 
 /*!
+ * @brief Defines whether we make detections on all correlograms or a 
+ *        reduced version of the correlograms.
+ */
+enum class DetectionWaveformPolicy
+{
+    REDUCED_CORRELOGRAMS = 0, /*!< Combines all correlograms by taking
+                                   the maximum or absolute maximum
+                                   of the correlograms then computing
+                                   the detections. */
+    SINGLE_CORRELOGRAMS       /*!< Makes detections on individual 
+                                   correlograms.  There may however
+                                   be multiple detections from 
+                                   different templates in a small
+                                   time window.  In this case, the
+                                   associator must remove these
+                                   duplicates. */
+};
+
+/*!
  * @brief Defines the interpolation policy for refining detections.
  */
 enum class DetectionInterpolationPolicy

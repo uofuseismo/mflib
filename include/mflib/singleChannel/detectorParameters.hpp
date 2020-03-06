@@ -117,9 +117,24 @@ public:
     double getDetectionThreshold() const noexcept; 
 
     /*!
+     * @brief Defines the policy for combining waveforms.  This can combine
+     *        correlograms then detect or make detections on individual
+     *        correlograms and leave it to the associator to remove double
+     *        events.
+     * @param[in] policy   The policy for combining waveforms
+     */
+    void setWaveformPolicy(DetectionWaveformPolicy policy) noexcept;
+    /*!
+     * @brief Gets the waveform combining policy.
+     * @result Determines if the correlograms will be combined prior to
+     *         detecting or if the detector will be run on individual
+     *         correlograms.
+     */
+    DetectionWaveformPolicy getWaveformPolicy() const noexcept;
+    /*! @} */
+    /*!
      * @brief Defines the detection time interpolation strategy.
      */
-    /*! @} */
 
     /*! @name Output Parameters
      * @{
