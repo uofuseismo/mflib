@@ -34,8 +34,8 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_NO_THROW(parms.setMinimumDetectionSpacing(minSamples));
     EXPECT_NO_THROW(parms.setDetectionThreshold(thresh));
     EXPECT_NO_THROW(parms.setMaximaPolicy(policy));
-    auto detPolicy = MFLib::DetectionWaveformPolicy::SINGLE_CORRELOGRAMS;
-    parms.setWaveformPolicy(detPolicy);
+    auto detPolicy = MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE;
+    parms.setMatchedFilteredSignalDetectorPolicy(detPolicy);
  
     parms.disableSaveDetectedWaveform();
     EXPECT_FALSE(parms.wantDetectedWaveform());
@@ -49,7 +49,7 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_NEAR(parms.getDetectionThreshold(), thresh, 1.e-14);
     EXPECT_EQ(parms.getMaximaPolicy(), policy);
     EXPECT_TRUE(parms.wantDetectedWaveform());
-    EXPECT_EQ(parms.getWaveformPolicy(), detPolicy);
+    EXPECT_EQ(parms.getMatchedFilteredSignalDetectorPolicy(), detPolicy);
 
     DetectorParameters parmsCopy(parms);
     EXPECT_EQ(parmsCopy.getMinimumDetectionSpacing(), minSamples);
@@ -59,8 +59,8 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_EQ(parmsCopy.wantDetectedWaveform(), parms.wantDetectedWaveform());
     EXPECT_EQ(parmsCopy.wantAmplitudeScalingFactor(),
               parms.wantAmplitudeScalingFactor());
-    EXPECT_EQ(parmsCopy.getWaveformPolicy(),
-              parms.getWaveformPolicy()); 
+    EXPECT_EQ(parmsCopy.getMatchedFilteredSignalDetectorPolicy(),
+              parms.getMatchedFilteredSignalDetectorPolicy()); 
 }
 
 TEST(singleChannelDetection, detector)
@@ -170,8 +170,8 @@ fclose(fout);
     // Now compute the detections
     DetectorParameters detParms;
     detParms.setMinimumDetectionSpacing(minSpacing);
-    detParms.setWaveformPolicy(
-        MFLib::DetectionWaveformPolicy::REDUCED_CORRELOGRAMS);
+    detParms.setMatchedFilteredSignalDetectorPolicy(
+        MFLib::MatchedFilteredSignalDetectorPolicy::REDUCED);
     detParms.enableSaveDetectedWaveform();
     detParms.enableSaveAmplitudeScalingFactor();
     Detector<double> detector;

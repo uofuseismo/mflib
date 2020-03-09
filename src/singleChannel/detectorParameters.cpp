@@ -4,8 +4,8 @@
 #include "mflib/singleChannel/detectorParameters.hpp"
 
 #define DEFAULT_THRESHOLD 0.7
-#define DEFAULT_MAXIMUM_POLICY MaximumMatchedFilterPolicy::MAXIMUM
-#define DEFAULT_CORRELOGRAM_POLICY DetectionWaveformPolicy::REDUCED_CORRELOGRAMS
+#define DEFAULT_MAXIMUM_POLICY MFLib::MaximumMatchedFilterPolicy::MAXIMUM
+#define DEFAULT_MF_POLICY MFLib::MatchedFilteredSignalDetectorPolicy::REDUCED
 #define DEFAULT_MIN_SAMPLE_DISTANCE 0
 
 using namespace MFLib::SingleChannel;
@@ -15,7 +15,8 @@ class DetectorParameters::DetectorParametersImpl
 public:
     double mThreshold = DEFAULT_THRESHOLD;
     MaximumMatchedFilterPolicy mMaxPolicy = DEFAULT_MAXIMUM_POLICY;
-    DetectionWaveformPolicy mDetectionWaveformPolicy = DEFAULT_CORRELOGRAM_POLICY;
+    MatchedFilteredSignalDetectorPolicy mMatchedFilteredSignalDetectorPolicy
+         = DEFAULT_MF_POLICY;
     int mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
     bool mWantDetectedWaveform = false;
     bool mWantAmplitude = true;
@@ -66,7 +67,7 @@ void DetectorParameters::clear() noexcept
     pImpl->mThreshold = DEFAULT_THRESHOLD;
     pImpl->mMaxPolicy = DEFAULT_MAXIMUM_POLICY;
     pImpl->mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
-    pImpl->mDetectionWaveformPolicy = DEFAULT_CORRELOGRAM_POLICY;
+    pImpl->mMatchedFilteredSignalDetectorPolicy = DEFAULT_MF_POLICY;
     pImpl->mWantDetectedWaveform = false;
     pImpl->mWantAmplitude = true;
 }
@@ -101,19 +102,18 @@ int DetectorParameters::getMinimumDetectionSpacing() const noexcept
 }
 
 /// Get/set policy on detections on correlations
-void DetectorParameters::setWaveformPolicy(
-    const DetectionWaveformPolicy policy) noexcept
+void DetectorParameters::setMatchedFilteredSignalDetectorPolicy(
+    const MatchedFilteredSignalDetectorPolicy policy) noexcept
 {
-    pImpl->mDetectionWaveformPolicy = policy;
+    pImpl->mMatchedFilteredSignalDetectorPolicy = policy;
 }
 
 
-MFLib::DetectionWaveformPolicy
-DetectorParameters::getWaveformPolicy() const noexcept
+MFLib::MatchedFilteredSignalDetectorPolicy
+DetectorParameters::getMatchedFilteredSignalDetectorPolicy() const noexcept
 {
-    return pImpl->mDetectionWaveformPolicy;
+    return pImpl->mMatchedFilteredSignalDetectorPolicy;
 }
-
 
 /// Get/set the maximum policy
 void DetectorParameters::setMaximaPolicy(

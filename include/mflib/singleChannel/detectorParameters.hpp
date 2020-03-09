@@ -118,19 +118,21 @@ public:
 
     /*!
      * @brief Defines the policy for combining waveforms.  This can combine
-     *        correlograms then detect or make detections on individual
-     *        correlograms and leave it to the associator to remove double
-     *        events.
+     *        matched filtered signals then detect or make detections on
+     *        individual matched filtered signals and leave it to the
+     *        associator to remove double events.
      * @param[in] policy   The policy for combining waveforms
      */
-    void setWaveformPolicy(DetectionWaveformPolicy policy) noexcept;
+    void setMatchedFilteredSignalDetectorPolicy(
+        MFLib::MatchedFilteredSignalDetectorPolicy policy) noexcept;
     /*!
-     * @brief Gets the waveform combining policy.
-     * @result Determines if the correlograms will be combined prior to
-     *         detecting or if the detector will be run on individual
+     * @brief Gets the matched filtered signal detection policy.
+     * @result Determines if the matched filtered signals will be combined
+     *         prior to detecting or if the detector will be run on individual
      *         correlograms.
      */
-    DetectionWaveformPolicy getWaveformPolicy() const noexcept;
+    MFLib::MatchedFilteredSignalDetectorPolicy
+    getMatchedFilteredSignalDetectorPolicy() const noexcept;
     /*! @} */
     /*!
      * @brief Defines the detection time interpolation strategy.

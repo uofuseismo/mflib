@@ -71,6 +71,20 @@ DetectorParameters::getMaximaPolicy() const noexcept
     return mParameters->getMaximaPolicy();
 }
 
+/// Detector reduction policy
+void DetectorParameters::setMatchedFilteredSignalDetectorPolicy(
+    const MFLib::MatchedFilteredSignalDetectorPolicy policy) noexcept
+{
+    mParameters->setMatchedFilteredSignalDetectorPolicy(policy);
+}
+
+MFLib::MatchedFilteredSignalDetectorPolicy
+DetectorParameters::getMatchedFilteredSignalDetectorPolicy() const noexcept
+{
+    return mParameters->getMatchedFilteredSignalDetectorPolicy();
+}
+
+
 /// Minimum sample spacing
 void DetectorParameters::setMinimumDetectionSpacing(const int nSamples) noexcept
 {
@@ -141,6 +155,14 @@ void PBMFLib::SingleChannel::initializeDetectorParameters(pybind11::module &m)
     parms.def("set_maxima_policy",
               &PBMFLib::SingleChannel::DetectorParameters::setMaximaPolicy,
               "Sets the policy defining how maxima are computed in the matched filtered signals.  For example, this can select the maxima or absolute maxima of the matched filtered signals.");
+
+    parms.def("get_matched_filtered_signal_detector_policy",
+              &PBMFLib::SingleChannel::DetectorParameters::getMatchedFilteredSignalDetectorPolicy,
+              "Gets the policy for whether detections are computed on invidual matched filtered signals.");
+ 
+    parms.def("set_matched_filtered_signal_detector_policy",
+              &PBMFLib::SingleChannel::DetectorParameters::setMatchedFilteredSignalDetectorPolicy,
+              "Sets the policy on whether detections are computed on individual or reduced matched filtered signals.");
 
     parms.def("get_minimum_detection_spacing",
               &PBMFLib::SingleChannel::DetectorParameters::getMinimumDetectionSpacing,

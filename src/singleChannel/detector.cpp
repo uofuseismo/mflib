@@ -452,8 +452,8 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     // Determine if I am making detections for each correlogram or a 
     // a reduced corrrelogram
     bool channelBased = false;
-    if (pImpl->mParameters.getWaveformPolicy() == 
-        MFLib::DetectionWaveformPolicy::SINGLE_CORRELOGRAMS)
+    if (pImpl->mParameters.getMatchedFilteredSignalDetectorPolicy() ==
+        MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE)
     {
         channelBased = true;
     }

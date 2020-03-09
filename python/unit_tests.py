@@ -345,6 +345,7 @@ def test_single_channel_detector_parameters():
     get_wave = True
 
     parms.set_maxima_policy(pymflib.MaxmimumMatchedFilterPolicy.absolute_maximum)
+    parms.set_matched_filtered_signal_detector_policy(pymflib.MatchedFilteredSignalDetectorPolicy.single)
     parms.set_minimum_detection_spacing(min_spacing)
     parms.set_detection_threshold(det_tol)
     parms.enable_save_detected_waveform()
@@ -354,6 +355,8 @@ def test_single_channel_detector_parameters():
     assert parms.get_minimum_detection_spacing() == min_spacing, 'min spacing failed'
     assert parms.get_detection_threshold() == det_tol, 'det tol failed'
     assert parms.want_detected_waveform(), 'get det wave failed'
+    assert parms.get_matched_filtered_signal_detector_policy() == \
+           pymflib.MatchedFilteredSignalDetectorPolicy.single, 'mfs detector policy failed'
     assert not parms.want_amplitude_scaling_factor(), 'get det amp failed'
 
     # Test copy c'tor
@@ -362,6 +365,8 @@ def test_single_channel_detector_parameters():
     assert parms_copy.get_minimum_detection_spacing() == min_spacing, 'copy min spacing failed'
     assert parms_copy.get_detection_threshold() == det_tol, 'copy det tol failed'
     assert parms_copy.want_detected_waveform(), 'copy get det wave failed'
+    assert parms_copy.get_matched_filtered_signal_detector_policy() == \
+           pymflib.MatchedFilteredSignalDetectorPolicy.single, 'copy mfs detector policy failed'
     assert not parms_copy.want_amplitude_scaling_factor(), 'copy get the det amp failed'
 
 if __name__ == "__main__":

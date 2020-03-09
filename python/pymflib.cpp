@@ -28,6 +28,11 @@ PYBIND11_MODULE(pymflib, m)
         .value("absolute_maximum", MFLib::MaximumMatchedFilterPolicy::ABSOLUTE_MAXIMUM,
                "Selects the maxima of the absolute value of the matched filtered signals.");
 
+    pybind11::enum_<MFLib::MatchedFilteredSignalDetectorPolicy> (m, "MatchedFilteredSignalDetectorPolicy")
+        .value("reduce", MFLib::MatchedFilteredSignalDetectorPolicy::REDUCED,
+               "Combines all matched filtered signals by taking the maximum or absolute maximum then computing detections.")
+        .value("single", MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE,
+               "Makes detections on individual matched filtered signals.  This may result in multiple detections from a different template occurring simultaneously in a small time window.  In this case, the associator must remove these duplicates."); 
     pybind11::module scModule = m.def_submodule("SingleChannel");
 
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);

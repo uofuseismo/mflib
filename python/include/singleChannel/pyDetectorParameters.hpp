@@ -33,6 +33,10 @@ public:
     /// Behavioral
     void setMaximaPolicy(MFLib::MaximumMatchedFilterPolicy policy) noexcept;
     MFLib::MaximumMatchedFilterPolicy getMaximaPolicy() const noexcept;
+    void setMatchedFilteredSignalDetectorPolicy(
+        MFLib::MatchedFilteredSignalDetectorPolicy policy) noexcept;
+    MFLib::MatchedFilteredSignalDetectorPolicy
+        getMatchedFilteredSignalDetectorPolicy() const noexcept;
     void setMinimumDetectionSpacing(int nSamples) noexcept;
     int getMinimumDetectionSpacing() const noexcept;
     void setDetectionThreshold(double tol);
