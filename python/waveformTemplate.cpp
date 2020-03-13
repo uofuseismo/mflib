@@ -168,12 +168,14 @@ void WaveformTemplate::setIdentifier(
     mWaveformTemplate->setIdentifier(id);
 }
 
-/*
-uint64_t WaveformTemplate::getIdentifier() const
+std::pair<PBMFLib::NetworkStationPhase, uint64_t>
+WaveformTemplate::getIdentifier() const
 {
-    return mWaveformTemplate->getIdentifier();
+    auto id = mWaveformTemplate->getIdentifier();
+    PBMFLib::NetworkStationPhase nsp(id.first);
+    std::pair<PBMFLib::NetworkStationPhase, uint64_t> idOut(nsp, id.second);
+    return id;
 }
-*/
 
 void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
 {

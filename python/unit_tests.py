@@ -272,8 +272,12 @@ def test_single_channel_relative_magnitude():
 
 def test_single_channel_detection():
     print("Single channel detection test...")
+    nsp = pymflib.NetworkStationPhase()
+    nsp.set_network("UU")
+    nsp.set_station("CMU")
+    nsp.set_phase("P")
     onset_time = 4
-    template_id = 204
+    template_id = [nsp, 204]
     onset_int_time = 9
     detection_time = 2
     xc_val = 0.3
@@ -286,7 +290,11 @@ def test_single_channel_detection():
     assert not detection.have_template_identifier(), 'template id bool not failed'
     detection.set_template_identifier(template_id)
     assert detection.have_template_identifier(), 'template id bool failed'
-    assert detection.get_template_identifier() == template_id, 'template id failed'
+    template_back = detection.get_template_identifier()
+    assert template_back[0].get_network() == template_id[0].get_network(), 'template id net failed'
+    assert template_back[0].get_station() == template_id[0].get_station(), 'template id stat failed'
+    assert template_back[0].get_phase() == template_id[0].get_phase(), 'template id phase failed'
+    assert template_back[1] == template_id[1], 'template id failed'
 
     assert not detection.have_correlation_coefficient(), 'xc coeff bool not failed'
     detection.set_correlation_coefficient(xc_val)
@@ -322,7 +330,11 @@ def test_single_channel_detection():
     # Test copy c'tor
     det_copy = detection
     assert det_copy.have_template_identifier(), 'copy template id bool failed'
-    assert det_copy.get_template_identifier() == template_id, 'copy template id failed'
+    template_back = det_copy.get_template_identifier()
+    assert template_back[0].get_network() == template_id[0].get_network(), 'template id net failed'
+    assert template_back[0].get_station() == template_id[0].get_station(), 'template id stat failed'
+    assert template_back[0].get_phase() == template_id[0].get_phase(), 'template id phase failed'
+    assert template_back[1] == template_id[1], 'template id failed'
     assert det_copy.have_correlation_coefficient(), 'copy xc val bool failed'
     assert det_copy.get_correlation_coefficient(), 'copy xc val failed'
     assert det_copy.have_phase_onset_time(), 'copy onset time bool failed'
