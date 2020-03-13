@@ -71,6 +71,8 @@ set(SRC
     src/peakFinder.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
+    src/networkStationPhase.cpp
+    src/singleChannel/associatorParameters.cpp
     src/singleChannel/detectorParameters.cpp
     src/singleChannel/detector.cpp
     src/singleChannel/detection.cpp
@@ -110,6 +112,7 @@ target_include_directories(matchedFilter PRIVATE ${PRIVATE_HEADER_FILES})
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
+               python/networkStationPhase.cpp
                python/singleChannel/detection.cpp 
                python/singleChannel/detector.cpp
                python/singleChannel/detectorParameters.cpp
@@ -133,6 +136,7 @@ endif()
 
 add_executable(unitTests
                testing/main.cpp
+               testing/networkStationPhase.cpp
                testing/waveformTemplate.cpp
                testing/matchedFilterParameters.cpp
                testing/matchedFilter.cpp
@@ -141,6 +145,7 @@ add_executable(unitTests
                testing/peakFinder.cpp
                testing/detection.cpp
                testing/detector.cpp
+               testing/associator.cpp
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
