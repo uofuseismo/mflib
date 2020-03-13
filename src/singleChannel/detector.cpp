@@ -458,8 +458,6 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     {
         channelBased = true;
     }
-    int nloop = 1;
-    if (channelBased){nloop = nt;}
     // Set workspace
     auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
     auto det = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
