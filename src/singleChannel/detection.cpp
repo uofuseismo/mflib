@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
 
@@ -48,7 +49,7 @@ public:
     double mInterpolatedDetectionTime = 0;
     double mPhaseOnsetTime = 0;
     double mInterpolatedPhaseOnsetTime = 0;
-    uint64_t mTemplateID = 0;
+    std::pair<MFLib::NetworkStationPhase, uint64_t> mTemplateID;
     bool mHaveCorrelationCoefficient = false;
     bool mHaveDetectedSignal = false;
     bool mHaveDetectionTime = false;
@@ -116,7 +117,8 @@ void Detection<T>::clear() noexcept
     pImpl->mInterpolatedDetectionTime = 0;
     pImpl->mPhaseOnsetTime = 0;
     pImpl->mInterpolatedPhaseOnsetTime = 0;
-    pImpl->mTemplateID = 0;
+    pImpl->mTemplateID.first.clear();
+    pImpl->mTemplateID.second = 0;
     pImpl->mHaveCorrelationCoefficient = false;
     pImpl->mHaveDetectionTime = false;
     pImpl->mHaveInterpolatedDetectionTime = false;
@@ -160,14 +162,16 @@ bool Detection<T>::haveCorrelationCoefficient() const noexcept
 
 /// The template identifier
 template<class T>
-void Detection<T>::setTemplateIdentifier(const uint64_t id) noexcept
+void Detection<T>::setTemplateIdentifier(
+    const std::pair<MFLib::NetworkStationPhase, uint64_t> &id) noexcept
 {
     pImpl->mHaveTemplateID = true;
     pImpl->mTemplateID = id;
 }
 
 template<class T>
-uint64_t Detection<T>::getTemplateIdentifier() const
+std::pair<MFLib::NetworkStationPhase, uint64_t> 
+Detection<T>::getTemplateIdentifier() const
 {
     if (!haveTemplateIdentifier())
     {

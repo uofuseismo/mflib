@@ -12,6 +12,7 @@
 #define USE_PSTL
 #endif
 #include "mflib/waveformTemplate.hpp"
+#include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detector.hpp"
 #include "mflib/singleChannel/detectorParameters.hpp"
 #include "mflib/singleChannel/detection.hpp"
@@ -512,7 +513,12 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             auto it = uniqueTemplateIDs[i];
             templates[i] = mf.getWaveformTemplate(it);
             // Ensure we can pair this template to something
-            if (!templates[i].haveIdentifier()){templates[i].setIdentifier(it);}
+            if (!templates[i].haveIdentifier())
+            {
+                NetworkStationPhase nsp;
+                std::pair<NetworkStationPhase, uint64_t> idWork;
+                templates[i].setIdentifier(idWork);
+            }
         }
         // Initialize the relative magnitudes?
         std::vector<MFLib::SingleChannel::RelativeMagnitude<T>> magnitudes;

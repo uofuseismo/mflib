@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <array>
 #include "mflib/waveformTemplate.hpp"
+#include "mflib/networkStationPhase.hpp"
 #include <gtest/gtest.h>
 namespace
 {
@@ -13,7 +14,13 @@ TEST(waveformTemplate, basic)
     double df = 10;
     double onsetTime = 0.2; // Relative to trace start time
     double mag = 4;
-    uint64_t waveID = 942;
+    NetworkStationPhase nsp;
+    nsp.setNetwork("UU");
+    nsp.setStation("BSUT");
+    nsp.setPhase("P"); 
+    uint64_t waveEventID = 942;
+    std::pair<NetworkStationPhase, uint64_t> waveID(nsp, waveEventID);
+
     EXPECT_NO_THROW(tplate.setSamplingRate(df));
     EXPECT_EQ(tplate.getSamplingRate(), df);
     EXPECT_NO_THROW(tplate.setTravelTime(travelTime));
@@ -21,7 +28,8 @@ TEST(waveformTemplate, basic)
     EXPECT_NO_THROW(tplate.setMagnitude(mag));
     EXPECT_EQ(tplate.getMagnitude(), mag);
     EXPECT_NO_THROW(tplate.setIdentifier(waveID));
-    EXPECT_EQ(tplate.getIdentifier(), waveID);
+    EXPECT_EQ(tplate.getIdentifier().first,  nsp);
+    EXPECT_EQ(tplate.getIdentifier().second, waveEventID);
     
     double weight = 0.5;
     EXPECT_EQ(tplate.getShiftAndStackWeight(), 1); // Test default

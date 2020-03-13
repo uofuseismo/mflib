@@ -93,5 +93,27 @@ enum class DetectionInterpolationPolicy
                         detection. */
 };
 
+/*!
+ * @brief Defines the likelihood function used in the associator.
+ */
+enum class AssociatorLikelihoodFunction
+{
+    GAUSSIAN = 0,  /*!< This assumes the data samples are drawn from:
+                        \f[
+                           p(x) = \frac{\sqrt{2 \pi} \sigma} 
+                                  \exp \left ( -\frac{x^2}{2 \sigma^2} \right )
+                        \f]
+                        This optimizes for an origin time using the
+                        weighted mean. */
+    EXPONENTIAL    /*!< This assumes the data samples are drawn from:
+                        \f[
+                           p(x) = \frac{\sqrt{2} \sigma}
+                                  \exp \left ( -\frac{|x|}{\sqrt{2} \sigma}
+                                        \right )
+                        \f]
+                        This optimizes for an origin time using the 
+                        weighted median and can be more robust. */
+};
+
 }
 #endif

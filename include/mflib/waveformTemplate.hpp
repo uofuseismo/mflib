@@ -3,6 +3,7 @@
 #include <memory>
 namespace MFLib
 {
+class NetworkStationPhase;
 /*!
  * @brief Defines a waveform template.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
@@ -210,17 +211,20 @@ public:
      */
     /*!
      * @brief This is used to give the waveform template an identifier.
-     *        This can be useful when working with databases.
+     *        The identifier defines the network, station, and phase
+     *        as well as the event identifier to which the phase was associated
+     *        in the catalog.
      * @param[in] id   The waveform identifier.
      */
-    void setIdentifier(uint64_t id) noexcept;
+    void setIdentifier(const std::pair<NetworkStationPhase, uint64_t> &id) noexcept;
     /*!
-     * @brief Gets the waveform identifier.
-     * @result The waveform identifier.
+     * @brief Gets the waveform template identifier.
+     * @result The waveform identifier where result.first is the network,
+     *         station, and phase while result.second is the event identifier.
      * @throws std::runtime_error if the waveform identifier was not set. 
      * @sa \c haveIdentifier()
      */
-    uint64_t getIdentifier() const;
+    std::pair<NetworkStationPhase, uint64_t> getIdentifier() const;
     /*!
      * @brief Determines whether or not the waveform identifier was set.
      * @result True indicates that the waveform identifier was set.

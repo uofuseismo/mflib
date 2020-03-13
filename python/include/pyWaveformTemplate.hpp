@@ -11,6 +11,7 @@ class WaveformTemplate;
 
 namespace PBMFLib
 {
+class NetworkStationPhase;
 class WaveformTemplate
 {
 public:
@@ -39,8 +40,8 @@ public:
     void setMagnitude(double mag) noexcept;
     double getMagnitude() const;
     /// Sets the identifier
-    void setIdentifier(uint64_t id) noexcept;
-    uint64_t getIdentifier() const;
+    void setIdentifier(const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &id) noexcept;
+    std::pair<PBMFLib::NetworkStationPhase, uint64_t> getIdentifier() const;
     /// Signal
     void setSignal(const pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
     //void setSignal(const pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> &x);

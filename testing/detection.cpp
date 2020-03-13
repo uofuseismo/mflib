@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
 #include "utilities.hpp"
@@ -28,7 +29,13 @@ TEST(singleChannelDetection, detection)
     double alphaSR = 100; 
     auto magGR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaGR);
     auto magSR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaSR);
-    uint64_t id = 20;
+    
+    MFLib::NetworkStationPhase nsp;
+    nsp.setNetwork("PB");
+    nsp.setStation("B206");
+    nsp.setPhase("S"); 
+    uint64_t eventID = 20;
+    std::pair<MFLib::NetworkStationPhase, uint64_t> id(nsp, eventID);
 
     EXPECT_FALSE(det.haveCorrelationCoefficient());
     EXPECT_FALSE(det.haveTemplateIdentifier());
@@ -55,7 +62,8 @@ TEST(singleChannelDetection, detection)
                     MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
 
     EXPECT_NEAR(det.getCorrelationCoefficient(), similarity, 1.e-14);
-    EXPECT_EQ(det.getTemplateIdentifier(), id); 
+    EXPECT_EQ(det.getTemplateIdentifier().first, nsp);
+    EXPECT_EQ(det.getTemplateIdentifier().second, eventID);
     EXPECT_EQ(det.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(det.getDetectedSignal(npts, &sigPtr));
     error = infinityNorm(npts, sigPtr, signal.data());
@@ -79,7 +87,8 @@ TEST(singleChannelDetection, detection)
 
     Detection detCopy(det);
     EXPECT_NEAR(detCopy.getCorrelationCoefficient(), similarity, 1.e-14);
-    EXPECT_EQ(detCopy.getTemplateIdentifier(), id);
+    EXPECT_EQ(detCopy.getTemplateIdentifier().first, nsp);
+    EXPECT_EQ(detCopy.getTemplateIdentifier().second, eventID);
     EXPECT_EQ(detCopy.getDetectedSignalLength(), npts);
     EXPECT_NO_THROW(detCopy.getDetectedSignal(npts, &sigPtr));
     error = infinityNorm(npts, sigPtr, signal.data());

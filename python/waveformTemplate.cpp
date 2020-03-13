@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <vector>
 #include "mflib/waveformTemplate.hpp"
+#include "mflib/networkStationPhase.hpp"
 #include "pyWaveformTemplate.hpp"
+#include "pyNetworkStationPhase.hpp"
 
 using namespace PBMFLib;
 
@@ -157,15 +159,21 @@ double WaveformTemplate::getMagnitude() const
 }
 
 /// Setters/getters for identifier
-void WaveformTemplate::setIdentifier(const uint64_t id) noexcept
+void WaveformTemplate::setIdentifier(
+    const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &idIn) noexcept
 {
+    std::pair<MFLib::NetworkStationPhase, uint64_t> id;
+    id.first = idIn.first.getNativeClass();
+    id.second = idIn.second;
     mWaveformTemplate->setIdentifier(id);
 }
 
+/*
 uint64_t WaveformTemplate::getIdentifier() const
 {
     return mWaveformTemplate->getIdentifier();
 }
+*/
 
 void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
 {
@@ -221,7 +229,7 @@ void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
            "Gets the template identifier.");
     wt.def("set_identifier",
            &PBMFLib::WaveformTemplate::setIdentifier,
-           "Sets the template identifier.  This can be useful when, for example, the waveform snippet corresponds to an arrival in a database.");
+           "Sets the template identifier.  An identifier consists of the network name, station name, and seismic phase identifier as well as the event identifier to which the arrival was associated in the catalog.  This is essential for association when using the single channel pipeline.");
     /// Clears the class memory and resets
     wt.def("clear",
            &PBMFLib::WaveformTemplate::clear,

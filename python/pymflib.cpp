@@ -1,5 +1,6 @@
 #include "mflib/version.hpp"
 #include "pyWaveformTemplate.hpp"
+#include "pyNetworkStationPhase.hpp"
 #include "pyMultiChannelMatchedFilterParameters.hpp"
 #include "pyMultiChannelMatchedFilter.hpp"
 #include "singleChannel/pyMatchedFilterParameters.hpp"
@@ -16,6 +17,7 @@ PYBIND11_MODULE(pymflib, m)
     m.attr("__version__") = MFLIB_VERSION; 
    
     PBMFLib::initializeWaveformTemplate(m);
+    PBMFLib::initializeNetworkStationPhase(m);
 
     pybind11::enum_<MFLib::RelativeMagnitudeType> (m, "RelativeMagnitudeType")
         .value("gibbons_ringdal_2006", MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006,

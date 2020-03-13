@@ -9,6 +9,7 @@
 #endif
 #include <ipps.h>
 #include "mflib/waveformTemplate.hpp"
+#include "mflib/networkStationPhase.hpp"
 
 using namespace MFLib;
 
@@ -63,7 +64,8 @@ public:
         mTravelTime =-1;
         mMagnitude = 0;
         mSignalLength = 0;
-        mIdentifier = 0;
+        mIdentifier.first.clear();
+        mIdentifier.second = 0;
         mHaveMagnitude = false;
         mHaveIdentifier = false;
     }
@@ -82,7 +84,7 @@ public:
     /// The magnitude.
     double mMagnitude = 0;
     /// The waveform identifier.
-    uint64_t mIdentifier = 0;
+    std::pair<MFLib::NetworkStationPhase, uint64_t> mIdentifier;
     /// The number of samples in the template waveform signal.
     int mSignalLength = 0;
     /// Determines if the waveform identifier was set.
@@ -337,7 +339,8 @@ bool WaveformTemplate::haveTravelTime() const noexcept
 }
 
 /// Sets the identifier
-uint64_t WaveformTemplate::getIdentifier() const
+std::pair<MFLib::NetworkStationPhase, uint64_t> 
+WaveformTemplate::getIdentifier() const
 {
     if (!haveIdentifier())
     {
@@ -347,7 +350,8 @@ uint64_t WaveformTemplate::getIdentifier() const
 }
 
 /// Gets the identifier
-void WaveformTemplate::setIdentifier(const uint64_t id) noexcept
+void WaveformTemplate::setIdentifier(
+    const std::pair<MFLib::NetworkStationPhase, uint64_t> &id) noexcept
 {
     pImpl->mIdentifier = id;
     pImpl->mHaveIdentifier = true;

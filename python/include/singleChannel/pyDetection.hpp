@@ -4,6 +4,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "mflib/singleChannel/detection.hpp"
+#include "mflib/networkStationPhase.hpp"
 #include "pyWaveformTemplate.hpp"
 
 namespace MFLib
@@ -16,6 +17,7 @@ template<class T> class Detection;
 
 namespace PBMFLib
 {
+class NetworkStationPhase;
 namespace SingleChannel
 {
 template<class T>
@@ -38,8 +40,8 @@ public:
     double getCorrelationCoefficient() const;
     bool haveCorrelationCoefficient() const noexcept;
     /// Waveform identifier
-    void setTemplateIdentifier(uint64_t id) noexcept;
-    uint64_t getTemplateIdentifier() const;
+    void setTemplateIdentifier(const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &id) noexcept;
+    std::pair<PBMFLib::NetworkStationPhase, uint64_t> getTemplateIdentifier() const;
     bool haveTemplateIdentifier() const noexcept;
     /// Detected signal
     void setDetectedSignal(const pybind11::array_t<double, pybind11::array::c_style |

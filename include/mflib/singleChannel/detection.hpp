@@ -4,6 +4,7 @@
 #include "mflib/enums.hpp"
 namespace MFLib
 {
+class NetworkStationPhase;
 namespace SingleChannel
 {
 /*!
@@ -74,13 +75,13 @@ public:
      *        detection corresponds.
      * @param[in] id   The template identifier.
      */
-    void setTemplateIdentifier(uint64_t id) noexcept;
+    void setTemplateIdentifier(const std::pair<NetworkStationPhase, uint64_t> &id) noexcept;
     /*!
-     * @brief The template index.
+     * @brief Gets the template identifier.
      * @throws std::runtime_error if the template identifier was not set.
      * @sa \c haveTemplateIdentifier()
      */
-    uint64_t getTemplateIdentifier() const;
+    std::pair<NetworkStationPhase, uint64_t> getTemplateIdentifier() const;
     /*!
      * @brief Determines if the detection identifier was set.
      */

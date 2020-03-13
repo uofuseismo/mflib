@@ -4,6 +4,7 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "singleChannel/pyDetection.hpp"
+#include "pyNetworkStationPhase.hpp"
 
 using namespace PBMFLib::SingleChannel;
 
@@ -74,15 +75,21 @@ void Detection<T>::clear() noexcept
 
 /// Waveform identifier
 template<class T>
-void Detection<T>::setTemplateIdentifier(const uint64_t id) noexcept
+void Detection<T>::setTemplateIdentifier(
+    const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &idIn) noexcept
 {
+    auto nsp = idIn.first.getNativeClass();
+    std::pair<MFLib::NetworkStationPhase, uint64_t> id(nsp, idIn.second);
     mDetection->setTemplateIdentifier(id);
 }
 
-template<class T>
-uint64_t Detection<T>::getTemplateIdentifier() const
+template<class T> std::pair<PBMFLib::NetworkStationPhase, uint64_t>
+Detection<T>::getTemplateIdentifier() const
 {
-    return mDetection->getTemplateIdentifier();
+    auto id = mDetection->getTemplateIdentifier();
+    PBMFLib::NetworkStationPhase pid(id.first);
+    std::pair<PBMFLib::NetworkStationPhase, uint64_t> idOut(pid, id.second);
+    return idOut;
 }
 
 template<class T>
