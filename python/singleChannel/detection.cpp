@@ -101,8 +101,8 @@ bool Detection<T>::haveTemplateIdentifier() const noexcept
 // Detected signal
 template<>
 void Detection<double>::setDetectedSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x) 
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x) 
 {
     pybind11::buffer_info xbuf = x.request();
     auto len = static_cast<int> (xbuf.size);
@@ -116,8 +116,8 @@ void Detection<double>::setDetectedSignal(
 
 template<>
 void Detection<float>::setDetectedSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x) 
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x) 
 {
     pybind11::buffer_info xbuf = x.request();
     auto len = static_cast<int> (xbuf.size);

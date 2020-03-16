@@ -24,7 +24,7 @@ public:
     void initialize(const MultiChannelMatchedFilterParameters &parms);
     /// Set signal
     void setSignal(int it,
-                   const pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
+                   pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
     void zeroSignal(int it);
     /// Is this class initiialized
     bool isInitialized() const noexcept; 

@@ -51,8 +51,8 @@ void MatchedFilter<T>::initialize(
 /// Sets the signal
 template<>
 void MatchedFilter<double>::setSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x)
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x)
 {
     if (!isInitialized())
     {
@@ -71,8 +71,8 @@ void MatchedFilter<double>::setSignal(
 
 template<>
 void MatchedFilter<float>::setSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x)
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x)
 {
     if (!isInitialized())
     {

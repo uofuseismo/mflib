@@ -43,8 +43,8 @@ void MultiChannelMatchedFilter<T>::initialize(
 template<>
 void MultiChannelMatchedFilter<double>::setSignal(
     const int it,
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x)
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x)
 {
     if (!isInitialized())
     {
@@ -64,8 +64,8 @@ void MultiChannelMatchedFilter<double>::setSignal(
 template<>
 void MultiChannelMatchedFilter<float>::setSignal(
     const int it,
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x)
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x)
 {
     if (!isInitialized())
     {   

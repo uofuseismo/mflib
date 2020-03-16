@@ -44,8 +44,10 @@ public:
     std::pair<PBMFLib::NetworkStationPhase, uint64_t> getTemplateIdentifier() const;
     bool haveTemplateIdentifier() const noexcept;
     /// Detected signal
-    void setDetectedSignal(const pybind11::array_t<double, pybind11::array::c_style |
-                                                           pybind11::array::forcecast> &x);
+    void setDetectedSignal(pybind11::array_t<double, pybind11::array::c_style |
+                                             pybind11::array::forcecast> &x);
+    //void setDetectedSignal(pybind11::array_t<float, pybind11::array::c_style |
+    //                                         pybind11::array::forcecast> &x);
     pybind11::array_t<double> getDetectedSignal() const;
     bool haveDetectedSignal() const noexcept;
     /// Onset time

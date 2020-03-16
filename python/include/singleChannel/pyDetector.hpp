@@ -1,5 +1,5 @@
 #ifndef PYMFLIB_SINGLECHANNEL_DETECTOR_HPP
-#define PYFMLIB_SINGLECHANNEL_DETECTOR_HPP
+#define PYMFLIB_SINGLECHANNEL_DETECTOR_HPP
 #include <memory>
 #include <pybind11/pybind11.h>
 #include "singleChannel/pyDetection.hpp"

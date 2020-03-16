@@ -67,8 +67,8 @@ bool RelativeMagnitude<T>::isInitialized() const noexcept
 /// Set the waveform
 template<>
 void RelativeMagnitude<double>::setDetectedSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x)
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x)
 {
     auto nref = getDetectedSignalLength();
     pybind11::buffer_info xbuf = x.request();
@@ -86,8 +86,8 @@ void RelativeMagnitude<double>::setDetectedSignal(
 
 template<>
 void RelativeMagnitude<float>::setDetectedSignal(
-    const pybind11::array_t<double, pybind11::array::c_style |
-                                    pybind11::array::forcecast> &x) 
+    pybind11::array_t<double, pybind11::array::c_style |
+                      pybind11::array::forcecast> &x) 
 {
     auto nref = getDetectedSignalLength();
     pybind11::buffer_info xbuf = x.request();

@@ -43,7 +43,7 @@ public:
     void setIdentifier(const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &id) noexcept;
     std::pair<PBMFLib::NetworkStationPhase, uint64_t> getIdentifier() const;
     /// Signal
-    void setSignal(const pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
+    void setSignal(pybind11::array_t<double, pybind11::array::c_style | pybind11::array::forcecast> &x);
     //void setSignal(const pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> &x);
     pybind11::array_t<double> getSignal() const;
     /// Shift and stack weight

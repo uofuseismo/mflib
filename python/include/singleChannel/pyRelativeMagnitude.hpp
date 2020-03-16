@@ -36,8 +36,8 @@ public:
     /// Gets the expected length of the detected signal
     int getDetectedSignalLength() const; 
     /// Sets the detected signal
-    void setDetectedSignal(const pybind11::array_t<double, pybind11::array::c_style |
-                                                           pybind11::array::forcecast> &x);
+    void setDetectedSignal(pybind11::array_t<double, pybind11::array::c_style |
+                                             pybind11::array::forcecast> &x);
     /// Determines if the detected signal was set
     bool haveDetectedSignal() const noexcept;
     /// Computes the amplitude scaling factor
