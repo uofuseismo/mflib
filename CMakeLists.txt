@@ -29,13 +29,13 @@ find_package(MPI)
 if (MPI_FOUND)
    message("MPI was found")
 endif()
-find_package(CUDA
-             COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES)
-if (${CUDA_FOUND})
-   message("CUDA was found")
-   enable_language(CUDA)
-   string(APPEND CMAKE_CXX_FLAGS " -DUSE_CUDA")
-endif()
+#find_package(CUDA
+#             COMPONENTS CUDA_INCLUDE_DIRS CUDA_CUFFT_LIBRARIES)
+#if (${CUDA_FOUND})
+#   message("CUDA was found")
+#   enable_language(CUDA)
+#   string(APPEND CMAKE_CXX_FLAGS " -DUSE_CUDA")
+#endif()
 set(FindIPP_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 set(FindMKL_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 find_package(FindIPP REQUIRED)
@@ -56,7 +56,7 @@ include_directories(
     ${MKL_INCLUDE_DIR}
     ${IPP_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
-    ${CUDA_INCLUDE_DIRS}
+    #${CUDA_INCLUDE_DIRS}
 )
 
 configure_file(${CMAKE_SOURCE_DIR}/include/mflib/version.hpp.in
