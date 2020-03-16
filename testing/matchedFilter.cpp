@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <random>
-#include <omp.h>
 #include <chrono>
 #include <ctime>
 #include <ipps.h>
