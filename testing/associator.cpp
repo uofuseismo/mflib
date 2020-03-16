@@ -3,7 +3,6 @@
 #include <cmath>
 #include <random>
 #include <vector>
-#include <omp.h>
 #include <chrono>
 #include <random>
 #include "mflib/waveformTemplate.hpp"
