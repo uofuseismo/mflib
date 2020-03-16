@@ -15,7 +15,11 @@ def test_waveform_template():
     travel_time = 9 # Travel time for this phase is 9 seconds
     onset_time = .5 # Onset is .5 seconds into the signal
     magnitude = 6
-    identifier = 4
+    nsp = pymflib.NetworkStationPhase()
+    nsp.set_network("UU")
+    nsp.set_station("FORU")
+    nsp.set_phase("P")
+    identifier = [nsp, 4]
     # Figure up the class
     wt = pymflib.WaveformTemplate()
 
@@ -45,7 +49,11 @@ def test_waveform_template():
 
     # Test the identifier
     wt.set_identifier(identifier)
-    assert wt.get_identifier() == identifier, "Identifier failed"
+    id_back = wt.get_identifier()
+    assert id_back[0].get_network() == identifier[0].get_network(), 'network failed'
+    assert id_back[0].get_station() == identifier[0].get_station(), 'station failed'
+    assert id_back[0].get_phase() == identifier[0].get_phase(), 'phase failed'
+    assert id_back[1] == identifier[1], "Identifier failed"
 
     # Test the copy c'tor
     wt_copy = wt
@@ -55,7 +63,11 @@ def test_waveform_template():
     assert wt_copy.get_phase_travel_time() == travel_time, "Travel time failed"
     assert wt_copy.get_phase_onset_time_in_signal() == onset_time, "Onset time failed"
     assert wt_copy.get_magnitude() == magnitude, "Magnitude failed"
-    assert wt_copy.get_identifier() == identifier, "Identifier failed"
+    id_back = wt_copy.get_identifier()
+    assert id_back[0].get_network() == identifier[0].get_network(), 'network failed'
+    assert id_back[0].get_station() == identifier[0].get_station(), 'station failed'
+    assert id_back[0].get_phase() == identifier[0].get_phase(), 'phase failed'
+    assert id_back[1] == identifier[1], "Identifier failed"
 
     # Clear the module
     wt.clear()
