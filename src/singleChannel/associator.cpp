@@ -19,6 +19,7 @@ std::vector<uint64_t> getUniqueEVIDs(
     std::vector<MFLib::SingleChannel::Detection<T>> &detections)
 {
     std::vector<uint64_t> evids;
+/*
     evids.reserve(detections.size());
     for (int i=0; i<static_cast<int> (detections.size()); ++i)
     {
@@ -26,7 +27,7 @@ std::vector<uint64_t> getUniqueEVIDs(
         auto nsp = id.first;
         auto evid = id.second;
         bool lfound = false;
-        for (int j=0; j<evids.static_cast<int> (evids.size()); ++j)
+        for (int j=0; j<static_cast<int> (evids.size()); ++j)
         {
             if (evid == evids[j])
             {
@@ -40,6 +41,7 @@ std::vector<uint64_t> getUniqueEVIDs(
         }
     }
     std::sort(evids.begin(), evids.end());
+*/
     return evids;
 }
 

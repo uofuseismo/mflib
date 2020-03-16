@@ -96,21 +96,19 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
-target_link_libraries(matchedFilter ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES}
-                      ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(matchedFilter PRIVATE ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
+#                      ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
                       CXX_STANDARD_REQUIRED YES
                       CXX_EXTENSIONS NO)
 target_include_directories(matchedFilter PUBLIC ${PUBLIC_HEADER_FILES})
 target_include_directories(matchedFilter PRIVATE ${PRIVATE_HEADER_FILES})
-#if(OpenMP_CXX_FOUND)
-#   message("yes")
-#   #target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
-#   set(OPENMP_CXX_LIB OpenMP::OpenMP_CXX)
-#   #message(${OPENMP_CXX_LIB})
-#   target_include_directories(matchedFilter PRIVATE OpenMP::OpenMP_CXX)
-#endif()
+if(OpenMP_CXX_FOUND)
+   target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
+   #set(OPENMP_CXX_LIB OpenMP::OpenMP_CXX)
+   target_include_directories(matchedFilter PRIVATE OpenMP::OpenMP_CXX)
+endif()
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
@@ -125,7 +123,7 @@ if (MFLIB_WRAP_PYTHON)
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE
-                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} OpenMP::OpenMP_CXX)
+                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA})# OpenMP::OpenMP_CXX)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
    message("hey" ${CMAKE_SOURCE_DIR}/python/include)
@@ -151,7 +149,7 @@ add_executable(unitTests
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
-                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} OpenMP::OpenMP_CXX)
+                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 set_target_properties(unitTests  PROPERTIES
                       CXX_STANDARD 17
