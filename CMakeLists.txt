@@ -72,10 +72,12 @@ set(SRC
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/networkStationPhase.cpp
+    src/singleChannel/associator.cpp
     src/singleChannel/associatorParameters.cpp
     src/singleChannel/detectorParameters.cpp
     src/singleChannel/detector.cpp
     src/singleChannel/detection.cpp
+    src/singleChannel/event.cpp
     src/singleChannel/matchedFilterParameters.cpp
     src/singleChannel/matchedFilter.cpp
     src/singleChannel/relativeMagnitude.cpp
