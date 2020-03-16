@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <string>
 #include <functional>
 #include <vector>
 #if __has_include(<pstl/algorithm>)

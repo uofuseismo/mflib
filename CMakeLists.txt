@@ -96,7 +96,7 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
-target_link_libraries(matchedFilter PRIVATE ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
+target_link_libraries(matchedFilter PUBLIC ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
 #                      ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
