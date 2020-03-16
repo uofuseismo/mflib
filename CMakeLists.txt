@@ -148,7 +148,7 @@ add_executable(unitTests
                testing/associator.cpp
                testing/utilities.cpp)
 target_link_libraries(unitTests
-                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${IPP_LIBRARY}
+                      PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${MKL_LIBRARY} ${IPP_LIBRARY}
                       ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 set_target_properties(unitTests  PROPERTIES
