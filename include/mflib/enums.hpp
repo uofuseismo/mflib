@@ -115,5 +115,15 @@ enum class AssociatorLikelihoodFunction
                         weighted median and can be more robust. */
 };
 
+/*!
+ * @brief Defines the arrival's polarity.
+ */
+enum class Polarity
+{
+    UNKNOWN = 0,     /*!< The onset's polarity is unkonwn. */
+    COMPRESSION = 1, /*!< The onset's polarity is compressional which is probably upwards on the seismogram. */
+    DILATATION = -1  /*!< The onset's polartiy is dilitational which is probably downwards on the seismogram. */
+};
+
 }
 #endif

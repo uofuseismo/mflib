@@ -1,6 +1,7 @@
 #ifndef MFLIB_WAVEFORMTEMPLATE_HPP
 #define MFLIB_WAVEFORMTEMPLATE_HPP
 #include <memory>
+#include "mflib/enums.hpp"
 namespace MFLib
 {
 class NetworkStationPhase;
@@ -252,6 +253,21 @@ public:
      * @result True indicates that the magnitude was set.
      */
     bool haveMagnitude() const noexcept; 
+    /*! @} */
+
+    /*! @brief Polarity
+     * @{
+     */
+    /*!
+     * @brief Sets the onset's polarity.
+     * @param[in] polarity  The arrival's polarity.
+     */
+    void setPolarity(MFLib::Polarity polarity) noexcept;
+    /*!
+     * @brief Gets the onset's polarity.
+     * @result The onset's polarity.  By default this is unknown.
+     */
+    MFLib::Polarity getPolarity() const noexcept;
     /*! @} */
 private:
     class WaveformTemplateImpl;

@@ -32,6 +32,7 @@ public:
         mTravelTime = tplate.mTravelTime;
         mMagnitude = tplate.mMagnitude;
         mIdentifier = tplate.mIdentifier;
+        mPolarity = tplate.mPolarity;
         mHaveIdentifier = tplate.mHaveIdentifier; 
         mHaveMagnitude = tplate.mHaveMagnitude;
         // Copy the waveform
@@ -63,6 +64,7 @@ public:
         mPhaseOnsetTime =-1;
         mTravelTime =-1;
         mMagnitude = 0;
+        mPolarity = MFLib::Polarity::UNKNOWN;
         mSignalLength = 0;
         mIdentifier.first.clear();
         mIdentifier.second = 0;
@@ -87,6 +89,8 @@ public:
     std::pair<MFLib::NetworkStationPhase, uint64_t> mIdentifier;
     /// The number of samples in the template waveform signal.
     int mSignalLength = 0;
+    /// The onset's polarity.
+    MFLib::Polarity mPolarity = MFLib::Polarity::UNKNOWN;
     /// Determines if the waveform identifier was set.
     bool mHaveIdentifier = false;
     /// Determines if the magnitude was set.
@@ -384,4 +388,16 @@ void WaveformTemplate::setMagnitude(const double mag) noexcept
 bool WaveformTemplate::haveMagnitude() const noexcept
 {
     return pImpl->mHaveMagnitude;
+}
+
+/// Sets the polarity
+void WaveformTemplate::setPolarity(const MFLib::Polarity polarity) noexcept
+{
+    pImpl->mPolarity = polarity;
+}
+
+/// Get the polarity
+MFLib::Polarity WaveformTemplate::getPolarity() const noexcept
+{
+    return pImpl->mPolarity;
 }

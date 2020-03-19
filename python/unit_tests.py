@@ -8,6 +8,7 @@ def test_waveform_template():
     """
     Tests the waveform template.  This is the basic unit of currency in this library.  
     """
+    print("Waveform template test...")
     # Some values to set then recover
     template_signal = np.arange(1, 400, 1) # 4 seconds of signal
     sampling_rate = 100
@@ -16,6 +17,7 @@ def test_waveform_template():
     onset_time = .5 # Onset is .5 seconds into the signal
     magnitude = 6
     nsp = pymflib.NetworkStationPhase()
+    polarity = pymflib.Polarity.compression
     nsp.set_network("UU")
     nsp.set_station("FORU")
     nsp.set_phase("P")
@@ -47,6 +49,10 @@ def test_waveform_template():
     wt.set_magnitude(magnitude)
     assert wt.get_magnitude() == magnitude, "Magnitude failed"
 
+    # Test the polarity
+    wt.set_polarity(polarity)
+    assert wt.get_polarity() == polarity, "Polarity failed"
+
     # Test the identifier
     wt.set_identifier(identifier)
     id_back = wt.get_identifier()
@@ -68,6 +74,7 @@ def test_waveform_template():
     assert id_back[0].get_station() == identifier[0].get_station(), 'station failed'
     assert id_back[0].get_phase() == identifier[0].get_phase(), 'phase failed'
     assert id_back[1] == identifier[1], "Identifier failed"
+    assert wt_copy.get_polarity() == polarity, "Polarity copy failed"
 
     # Clear the module
     wt.clear()
@@ -394,6 +401,7 @@ def test_single_channel_detector_parameters():
     assert not parms_copy.want_amplitude_scaling_factor(), 'copy get the det amp failed'
 
 if __name__ == "__main__":
+    test_waveform_template()
     test_matched_filter_parameters()
     test_matched_filtering()
     test_single_channel_matched_filtering()

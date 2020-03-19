@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include "mflib/enums.hpp"
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/networkStationPhase.hpp"
 #include "pyWaveformTemplate.hpp"
@@ -158,6 +159,17 @@ double WaveformTemplate::getMagnitude() const
     return mWaveformTemplate->getMagnitude();
 }
 
+/// Setters/getters for polarity
+void WaveformTemplate::setPolarity(const MFLib::Polarity polarity) noexcept
+{
+    mWaveformTemplate->setPolarity(polarity);
+}
+
+MFLib::Polarity WaveformTemplate::getPolarity() const noexcept
+{
+    return mWaveformTemplate->getPolarity();
+}
+
 /// Setters/getters for identifier
 void WaveformTemplate::setIdentifier(
     const std::pair<PBMFLib::NetworkStationPhase, uint64_t> &idIn) noexcept
@@ -225,6 +237,13 @@ void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
     wt.def("set_magnitude",
            &PBMFLib::WaveformTemplate::setMagnitude,
            "Sets the magnitude associated with this template.");
+    /// The polarity
+    wt.def("get_polarity",
+           &PBMFLib::WaveformTemplate::getPolarity,
+           "Gets the polarity of the onset.");
+    wt.def("set_polarity",
+           &PBMFLib::WaveformTemplate::setPolarity,
+           "Sets the polarity of the onset.");
     /// The waveform identifier
     wt.def("get_identifier",
            &PBMFLib::WaveformTemplate::getIdentifier,

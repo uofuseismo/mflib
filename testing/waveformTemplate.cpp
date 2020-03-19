@@ -14,6 +14,7 @@ TEST(waveformTemplate, basic)
     double df = 10;
     double onsetTime = 0.2; // Relative to trace start time
     double mag = 4;
+    MFLib::Polarity polarity = MFLib::Polarity::COMPRESSION;
     NetworkStationPhase nsp;
     nsp.setNetwork("UU");
     nsp.setStation("BSUT");
@@ -30,7 +31,9 @@ TEST(waveformTemplate, basic)
     EXPECT_NO_THROW(tplate.setIdentifier(waveID));
     EXPECT_EQ(tplate.getIdentifier().first,  nsp);
     EXPECT_EQ(tplate.getIdentifier().second, waveEventID);
-    
+    tplate.setPolarity(polarity);
+    EXPECT_EQ(tplate.getPolarity(), polarity);
+ 
     double weight = 0.5;
     EXPECT_EQ(tplate.getShiftAndStackWeight(), 1); // Test default
     EXPECT_NO_THROW(tplate.setShiftAndStackWeight(weight));
@@ -75,6 +78,7 @@ TEST(waveformTemplate, basic)
     EXPECT_EQ(tplateCopy.getSignalLength(), npts);
     EXPECT_EQ(tplateCopy.getMagnitude(), mag);
     EXPECT_EQ(tplateCopy.getIdentifier(), waveID);
+    EXPECT_EQ(tplateCopy.getPolarity(), polarity);
 
     EXPECT_NO_THROW(tplateCopy.getSignal(npts, &x8Ptr)); 
     for (int i=0; i<static_cast<int> (x8.size()); ++i)

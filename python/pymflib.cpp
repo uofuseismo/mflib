@@ -35,6 +35,15 @@ PYBIND11_MODULE(pymflib, m)
                "Combines all matched filtered signals by taking the maximum or absolute maximum then computing detections.")
         .value("single", MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE,
                "Makes detections on individual matched filtered signals.  This may result in multiple detections from a different template occurring simultaneously in a small time window.  In this case, the associator must remove these duplicates."); 
+
+    pybind11::enum_<MFLib::Polarity> (m, "Polarity")
+        .value("unknown", MFLib::Polarity::UNKNOWN,
+               "The polarity is unknown.")
+        .value("compression", MFLib::Polarity::COMPRESSION,
+               "The polarity corresponds to the compressional (shaded) quadrant of the beachball and is probably upwards on the seismogram.") 
+        .value("diliation", MFLib::Polarity::DILATATION,
+               "The polarity corresopnds to the dilitational (unshaded) quadrant of the beachball and is probably downwards on the seismogram.");
+
     pybind11::module scModule = m.def_submodule("SingleChannel");
 
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);

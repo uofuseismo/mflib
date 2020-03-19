@@ -3,6 +3,7 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include "mflib/enums.hpp"
 
 namespace MFLib
 {
@@ -49,6 +50,9 @@ public:
     /// Shift and stack weight
     void setShiftAndStackWeight(double weight);
     double getShiftAndStackWeight() const; 
+    /// Polartiy
+    void setPolarity(MFLib::Polarity polarity) noexcept;
+    MFLib::Polarity getPolarity() const noexcept;
     /// Creates 
     MFLib::WaveformTemplate getNativeClass() const;
 private:
