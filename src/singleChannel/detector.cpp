@@ -227,8 +227,10 @@ void reduceAllCorrelations(
     {
 #ifdef USE_PSTL
         std::copy(std::execution::unseq, mfPtr, mfPtr+detectionLength, det);
+        std::fill(std::execution::unseq, id, id+detectionLength, 0);
 #else
         std::copy(mfPtr, mfPtr+detectionLength, det);
+        std::fill(id, id+detectionLength, 0);
 #endif
     }
     // Now reduce
