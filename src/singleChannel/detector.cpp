@@ -152,38 +152,24 @@ std::vector<int> getUniqueTemplateIDs(const int nDetections,
                                       const int detectionIndex[],
                                       const int ids[])
 {
-    std::vector<int> uniqueIDs(nDetections+1);
+    // Extract the IDs at each detection index
+    std::vector<int> uniqueIDs(nDetections);
     #pragma omp simd
     for (int i=0; i<nDetections; ++i)
     {
         int index = detectionIndex[i];
         uniqueIDs[i] = ids[index];
     }
-    // Sort
+    // Sort (in ascending order) for stl's std::unique
 #ifdef USE_PSTL
     std::sort(std::execution::unseq, uniqueIDs.begin(), uniqueIDs.end());
 #else
     std::sort(uniqueIDs.begin(), uniqueIDs.end());
 #endif
-    uniqueIDs[nDetections] = uniqueIDs[0] - 1; 
-    // Count the unique indices
-    int n = 0;
-    for (int i=0; i<nDetections; ++i)
-    {
-        if (uniqueIDs[i+1] != uniqueIDs[i]){n = n + 1;}
-    }
-    // Make a set of unique IDs
-    std::vector<int> result(n);
-    int j = 0;
-    for (int i=0; i<nDetections; ++i)
-    {
-        if (uniqueIDs[i+1] != uniqueIDs[i])
-        {
-            result[j] = uniqueIDs[i];
-            j = j + 1;
-        }
-    }
-    return result;
+    // Remove duplicates and resize vector
+    auto last = std::unique(uniqueIDs.begin(), uniqueIDs.end());
+    uniqueIDs.erase(last, uniqueIDs.end()); 
+    return uniqueIDs;
 }
 
 int getTemplateIndex(const int val, const std::vector<int> &v)  
@@ -498,7 +484,7 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         MKL_free(id);
         return;
     }
-    // Loop on the number of templates
+    // Loop through the peaks
     for (int ip=0; ip<static_cast<int> (peakFinders.size()); ++ip)
     {
         // Get the detection indices
@@ -516,7 +502,7 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             if (!templates[i].haveIdentifier())
             {
                 NetworkStationPhase nsp;
-                std::pair<NetworkStationPhase, uint64_t> idWork;
+                std::pair<NetworkStationPhase, uint64_t> idWork(nsp, it);
                 templates[i].setIdentifier(idWork);
             }
         }
