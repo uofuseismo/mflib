@@ -299,6 +299,18 @@ bool Detection<T>::haveAmplitudeScalingFactor() const noexcept
     return false;
 }
 
+template<class T>
+void Detection<T>::setPolarity(const MFLib::Polarity polarity) noexcept
+{
+    mDetection->setPolarity(polarity);
+}
+
+template<class T>
+MFLib::Polarity Detection<T>::getPolarity() const noexcept
+{
+    return mDetection->getPolarity();
+}
+
 /// Gets the native class
 template<class T>
 MFLib::SingleChannel::Detection<T> 
@@ -385,7 +397,7 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_interpolated_phase_onset_time",
                    &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedPhaseOnsetTime,
                    "Determines if the interpolated phase onset time is set.");
-    // 
+    // Amplitude scaling factor
     mDetDouble.def("get_amplitude_scaling_factor",
                    &PBMFLib::SingleChannel::Detection<double>::getAmplitudeScalingFactor,
                    "Gets the amplitude scaling factor to best match the template to the detected signal.");
@@ -395,6 +407,13 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_amplitude_scaling_factor",
                    &PBMFLib::SingleChannel::Detection<double>::haveAmplitudeScalingFactor,
                    "Determines if the amplitude scaling factors were computed");
+    // Polarity
+    mDetDouble.def("get_polarity",
+                   &PBMFLib::SingleChannel::Detection<double>::getPolarity,
+                   "Gets the polarity of the detection.");
+    mDetDouble.def("set_polarity",
+                   &PBMFLib::SingleChannel::Detection<double>::setPolarity,
+                   "Sets the polarity of the detection.");
     // Clears
     mDetDouble.def("clear",
                    &PBMFLib::SingleChannel::Detection<double>::clear,

@@ -27,6 +27,7 @@ TEST(singleChannelDetection, detection)
     double intOnsetTime = 4; 
     double alphaGR = 10;  // Scaling factor
     double alphaSR = 100; 
+    MFLib::Polarity polarity = MFLib::Polarity::DILATATION;
     auto magGR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaGR);
     auto magSR = convertAmplitudeScalingFactorToMagnitudePerturbation(alphaSR);
     
@@ -48,6 +49,7 @@ TEST(singleChannelDetection, detection)
         MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
     EXPECT_FALSE(det.haveAmplitudeScalingFactor(
         MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
+    EXPECT_EQ(det.getPolarity(), MFLib::Polarity::UNKNOWN);
 
     EXPECT_NO_THROW(det.setCorrelationCoefficient(similarity));
     EXPECT_NO_THROW(det.setTemplateIdentifier(id));
@@ -60,6 +62,7 @@ TEST(singleChannelDetection, detection)
                     MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
     EXPECT_NO_THROW(det.setAmplitudeScalingFactor(alphaSR,
                     MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
+    det.setPolarity(polarity);
 
     EXPECT_NEAR(det.getCorrelationCoefficient(), similarity, 1.e-14);
     EXPECT_EQ(det.getTemplateIdentifier().first, nsp);
@@ -84,6 +87,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(det.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
                 magSR, 1.e-14);
+    EXPECT_EQ(det.getPolarity(), polarity);
 
     Detection detCopy(det);
     EXPECT_NEAR(detCopy.getCorrelationCoefficient(), similarity, 1.e-14);
@@ -110,6 +114,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(detCopy.getMagnitudePerturbation(
                 MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014),
                 magSR, 1.e-14);
+    EXPECT_EQ(detCopy.getPolarity(), polarity);
 
     det.clear();
     EXPECT_FALSE(det.haveCorrelationCoefficient());
@@ -123,6 +128,7 @@ TEST(singleChannelDetection, detection)
         MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
     EXPECT_FALSE(det.haveAmplitudeScalingFactor(
         MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014));
+    EXPECT_EQ(det.getPolarity(), MFLib::Polarity::UNKNOWN);
 }
 
 }

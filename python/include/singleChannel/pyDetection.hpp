@@ -70,6 +70,9 @@ public:
     double getMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;
     double getAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const;
     bool haveAmplitudeScalingFactor() const noexcept;
+    /// Detection
+    void setPolarity(MFLib::Polarity polarity) noexcept;
+    MFLib::Polarity getPolarity() const noexcept;
     ///
     MFLib::SingleChannel::Detection<T> getNativeClass() const;
 private:

@@ -297,6 +297,25 @@ public:
     bool haveMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const noexcept;
     /*! @} */
 
+    /*! @name Polarity
+     * @{
+     */
+    /*!
+     * @brief Gets the polarity.
+     */
+    /*!
+     * @brief Sets the polarity of the detection.
+     * @param[in] polarity  The detections polarity.
+     */
+    void setPolarity(MFLib::Polarity polarity) noexcept;
+    /*!
+     * @brief Gets the detection's polarity.
+     * @result The polarity of the detection.  If this was never set then the
+     *         result will be unknown.
+     */
+    MFLib::Polarity getPolarity() const noexcept;
+    /*! @} */
+
     /*! 
      * @brief Determines if this class has a detection.
      * @result True indicates that this class is tied to a detection.

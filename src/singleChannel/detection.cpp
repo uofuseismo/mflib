@@ -50,6 +50,7 @@ public:
     double mPhaseOnsetTime = 0;
     double mInterpolatedPhaseOnsetTime = 0;
     std::pair<MFLib::NetworkStationPhase, uint64_t> mTemplateID;
+    MFLib::Polarity mPolarity = MFLib::Polarity::UNKNOWN;
     bool mHaveCorrelationCoefficient = false;
     bool mHaveDetectedSignal = false;
     bool mHaveDetectionTime = false;
@@ -119,6 +120,7 @@ void Detection<T>::clear() noexcept
     pImpl->mInterpolatedPhaseOnsetTime = 0;
     pImpl->mTemplateID.first.clear();
     pImpl->mTemplateID.second = 0;
+    pImpl->mPolarity = MFLib::Polarity::UNKNOWN;
     pImpl->mHaveCorrelationCoefficient = false;
     pImpl->mHaveDetectionTime = false;
     pImpl->mHaveInterpolatedDetectionTime = false;
@@ -432,6 +434,21 @@ bool Detection<T>::haveMagnitudePerturbation(
     auto idx = magTypeToIndex(type);
     return pImpl->mAmplitudes[idx].mSet;
 }
+
+/// Sets the detection's polartiy
+template<class T>
+void Detection<T>::setPolarity(MFLib::Polarity polarity) noexcept
+{
+    pImpl->mPolarity = polarity;
+}
+
+/// Gets the detection's polarity
+template<class T>
+MFLib::Polarity Detection<T>::getPolarity() const noexcept
+{
+    return pImpl->mPolarity;
+}
+
 
 
 /// Determines if I have a detection
