@@ -477,7 +477,6 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             nDetections = nDetections + peakFinders[it].getNumberOfPeaks();
         }
     }
-printf("%d\n", nDetections);
     // Swing and a miss
     if (nDetections < 1)
     {
@@ -492,9 +491,16 @@ printf("%d\n", nDetections);
         auto peaksIndices = peakFinders[ip].getPeakIndicesPointer();
         // Figure out which templates I'll need and copy them
         auto nDetectionsInPeakFinder = peakFinders[ip].getNumberOfPeaks();
-        if (nDetectionsInPeakFinder < 1){continue;}
-        auto uniqueTemplateIDs
-            = getUniqueTemplateIDs(nDetectionsInPeakFinder, peaksIndices, id);
+        if (nDetectionsInPeakFinder < 1){continue;} // Nothing to do
+        // For single channel operation we trick the getUniqueTtemplates to find
+        // the ip'th (it'th) template
+        if (channelBased)
+        {
+            std::fill(id, id+detectionLength, ip);
+        }
+        auto uniqueTemplateIDs = getUniqueTemplateIDs(nDetectionsInPeakFinder,
+                                                      peaksIndices, id);
+        
         std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
         std::vector<T> templateSignal(uniqueTemplateIDs.size());
         for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
