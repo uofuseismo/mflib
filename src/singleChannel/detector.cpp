@@ -587,6 +587,21 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                 detection.setPhaseOnsetTime(pickTime);
                 detection.setInterpolatedPhaseOnsetTime(intPickTime);
             }
+            // Try getting the polarity by investigating the sign of the 
+            // detection.  For example, if the Pearson correlation is +0.8,
+            // then this is an exact match and the enums will retain their
+            // original value.  If the Pearson correlation is, say, -.91, then
+            // the detection more than 90 degrees out of phase, so the enums
+            // flip sign.  If the original enum was UNKNOWN (0) then multiplying 
+            // by the sign of hte detection will leave the enum as UNKNOWN 
+            // (e.g., 1*0=0)
+            int detectionSign = 1;
+            if (mfPtr[peakIndex] < 0){detectionSign =-1;}
+            if (mfPtr[peakIndex] == 0){detectionSign = 0;}
+            auto polarity = templates[jt].getPolarity();
+            auto iPolarity = static_cast<int> (polarity); // Can be: {-1, 0, 1}
+            polarity = static_cast<MFLib::Polarity> (detectionSign*iPolarity);
+            detection.setPolarity(polarity);
             // Compute the relative amplitudes / magnitudes
             if (lComputeAmplitude)
             {

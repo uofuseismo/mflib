@@ -118,7 +118,7 @@ enum class AssociatorLikelihoodFunction
 /*!
  * @brief Defines the arrival's polarity.
  */
-enum class Polarity
+enum class Polarity : int
 {
     UNKNOWN = 0,     /*!< The onset's polarity is unkonwn. */
     COMPRESSION = 1, /*!< The onset's polarity is compressional which is probably upwards on the seismogram. */
