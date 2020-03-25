@@ -1,17 +1,89 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <vector>
 #include <string>
 #include <limits>
 #include <mpi.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/networkStationPhase.hpp"
+#include "mflib/singleChannel/detection.hpp"
 #include "mflib/mpi.hpp"
 
 using namespace MFLib;
 
 namespace
 {
+
+struct MPIDetection
+{
+    double mAmplitude1 = 0;
+    double mAmplitude2 = 0;
+    double mCorrelationCoefficient = 0;
+    double mDetectionTime = 0;
+    double mInterpolatedDetectionTime = 0;
+    double mPhaseOnsetTime = 0;
+    double mInterpolatedPhaseOnsetTime = 0;
+    char mNetwork[64];
+    char mStation[64];
+    char mPhase[64];
+    uint64_t mTemplateID;
+    bool mHaveCorrelationCoefficient = false;
+    bool mHaveDetectedSignal = false;
+    bool mHaveDetectionTime = false;
+    bool mHaveInterpolatedDetectionTime = false;
+    bool mHavePhaseOnsetTime = false;
+    bool mHaveInterpolatedPhaseOnsetTime = false;
+    bool mHaveTemplateID = false;
+};
+
+template<class T>
+MPIDetection convertDetection(const MFLib::SingleChannel::Detection<T> &det)
+{
+    MPIDetection detOut;
+    std::memset(detOut.mNetwork, 0, 64*sizeof(char));
+    std::memset(detOut.mStation, 0, 64*sizeof(char));
+    std::memset(detOut.mPhase,   0, 64*sizeof(char));
+    detOut.mHaveDetectedSignal = det.haveDetectedSignal();
+    detOut.mHaveDetectionTime = det.haveDetectionTime();
+    detOut.mHaveInterpolatedDetectionTime = det.haveInterpolatedDetectionTime();
+    detOut.mHavePhaseOnsetTime = det.havePhaseOnsetTime();
+    detOut.mHaveInterpolatedPhaseOnsetTime
+        = det.haveInterpolatedPhaseOnsetTime();
+    detOut.mHaveTemplateID = det.haveTemplateIdentifier();
+    if (detOut.mHaveDetectionTime)
+    {
+        detOut.mDetectionTime = det.getDetectionTime();
+    }
+    if (detOut.mHaveInterpolatedDetectionTime)
+    {
+        detOut.mInterpolatedDetectionTime = det.getInterpolatedDetectionTime();
+    } 
+    if (detOut.mHavePhaseOnsetTime)
+    {
+        detOut.mPhaseOnsetTime = det.getPhaseOnsetTime();
+    }
+    if (detOut.mHaveInterpolatedPhaseOnsetTime)
+    {
+        detOut.mInterpolatedPhaseOnsetTime
+            = det.getInterpolatedPhaseOnsetTime();
+    }
+    if (detOut.mHaveTemplateID)
+    {
+        auto id = det.getTemplateIdentifier();
+        auto network = id.first.getNetwork();
+        auto station = id.first.getStation();
+        auto phase   = id.first.getPhase();
+        detOut.mTemplateID = id.second;
+        auto lenc = std::min(static_cast<size_t> (64), network.size()); 
+        strncpy(detOut.mNetwork, network.c_str(), lenc);
+        lenc = std::min(static_cast<size_t> (64), station.size());
+        strncpy(detOut.mStation, station.c_str(), lenc);
+        lenc = std::min(static_cast<size_t> (64), phase.size());
+        strncpy(detOut.mPhase,   phase.c_str(), lenc);
+    }
+    return detOut;
+}
 
 void broadcastString(std::string &value, const int root, const MPI_Comm comm)
 {
@@ -151,4 +223,11 @@ void MFLib::MPI::Broadcast(WaveformTemplate &tplate, const int root,
             tplate.setIdentifier(identifier);
         }
     }
+}
+
+template<>
+void MFLib::MPI::Send(const MFLib::SingleChannel::Detection<double> &detection,
+                      const int dest, const int tag, const MPI_Comm comm)
+{
+    auto mpiDetection = convertDetection(detection);
 }

@@ -490,8 +490,17 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         // Get the detection indices
         auto peaksIndices = peakFinders[ip].getPeakIndicesPointer();
         // Figure out which templates I'll need and copy them
-        auto uniqueTemplateIDs
-            = getUniqueTemplateIDs(nDetections, peaksIndices, id);
+        auto nDetectionsInPeakFinder = peakFinders[ip].getNumberOfPeaks();
+        if (nDetectionsInPeakFinder < 1){continue;} // Nothing to do
+        // For single channel operation we trick the getUniqueTtemplates to find
+        // the ip'th (it'th) template
+        if (channelBased)
+        {
+            std::fill(id, id+detectionLength, ip);
+        }
+        auto uniqueTemplateIDs = getUniqueTemplateIDs(nDetectionsInPeakFinder,
+                                                      peaksIndices, id);
+        
         std::vector<MFLib::WaveformTemplate> templates(uniqueTemplateIDs.size());
         std::vector<T> templateSignal(uniqueTemplateIDs.size());
         for (int i=0; i<static_cast<int> (uniqueTemplateIDs.size()); ++i)
@@ -519,11 +528,11 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
         }
         // Create detections (i.e., make the products)
         auto lGetWaveforms = pImpl->mParameters.wantDetectedWaveform();
-        pImpl->mDetections.resize(nDetections); 
+        pImpl->mDetections.reserve(nDetections);
         auto signalLength = mf.getSignalLength();
         auto signalPtr = mf.getSignalPointer();
         // Extract the detections
-        for (int i=0; i<nDetections; ++i)
+        for (int i=0; i<nDetectionsInPeakFinder; ++i)
         {
             // For simplicity we'll create the detection then copy it later on
             MFLib::SingleChannel::Detection<T> detection; 
@@ -617,8 +626,13 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                 detection.setAmplitudeScalingFactor(alpha, magType);
             }
             // Save this detection
-            pImpl->mDetections[i] = detection;
+            pImpl->mDetections.push_back(detection);
         }
+    }
+    if (nDetections != static_cast<int> (pImpl->mDetections.size()))
+    {
+        fprintf(stderr, "Alogithmic failure: Wanted %d detections but got %d\n",
+                nDetections, static_cast<int> (pImpl->mDetections.size())); 
     }
     // Clean up
     MKL_free(det);
