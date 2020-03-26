@@ -596,7 +596,6 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                 detection.setPhaseOnsetTime(pickTime);
                 detection.setInterpolatedPhaseOnsetTime(intPickTime);
             }
-<<<<<<< HEAD
             // Try getting the polarity by investigating the sign of the 
             // detection.  For example, if the Pearson correlation is +0.8,
             // then this is an exact match and the enums will retain their
@@ -612,13 +611,11 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             auto iPolarity = static_cast<int> (polarity); // Can be: {-1, 0, 1}
             polarity = static_cast<MFLib::Polarity> (detectionSign*iPolarity);
             detection.setPolarity(polarity);
-=======
             // Try attaching the travel time
             if (templates[jt].haveTravelTime())
             {
                  detection.setTravelTime(templates[jt].getTravelTime());
             }
->>>>>>> b249f61902dec13a9a709772380a73e49ba4c6e5
             // Compute the relative amplitudes / magnitudes
             if (lComputeAmplitude)
             {
