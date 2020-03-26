@@ -49,6 +49,7 @@ public:
     double mInterpolatedDetectionTime = 0;
     double mPhaseOnsetTime = 0;
     double mInterpolatedPhaseOnsetTime = 0;
+    double mTravelTime = 0;
     std::pair<MFLib::NetworkStationPhase, uint64_t> mTemplateID;
     MFLib::Polarity mPolarity = MFLib::Polarity::UNKNOWN;
     bool mHaveCorrelationCoefficient = false;
@@ -57,6 +58,7 @@ public:
     bool mHaveInterpolatedDetectionTime = false;
     bool mHavePhaseOnsetTime = false;
     bool mHaveInterpolatedPhaseOnsetTime = false;
+    bool mHaveTravelTime = false;
     bool mHaveTemplateID = false;
     bool mHaveDetection = false;
 };
@@ -118,6 +120,7 @@ void Detection<T>::clear() noexcept
     pImpl->mInterpolatedDetectionTime = 0;
     pImpl->mPhaseOnsetTime = 0;
     pImpl->mInterpolatedPhaseOnsetTime = 0;
+    pImpl->mTravelTime = 0;
     pImpl->mTemplateID.first.clear();
     pImpl->mTemplateID.second = 0;
     pImpl->mPolarity = MFLib::Polarity::UNKNOWN;
@@ -126,6 +129,7 @@ void Detection<T>::clear() noexcept
     pImpl->mHaveInterpolatedDetectionTime = false;
     pImpl->mHavePhaseOnsetTime = false;
     pImpl->mHaveInterpolatedPhaseOnsetTime = false;
+    pImpl->mHaveTravelTime = false;
     pImpl->mHaveTemplateID = false;
     pImpl->mHaveDetectedSignal = false;
     pImpl->mHaveDetection = false;
@@ -416,6 +420,31 @@ T Detection<T>::getMagnitudePerturbation(
     }
     auto idx = magTypeToIndex(type);
     return pImpl->mAmplitudes[idx].mMagnitudePerturbation;
+}
+
+/// Sets the travel time
+template<class T>
+void Detection<T>::setTravelTime(const double travelTime)
+{
+    if (travelTime < 0)
+    {
+        throw std::invalid_argument("Travel time cannot be negative\n");
+    }
+    pImpl->mTravelTime = travelTime;
+    pImpl->mHaveTravelTime = true;
+}
+
+template<class T>
+double Detection<T>::getTravelTime() const
+{
+    if (!haveTravelTime()){throw std::runtime_error("Travel time not set\n");}
+    return pImpl->mTravelTime;
+}
+
+template<class T>
+bool Detection<T>::haveTravelTime() const noexcept
+{
+    return pImpl->mHaveTravelTime;
 }
 
 /// Determines if this amplitude perturbation is set

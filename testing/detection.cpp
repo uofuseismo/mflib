@@ -24,6 +24,7 @@ TEST(singleChannelDetection, detection)
     double detectionTime = 1;
     double intDetectionTime = 2;
     double onsetTime = 3;
+    double travelTime = 2;
     double intOnsetTime = 4; 
     double alphaGR = 10;  // Scaling factor
     double alphaSR = 100; 
@@ -57,6 +58,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NO_THROW(det.setDetectionTime(detectionTime));
     EXPECT_NO_THROW(det.setInterpolatedDetectionTime(intDetectionTime));
     EXPECT_NO_THROW(det.setPhaseOnsetTime(onsetTime));
+    EXPECT_NO_THROW(det.setTravelTime(travelTime));
     EXPECT_NO_THROW(det.setInterpolatedPhaseOnsetTime(intOnsetTime));
     EXPECT_NO_THROW(det.setAmplitudeScalingFactor(alphaGR,
                     MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006));
@@ -74,6 +76,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(det.getDetectionTime(), detectionTime, 1.e-14);
     EXPECT_NEAR(det.getInterpolatedDetectionTime(), intDetectionTime, 1.e-14);
     EXPECT_NEAR(det.getPhaseOnsetTime(), onsetTime, 1.e-14);
+    EXPECT_NEAR(det.getTravelTime(), travelTime, 1.e-14);
     EXPECT_NEAR(det.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14); 
     EXPECT_NEAR(det.getAmplitudeScalingFactor(
                 MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
@@ -101,6 +104,7 @@ TEST(singleChannelDetection, detection)
     EXPECT_NEAR(detCopy.getInterpolatedDetectionTime(),
                 intDetectionTime, 1.e-14);
     EXPECT_NEAR(detCopy.getPhaseOnsetTime(), onsetTime, 1.e-14);
+    EXPECT_NEAR(detCopy.getTravelTime(), travelTime, 1.e-14);
     EXPECT_NEAR(detCopy.getInterpolatedPhaseOnsetTime(), intOnsetTime, 1.e-14);
     EXPECT_NEAR(detCopy.getAmplitudeScalingFactor(
                 MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006),
