@@ -201,6 +201,33 @@ public:
     bool haveInterpolatedDetectionTime() const noexcept; 
     /*! @} */
 
+    /*! @name Travel Time
+     * @{
+     */
+    /*!
+     * @brief Sets the travel time from the source to the receiver.  This
+     *        is taken from the waveform template.
+     * @param[in] travelTime  The travel time from the source to the receiver
+     *                        in seconds.
+     * @throws std::invalid_argument if the travel time is not positive.
+     */
+    void setTravelTime(double travelTime);
+    /*!
+     * @brief Gets the travel time from the source to the receiver.  This
+     *        is taken from the corresponding waveform template.
+     * @result travelTime  The travel time from the source to the receiver
+     *                     in seconds.
+     * @throws std::runtime_error if this was not set.
+     * @sa \c haveTravelTime()
+     */
+    double getTravelTime() const;
+    /*!
+     * @brief Determines whether or not the travel time was set.
+     * @result True indicates that the travel time was set.
+     */
+    bool haveTravelTime() const noexcept; 
+    /*! @} */
+
     /*! @brief Phase Onset Time
      * @{
      */

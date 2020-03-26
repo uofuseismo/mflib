@@ -596,6 +596,11 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
                 detection.setPhaseOnsetTime(pickTime);
                 detection.setInterpolatedPhaseOnsetTime(intPickTime);
             }
+            // Try attaching the travel time
+            if (templates[jt].haveTravelTime())
+            {
+                 detection.setTravelTime(templates[jt].getTravelTime());
+            }
             // Compute the relative amplitudes / magnitudes
             if (lComputeAmplitude)
             {
