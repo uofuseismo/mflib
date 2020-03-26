@@ -599,16 +599,24 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             // Compute the relative amplitudes / magnitudes
             if (lComputeAmplitude)
             {
-                MFLib::RelativeMagnitudeType magType;
-                magnitudes[jt].setDetectedSignal(templateLength,
-                                                 detectedSignalPtr);
-                magType = MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006;
-                T alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-                detection.setAmplitudeScalingFactor(alpha, magType);
-
-                magType = MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014;
-                alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
-                detection.setAmplitudeScalingFactor(alpha, magType);
+                try
+                {
+                    MFLib::RelativeMagnitudeType magType;
+                    magnitudes[jt].setDetectedSignal(templateLength,
+                                                     detectedSignalPtr);
+                    magType = MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006;
+                    T alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
+                    detection.setAmplitudeScalingFactor(alpha, magType);
+  
+                    magType = MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014;
+                    alpha = magnitudes[jt].computeAmplitudeScalingFactor(magType);
+                    detection.setAmplitudeScalingFactor(alpha, magType);
+                }
+                catch (const std::exception &e)
+                {
+                    fprintf(stderr, "Magnitude calculation failed: %s\n",
+                            e.what());
+                }
             }
             // Save this detection
             pImpl->mDetections.push_back(detection);
