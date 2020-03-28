@@ -4,12 +4,22 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#pragma warning(push)
 #ifdef __ICC
-#pragma warning(disable: 68 654 1125 1225)
+  #pragma warning(push)
+  #pragma warning(disable: 68 654 1125 1225)
+#endif
+#ifdef __GNUG__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wall"
+  #pragma GCC diagnostic ignored "-Wextra"
 #endif
 #include <daal.h>
-#pragma warning(pop)
+#ifdef __ICC
+  #pragma warning(pop)
+#endif
+#ifdef __GNUG__
+  #pragma GCC diagnostic pop
+#endif
 #include "private/dbscan.hpp"
 
 using namespace MFLib;
