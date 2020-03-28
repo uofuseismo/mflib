@@ -16,12 +16,21 @@
   #pragma GCC diagnostic ignored "-Wsign-compare"
   #pragma GCC diagnostic ignored "-Wextra"
 #endif
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  #pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
 #include <daal.h>
 #ifdef __ICC
   #pragma warning(pop)
 #endif
 #ifdef __GNUG__
   #pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+  #pragma clang diagnostic pop
 #endif
 #include "private/dbscan.hpp"
 
