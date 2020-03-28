@@ -38,8 +38,10 @@ endif()
 #endif()
 set(FindIPP_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 set(FindMKL_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
+set(FindDAAL_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 find_package(FindIPP REQUIRED)
 find_package(FindMKL REQUIRED)
+find_package(FindDAAL REQUIRED)
 
 if (MFLIB_WRAP_PYTHON)
    find_package(PythonInterp 3)
@@ -56,6 +58,7 @@ include_directories(
     ${MKL_INCLUDE_DIR}
     ${IPP_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
+    ${DAAL_INCLUDE_DIR}
     #${CUDA_INCLUDE_DIRS}
 )
 
@@ -69,6 +72,7 @@ set(PRIVATE_HEADER_DIRECTORIES
 set(SRC
     src/version.cpp
     src/peakFinder.cpp
+    src/dbscan.cpp
     src/matchedFilterParameters.cpp
     src/matchedFilter.cpp
     src/networkStationPhase.cpp
@@ -96,7 +100,7 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
-target_link_libraries(matchedFilter PUBLIC ${MKL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
+target_link_libraries(matchedFilter PUBLIC ${MKL_LIBRARY} ${DAAL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
 #                      ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
@@ -123,7 +127,7 @@ if (MFLIB_WRAP_PYTHON)
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE
-                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA})# OpenMP::OpenMP_CXX)
+                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} ${DAAL_LIBRARY})# OpenMP::OpenMP_CXX)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
    message("hey" ${CMAKE_SOURCE_DIR}/python/include)
@@ -149,7 +153,7 @@ add_executable(unitTests
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${MKL_LIBRARY} ${IPP_LIBRARY}
-                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
+                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${DAAL_LIBRARY})# OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 set_target_properties(unitTests  PROPERTIES
                       CXX_STANDARD 17
