@@ -549,7 +549,17 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             }
             // Set the basics
             detection.setTemplateIdentifier(templates[jt].getIdentifier());
-            detection.setCorrelationCoefficient(det[peakIndex]);
+            auto mfPtr = mf.getMatchedFilterSignalPointer(it);
+            if (std::abs(mfPtr[peakIndex]) <
+                pImpl->mParameters.getDetectionThreshold())
+            {
+                fprintf(stderr, "algorithmic failure: |xc|=%lf < %lf, \n",
+                        std::abs(mfPtr[peakIndex]),
+                        pImpl->mParameters.getDetectionThreshold());
+            }
+            T one = 1; 
+            auto xc = std::max(-one, std::min(one, mfPtr[peakIndex]));
+            detection.setCorrelationCoefficient(xc); //mfPtr[peakIndex]);
             // Get the detected chunk of signal
             int templateLength = templates[jt].getSignalLength();
             auto lComputeAmplitude = lWantMagnitudes;
@@ -570,7 +580,7 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             auto detectionTime = peakIndex*dt;
             detection.setDetectionTime(detectionTime);
             // Compute the interpolated onset time
-            auto mfPtr = mf.getMatchedFilterSignalPointer(it);
+            //auto mfPtr = mf.getMatchedFilterSignalPointer(it);
             /*
             auto shift = quadraticRefinement(detectionLength,
                                              mfPtr,
