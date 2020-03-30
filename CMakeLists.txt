@@ -147,6 +147,7 @@ add_executable(unitTests
                testing/singleChannel.cpp
                testing/relativeMagnitude.cpp
                testing/peakFinder.cpp
+               testing/dbscan.cpp
                testing/detection.cpp
                testing/detector.cpp
                testing/associator.cpp
