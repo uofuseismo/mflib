@@ -13,7 +13,7 @@ class AssociatorParameters;
  *        events.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
-template<class T>
+template<class T = double>
 class Associator
 {
 public:
@@ -126,7 +126,6 @@ public:
      * @result The detections grouped into the iev'th event.
      * @sa \c getNumberOfEvents()
      */
-    template<typename T>
     std::vector<MFLib::SingleChannel::Detection<T>> getDetectionsForEvent(int iev) const;
 private:
     class AssociatorImpl;
