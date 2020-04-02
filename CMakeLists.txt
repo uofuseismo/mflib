@@ -9,6 +9,7 @@ include(FindOpenMP QUIET)
 if (OPENMP_FOUND)
    message("OpenMP found")
    string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
+   link_libraries(OpenMP::OpenMP_CXX)
 endif()
 
 check_cxx_source_compiles("
@@ -39,9 +40,11 @@ endif()
 set(FindIPP_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 set(FindMKL_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 set(FindDAAL_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
+set(FindTBB_DIR ${CMAKE_SOURCE_DIR}/CMakeModules)
 find_package(FindIPP REQUIRED)
 find_package(FindMKL REQUIRED)
 find_package(FindDAAL REQUIRED)
+find_package(FindTBB)
 
 if (MFLIB_WRAP_PYTHON)
    find_package(PythonInterp 3)
@@ -51,6 +54,9 @@ if (MFLIB_WRAP_PYTHON)
    message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
    #string(APPEND CMAKE_CXX_FLAGS " -DPYBIND11_CPP17 ")
    find_package(pybind11 REQUIRED)
+endif()
+if (TBB_FOUND)
+   message("TBB found")
 endif()
 
 include_directories(
@@ -100,7 +106,8 @@ endif()
 #cmake -DBUILD_SHARED_LIBS=YES /path/to/source 
 set(BUILD_SHARED_LIBS YES)
 add_library(matchedFilter ${SRC} ${MPI_SRC} ${CUDA_SRC})
-target_link_libraries(matchedFilter PUBLIC ${MKL_LIBRARY} ${DAAL_LIBRARY} ${IPP_LIBRARY} ${MPI_CXX_LIBRARIES})
+target_link_libraries(matchedFilter PRIVATE ${MKL_LIBRARY} ${DAAL_LIBRARY} ${IPP_LIBRARY}
+                      ${MPI_CXX_LIBRARIES} ${TBB_LIBRARY})
 #                      ${CUDA_CUFFT_LIBRARIES})# OpenMP::OpenMP_CXX)
 set_target_properties(matchedFilter PROPERTIES
                       CXX_STANDARD 17
@@ -127,7 +134,7 @@ if (MFLIB_WRAP_PYTHON)
                python/multiChannelMatchedFilter.cpp
                python/pymflib.cpp)
    target_link_libraries(pymflib PRIVATE
-                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} ${DAAL_LIBRARY})# OpenMP::OpenMP_CXX)
+                         pybind11::module matchedFilter ${MKL_LIBRARY} ${MKL_EXTRA} ${DAAL_LIBRARY} ${TBB_LIBRARY})# OpenMP::OpenMP_CXX)
    set_property(TARGET pymflib PROPERTY CXX_STD_14)
    set_property(TARGET pymflib PROPERTY PREFIX "")
    message("hey" ${CMAKE_SOURCE_DIR}/python/include)
@@ -154,7 +161,7 @@ add_executable(unitTests
                testing/utilities.cpp)
 target_link_libraries(unitTests
                       PRIVATE matchedFilter ${GTEST_BOTH_LIBRARIES} ${MKL_LIBRARY} ${IPP_LIBRARY}
-                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${DAAL_LIBRARY})# OpenMP::OpenMP_CXX)
+                      ${MPI_CXX_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${DAAL_LIBRARY} ${TBB_LIBRARY})# OpenMP::OpenMP_CXX)
 target_include_directories(unitTests PRIVATE ${GTEST_INCLUDE_DIRS})
 set_target_properties(unitTests  PROPERTIES
                       CXX_STANDARD 17

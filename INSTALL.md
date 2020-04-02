@@ -14,15 +14,17 @@ The following packages are required:
    2.  [CMake](https://cmake.org/) v.3.10 or greater.
    3.  [Intel Math Kernel Library](https://software.intel.com/en-us/mkl)
    4.  [Intel Performance Primitives](https://software.intel.com/en-us/ipp)
-   5.  [Google Test](https://github.com/google/googletest)
+   5.  [Intel DAAL](https://software.intel.com/en-us/daal)
+   6.  [Google Test](https://github.com/google/googletest)
 
 The following packages are optional:
 
-   1.  [CUDA 10.1](https://developer.nvidia.com/cuda-downloads) for a GPU-based matched filtered implementation.  I may relax this and rewrite this in OpenCL or, for my convenience, rewrite this in Data Parallel C++.
-   2.  [OpenMP](https://www.openmp.org/).  This likely probably ships with your compiler.
+   1.  [OpenMP](https://www.openmp.org/).  This likely probably ships with your compiler.
+   2.  [TBB](https://software.intel.com/en-us/tbb).  This will ship with an Intel compiler.
    3.  Message Passing Interface v3, e.g., [MPICH](https://www.mpich.org/) or [OpenMPI](https://www.open-mpi.org/).
    4.  The Parallel Standard Template Library extensions.  This will be better defined in C++20.
    5.  [pybind11](https://github.com/pybind/pybind11) for generation of Python bindings.
+   6.  [CUDA 10.1](https://developer.nvidia.com/cuda-downloads) for a GPU-based matched filtered implementation.  I am exploring Data Parallel C++ and Intel's OneAPI.  However those are still beta and not easily obtainable.
  
 # Download the Software
 
