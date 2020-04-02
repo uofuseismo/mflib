@@ -30,6 +30,12 @@ public:
     void setStation(const std::string &station) noexcept;
     std::string getStation() const noexcept;
 
+    void setChannel(const std::string &channel) noexcept;
+    std::string getChannel() const noexcept;
+
+    void setLocationCode(const std::string &location) noexcept;
+    std::string getLocationCode() const noexcept;
+
     void setPhase(const std::string &phase) noexcept;
     std::string getPhase() const noexcept;
     size_t getHash() const noexcept;

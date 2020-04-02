@@ -14,14 +14,22 @@ TEST(networkStationPhase, basic)
     std::string networkRef = "UU";
     std::string station = " DuG  "; 
     std::string stationRef = "DUG";
+    std::string channel = "HHz";
+    std::string channelRef = "HHZ";
+    std::string location = " 01 ";
+    std::string locationRef = "01";
     std::string phase = " s";
     std::string phaseRef = "S";
 
     nsp.setNetwork(network);
     nsp.setStation(station);
+    nsp.setChannel(channel);
+    nsp.setLocationCode(location);
     nsp.setPhase(phase);
     EXPECT_EQ(nsp.getNetwork(), networkRef);
     EXPECT_EQ(nsp.getStation(), stationRef);
+    EXPECT_EQ(nsp.getChannel(), channelRef);
+    EXPECT_EQ(nsp.getLocationCode(), locationRef);
     EXPECT_EQ(nsp.getPhase(), phaseRef);
     // Test copy c'tor
     NetworkStationPhase nspCopy(nsp);

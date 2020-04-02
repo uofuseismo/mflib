@@ -18,15 +18,19 @@ using namespace MFLib;
 TEST(singleChannelAssociator, parameters)
 {
     SingleChannel::AssociatorParameters parms;
+    EXPECT_FALSE(parms.useCorrelationCoefficientWeighting());
     
     EXPECT_NO_THROW(parms.setOriginTimeTolerance(4));
     EXPECT_NO_THROW(parms.setMinimumNumberOfPicksInEvent(8));
+    parms.enableCorrelationCoefficientWeighting();
     EXPECT_NEAR(parms.getOriginTimeTolerance(), 4, 1.e-14);
     EXPECT_EQ(parms.getMinimumNumberOfPicksInEvent(), 8);
+    EXPECT_TRUE(parms.useCorrelationCoefficientWeighting());
 
     SingleChannel::AssociatorParameters parmsCopy(parms);
     EXPECT_NEAR(parmsCopy.getOriginTimeTolerance(), 4, 1.e-14);
     EXPECT_EQ(parmsCopy.getMinimumNumberOfPicksInEvent(), 8);
+    EXPECT_TRUE(parmsCopy.useCorrelationCoefficientWeighting());
 }
 
 TEST(singleChannelAssociator, weightedStatistics)

@@ -91,6 +91,27 @@ public:
      * @result The minimum number of picks requied to form an event.
      */ 
     int getMinimumNumberOfPicksInEvent() const noexcept;
+
+ 
+    /*!
+     * @brief Allows the algorithm to use the correlation coefficients
+     *        as weights in the clustering.
+     */
+    void enableCorrelationCoefficientWeighting() noexcept;
+    /*!
+     * @brief Prevents the algorithm from using correlation coefficients
+     *        as weights in the clustering.  In this case all arrivals have
+     *        equal weight.
+     */
+    void disableCorrelationCoefficientWeighting() noexcept;
+    /*!
+     * @brief Determines if the clustering algorithm should weight origin
+     *        times based on the (absolute value) of the correlation
+     *        coefficient.
+     * @result True indicates that the clustering should utilize the 
+     *         correlation coefficients as weights.
+     */
+    bool useCorrelationCoefficientWeighting() const noexcept;
 private:
     class AssociatorParametersImpl;
     std::unique_ptr<AssociatorParametersImpl> pImpl;

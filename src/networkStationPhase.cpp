@@ -11,9 +11,12 @@ namespace
 {
 std::string makeHashString(const std::string &network,
                            const std::string &station,
+                           const std::string &channel,
+                           const std::string &location,
                            const std::string &phase)
 {
-    return network + "." + station + "." + phase;
+    return network + "." + station + "." + channel + "." + location  + "."
+         + phase;
 }
 }
 
@@ -22,6 +25,8 @@ class NetworkStationPhase::NetworkStationPhaseImpl
 public:
     std::string mNetwork;
     std::string mStation;
+    std::string mChannel;
+    std::string mLocation;
     std::string mPhase;
     size_t mHash = 0;
 };
@@ -52,6 +57,8 @@ void NetworkStationPhase::clear() noexcept
 {
     pImpl->mNetwork.clear();
     pImpl->mStation.clear();
+    pImpl->mChannel.clear();
+    pImpl->mLocation.clear();
     pImpl->mPhase.clear();
     pImpl->mHash = 0; 
 }
@@ -84,7 +91,9 @@ void NetworkStationPhase::setNetwork(const std::string &s) noexcept
                           pImpl->mNetwork.end());
     std::transform(pImpl->mNetwork.begin(), pImpl->mNetwork.end(), 
                    pImpl->mNetwork.begin(), ::toupper);
-    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation, pImpl->mPhase);
+    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation,
+                               pImpl->mChannel, pImpl->mLocation,
+                               pImpl->mPhase);
     pImpl->mHash = std::hash<std::string>()(work);
 
 }
@@ -105,7 +114,9 @@ void NetworkStationPhase::setStation(const std::string &s) noexcept
                           pImpl->mStation.end()); 
     std::transform(pImpl->mStation.begin(), pImpl->mStation.end(),
                    pImpl->mStation.begin(), ::toupper);
-    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation, pImpl->mPhase);
+    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation,
+                               pImpl->mChannel, pImpl->mLocation,
+                               pImpl->mPhase);
     pImpl->mHash = std::hash<std::string>()(work);
 }
 
@@ -113,6 +124,50 @@ void NetworkStationPhase::setStation(const std::string &s) noexcept
 std::string NetworkStationPhase::getStation() const noexcept
 {
     return pImpl->mStation;
+}
+
+/// Sets the channel
+void NetworkStationPhase::setChannel(const std::string &s) noexcept
+{
+    // Copy, remove blanks, and convert to upper case
+    pImpl->mChannel = s;
+    pImpl->mChannel.erase(std::remove(pImpl->mChannel.begin(),
+                                      pImpl->mChannel.end(), ' '),
+                          pImpl->mChannel.end());
+    std::transform(pImpl->mChannel.begin(), pImpl->mChannel.end(),
+                   pImpl->mChannel.begin(), ::toupper);
+    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation,
+                               pImpl->mChannel, pImpl->mLocation,
+                               pImpl->mPhase);
+    pImpl->mHash = std::hash<std::string>()(work);
+}
+
+/// Gets the channel
+std::string NetworkStationPhase::getChannel() const noexcept
+{
+    return pImpl->mChannel;
+}
+
+/// Sets the location code
+void NetworkStationPhase::setLocationCode(const std::string &s) noexcept
+{
+    // Copy, remove blanks, and convert to upper case
+    pImpl->mLocation = s;
+    pImpl->mLocation.erase(std::remove(pImpl->mLocation.begin(),
+                                       pImpl->mLocation.end(), ' '),
+                          pImpl->mLocation.end());
+    std::transform(pImpl->mLocation.begin(), pImpl->mLocation.end(),
+                   pImpl->mLocation.begin(), ::toupper);
+    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation,
+                               pImpl->mChannel, pImpl->mLocation,
+                               pImpl->mPhase);
+    pImpl->mHash = std::hash<std::string>()(work);
+}
+
+/// Gets the location code
+std::string NetworkStationPhase::getLocationCode() const noexcept
+{
+    return pImpl->mLocation;
 }
 
 /// Sets the phase
@@ -125,7 +180,9 @@ void NetworkStationPhase::setPhase(const std::string &s) noexcept
                         pImpl->mPhase.end());
     std::transform(pImpl->mPhase.begin(), pImpl->mPhase.end(), 
                    pImpl->mPhase.begin(), ::toupper);
-    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation, pImpl->mPhase);
+    auto work = makeHashString(pImpl->mNetwork, pImpl->mStation,
+                               pImpl->mChannel, pImpl->mLocation,
+                               pImpl->mPhase);
     pImpl->mHash = std::hash<std::string>()(work);
 }
 

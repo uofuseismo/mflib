@@ -18,6 +18,8 @@ TEST(waveformTemplate, basic)
     NetworkStationPhase nsp;
     nsp.setNetwork("UU");
     nsp.setStation("BSUT");
+    nsp.setChannel("EHZ");
+    nsp.setLocationCode("01");
     nsp.setPhase("P"); 
     uint64_t waveEventID = 942;
     std::pair<NetworkStationPhase, uint64_t> waveID(nsp, waveEventID);

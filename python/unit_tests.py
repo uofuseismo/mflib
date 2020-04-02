@@ -20,6 +20,8 @@ def test_waveform_template():
     polarity = pymflib.Polarity.compression
     nsp.set_network("UU")
     nsp.set_station("FORU")
+    nsp.set_channel("HHZ")
+    nsp.set_location_code("01")
     nsp.set_phase("P")
     identifier = [nsp, 4]
     # Figure up the class
@@ -58,6 +60,8 @@ def test_waveform_template():
     id_back = wt.get_identifier()
     assert id_back[0].get_network() == identifier[0].get_network(), 'network failed'
     assert id_back[0].get_station() == identifier[0].get_station(), 'station failed'
+    assert id_back[0].get_channel() == identifier[0].get_channel(), 'channel failed'
+    assert id_back[0].get_location_code() == identifier[0].get_location_code(), 'location failed'
     assert id_back[0].get_phase() == identifier[0].get_phase(), 'phase failed'
     assert id_back[1] == identifier[1], "Identifier failed"
 
@@ -72,6 +76,8 @@ def test_waveform_template():
     id_back = wt_copy.get_identifier()
     assert id_back[0].get_network() == identifier[0].get_network(), 'network failed'
     assert id_back[0].get_station() == identifier[0].get_station(), 'station failed'
+    assert id_back[0].get_channel() == identifier[0].get_channel(), 'channel failed'
+    assert id_back[0].get_location_code() == identifier[0].get_location_code(), 'location failed'
     assert id_back[0].get_phase() == identifier[0].get_phase(), 'phase failed'
     assert id_back[1] == identifier[1], "Identifier failed"
     assert wt_copy.get_polarity() == polarity, "Polarity copy failed"

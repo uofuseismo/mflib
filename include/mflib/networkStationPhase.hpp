@@ -88,6 +88,35 @@ public:
     std::string getStation() const noexcept;
     /* @} */
 
+    /*! @name Channel
+     * @{
+     */
+    /*!
+     * @brief Sets the channel name.
+     * @param[in] channel  The channel name.
+     */
+    void setChannel(const std::string &channel) noexcept;
+    /*!
+     * @brief Gets the channel name.
+     * @result The channel name.
+     */
+    std::string getChannel() const noexcept;
+    /*! @} */
+
+    /*! @name Location Code
+     * @{
+     */
+    /*!
+     * @brief Sets the location code.
+     * @param[in] locationCode  The location code.
+     */
+    void setLocationCode(const std::string &locationCode) noexcept;
+    /*!
+     * @brief Gets the location code.
+     * @result The location code.
+     */
+    std::string getLocationCode() const noexcept;
+    /*! @} */
     /*! @name Phase
      * @{
      */

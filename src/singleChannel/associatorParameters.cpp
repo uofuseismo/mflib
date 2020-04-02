@@ -13,6 +13,7 @@ class AssociatorParameters::AssociatorParametersImpl
 public:
     double mOriginTimeTolerance = DEFAULT_OT_TOLERANCE;
     int mMinNumberOfPicks = DEFAULT_MIN_PICKS;
+    bool mUseXCWeights = false;
 };
 
 /// Default constructor
@@ -61,6 +62,7 @@ void AssociatorParameters::clear() noexcept
 {
     pImpl->mOriginTimeTolerance = DEFAULT_OT_TOLERANCE;
     pImpl->mMinNumberOfPicks = DEFAULT_MIN_PICKS;
+    pImpl->mUseXCWeights = false;
 }
 
 /// Sets the origin time tolerance
@@ -95,9 +97,18 @@ int AssociatorParameters::getMinimumNumberOfPicksInEvent() const noexcept
     return pImpl->mMinNumberOfPicks;
 }
 
-/*
-bool AssociatorParameters::haveOriginTimeTolerance() const noexcept
+/// Enable XC weights in clustering
+void AssociatorParameters::enableCorrelationCoefficientWeighting() noexcept
 {
-    return pImpl->mOriginTimeTolerance >= 0 ? true : false;
+    pImpl->mUseXCWeights = true;
 }
-*/
+
+void AssociatorParameters::disableCorrelationCoefficientWeighting() noexcept
+{
+    pImpl->mUseXCWeights = false;
+}
+
+bool AssociatorParameters::useCorrelationCoefficientWeighting() const noexcept
+{
+   return pImpl->mUseXCWeights;
+}

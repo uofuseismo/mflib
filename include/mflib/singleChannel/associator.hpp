@@ -126,7 +126,7 @@ public:
      * @result The detections grouped into the iev'th event.
      * @sa \c getNumberOfEvents()
      */
-    std::vector<MFLib::SingleChannel::Detection<T>> getDetectionsForEvent(int iev) const;
+    std::vector<MFLib::SingleChannel::Detection<T>> getDetectionsInEvent(int iev) const;
 private:
     class AssociatorImpl;
     std::unique_ptr<AssociatorImpl> pImpl;

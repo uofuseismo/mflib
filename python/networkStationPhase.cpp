@@ -80,6 +80,28 @@ std::string NetworkStationPhase::getStation() const noexcept
     return mNetworkStationPhase->getStation();
 }
 
+/// Set/get channel
+void NetworkStationPhase::setChannel(const std::string &channel) noexcept
+{
+    mNetworkStationPhase->setChannel(channel);
+}
+
+std::string NetworkStationPhase::getChannel() const noexcept
+{
+    return mNetworkStationPhase->getChannel();
+}
+
+/// Set/get location code 
+void NetworkStationPhase::setLocationCode(const std::string &loc) noexcept
+{
+    mNetworkStationPhase->setLocationCode(loc);
+}
+
+std::string NetworkStationPhase::getLocationCode() const noexcept
+{
+    return mNetworkStationPhase->getLocationCode();
+}
+
 /// Set/get phase 
 void NetworkStationPhase::setPhase(const std::string &phase) noexcept
 {
@@ -118,6 +140,20 @@ void PBMFLib::initializeNetworkStationPhase(pybind11::module &m)
     nsp.def("get_station",
             &PBMFLib::NetworkStationPhase::getStation,
             "Gets the station name."); 
+    /// Station name
+    nsp.def("set_channel",
+            &PBMFLib::NetworkStationPhase::setChannel,
+            "Sets the channel name.");
+    nsp.def("get_channel",
+            &PBMFLib::NetworkStationPhase::getChannel,
+            "Gets the channel name.");
+    /// Location code
+    nsp.def("set_location_code",
+            &PBMFLib::NetworkStationPhase::setLocationCode,
+            "Sets the location code.");
+    nsp.def("get_location_code",
+            &PBMFLib::NetworkStationPhase::getLocationCode,
+            "Gets the location code.");
     /// Phase name
     nsp.def("set_phase",
             &PBMFLib::NetworkStationPhase::setPhase,
