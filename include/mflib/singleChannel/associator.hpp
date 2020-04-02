@@ -93,7 +93,6 @@ public:
     /*!
      * @brief Adds a detection. 
      */
-    template<typename T>
     void addDetection(const MFLib::SingleChannel::Detection<T> &det);
     /*!
      * @brief Gets the number of detections set on the class.

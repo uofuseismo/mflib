@@ -89,16 +89,16 @@ void Associator<T>::associate()
               std::execution::par,
 #endif
               pImpl->mDetections.begin(), pImpl->mDetections.end(),
-              [] (const MFLib::SingleChannel::Detection<> &a,
-                  const MFLib::SingleChannel::Detection<> &b)
+              [] (const MFLib::SingleChannel::Detection<T> &a,
+                  const MFLib::SingleChannel::Detection<T> &b)
               {
                   return a.getTemplateIdentifier().second <
                          b.getTemplateIdentifier().second;
               });
     // Get the unique event IDs
     std::vector<uint64_t> evids;
-    evids.reserve(allDetections.size());
-    for (const auto &det : allDetections)
+    evids.reserve(pImpl->mDetections.size());
+    for (const auto &det : pImpl->mDetections)
     {
         evids.push_back(det.getTemplateIdentifier().second);
     }
@@ -115,8 +115,14 @@ void Associator<T>::associate()
 }
 
 /// Gets the number of associated events
+/*
 template<class T>
 int Associator<T>::getNumberOfEvents() const noexcept
 {
     return static_cast<int> (pImpl->mEvents.size());
 }
+*/
+
+/// Implementation
+template class MFLib::SingleChannel::Associator<double>;
+template class MFLib::SingleChannel::Associator<float>;
