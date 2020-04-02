@@ -5,6 +5,7 @@ namespace MFLib
 {
 namespace SingleChannel
 {
+template<class T> class Detection;
 class AssociatorParameters;
 /*!
  * @class Associator associator.hpp "mflib/singleChannel/associator.hpp"
@@ -12,6 +13,7 @@ class AssociatorParameters;
  *        events.
  * @copyright Ben Baker (University of Utah) distributed under the MIT license.
  */
+template<class T>
 class Associator
 {
 public:
@@ -69,11 +71,64 @@ public:
     void clear() noexcept;
     /*! @} */
 
+    /*! @name Initialization
+     * @{
+     */
+    /*!
+     * @brief Initializes the associator class.
+     * @param[in] parameters  The parameters from which to initialize
+     *                        the associator.
+     */
+    void initialize(const MFLib::SingleChannel::AssociatorParameters &parameters);
+    /*!
+     * @brief Determines if the class is initialized.
+     * @result True indicates that the class is inititalized.
+     */
+    bool isInitialized() const noexcept;
+    /*! @} */
+
+    /*! @name Detections
+     * @{
+     */
+    /*!
+     * @brief Adds a detection. 
+     */
+    template<typename T>
+    void addDetection(const MFLib::SingleChannel::Detection<T> &det);
+    /*!
+     * @brief Gets the number of detections set on the class.
+     * @Result The number of detections.
+     */
+    int getNumberOfDetections() const noexcept;
+    /*!
+     * @brief Clears the detections set on the class. 
+     */
+    void clearDetections() noexcept;
+    /*! @} */
+
     /*!
      * @brief Associates the input detections into events.
+     * @throws std::runtime_error if the class is not initialized.
+     * @sa \c isInitialized()
      */
     void associate();
+
+    /*!
+     * @brief Gets the number of events.
+     * @result The number of events created by the associator.
+     * @sa \c associate()
+     */
     int getNumberOfEvents() const noexcept;
+
+    /*!
+     * @brief Returns the detections belonging to the iev'th event index.
+     * @param[in] iev  The event index.  This must be in the range
+     *                 [0, \c getNumberOfEvents()-1].
+     * @result The detections grouped into the iev'th event.
+     * @sa \c getNumberOfEvents()
+     */
+    template<typename T>
+    std::vector<MFLib::SingleChannel::Detection<T>> getDetectionsForEvent(int iev) const;
 private:
     class AssociatorImpl;
     std::unique_ptr<AssociatorImpl> pImpl;

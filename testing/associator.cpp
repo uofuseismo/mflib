@@ -20,10 +20,13 @@ TEST(singleChannelAssociator, parameters)
     SingleChannel::AssociatorParameters parms;
     
     EXPECT_NO_THROW(parms.setOriginTimeTolerance(4));
+    EXPECT_NO_THROW(parms.setMinimumNumberOfPicksInEvent(8));
     EXPECT_NEAR(parms.getOriginTimeTolerance(), 4, 1.e-14);
+    EXPECT_EQ(parms.getMinimumNumberOfPicksInEvent(), 8);
 
     SingleChannel::AssociatorParameters parmsCopy(parms);
     EXPECT_NEAR(parmsCopy.getOriginTimeTolerance(), 4, 1.e-14);
+    EXPECT_EQ(parmsCopy.getMinimumNumberOfPicksInEvent(), 8);
 }
 
 TEST(singleChannelAssociator, weightedStatistics)

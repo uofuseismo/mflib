@@ -56,7 +56,8 @@ if (MFLIB_WRAP_PYTHON)
    find_package(pybind11 REQUIRED)
 endif()
 if (TBB_FOUND)
-   message("TBB found")
+   message("TBB was found")
+   add_definitions(-DHAVE_TBB)
 endif()
 
 include_directories(

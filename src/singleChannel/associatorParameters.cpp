@@ -6,11 +6,13 @@
 using namespace MFLib::SingleChannel;
 
 #define DEFAULT_OT_TOLERANCE 2
+#define DEFAULT_MIN_PICKS 5
 
 class AssociatorParameters::AssociatorParametersImpl
 {
 public:
     double mOriginTimeTolerance = DEFAULT_OT_TOLERANCE;
+    int mMinNumberOfPicks = DEFAULT_MIN_PICKS;
 };
 
 /// Default constructor
@@ -58,6 +60,7 @@ AssociatorParameters::~AssociatorParameters() = default;
 void AssociatorParameters::clear() noexcept
 {
     pImpl->mOriginTimeTolerance = DEFAULT_OT_TOLERANCE;
+    pImpl->mMinNumberOfPicks = DEFAULT_MIN_PICKS;
 }
 
 /// Sets the origin time tolerance
@@ -74,6 +77,22 @@ void AssociatorParameters::setOriginTimeTolerance(const double tol)
 double AssociatorParameters::getOriginTimeTolerance() const noexcept
 {
     return pImpl->mOriginTimeTolerance;
+}
+
+/// Sets the minimum number of picks required to associate
+void AssociatorParameters::setMinimumNumberOfPicksInEvent(const int minPicks)
+{
+    if (minPicks < 1)
+    {
+        throw std::invalid_argument("minPicks = " + std::to_string(minPicks)
+                                  + " must be positive\n");
+    } 
+    pImpl->mMinNumberOfPicks = minPicks;
+}
+
+int AssociatorParameters::getMinimumNumberOfPicksInEvent() const noexcept
+{
+    return pImpl->mMinNumberOfPicks;
 }
 
 /*

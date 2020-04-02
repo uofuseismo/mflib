@@ -2,10 +2,18 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <algorithm>
+#if __has_include(<pstl/algorithm>)
+#include <pstl/algorithm>
+#include <pstl/execution>
+#define USE_PSTL 1
+#endif
 #include "mflib/singleChannel/associator.hpp"
+#include "mflib/singleChannel/associatorParameters.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "mflib/singleChannel/event.hpp"
 #include "mflib/networkStationPhase.hpp"
+#include "private/dbscan.hpp"
 #include "private/weightedStatistics.hpp"
 
 using namespace MFLib::SingleChannel;
@@ -13,54 +21,28 @@ using namespace MFLib::SingleChannel;
 namespace
 {
 
-/// Returns the unique event IDs in our list of picks
+}
+
 template<class T>
-std::vector<uint64_t> getUniqueEVIDs(
-    std::vector<MFLib::SingleChannel::Detection<T>> &detections)
-{
-    std::vector<uint64_t> evids;
-/*
-    evids.reserve(detections.size());
-    for (int i=0; i<static_cast<int> (detections.size()); ++i)
-    {
-        auto id = detections[i].getIdentifier();
-        auto nsp = id.first;
-        auto evid = id.second;
-        bool lfound = false;
-        for (int j=0; j<static_cast<int> (evids.size()); ++j)
-        {
-            if (evid == evids[j])
-            {
-                lfound = true;
-                break;
-            }
-        }
-        if (!lfound)
-        {
-            evids.push_back(evid);
-        }
-    }
-    std::sort(evids.begin(), evids.end());
-*/
-    return evids;
-}
-
-}
-
-class Associator::AssociatorImpl
+class Associator<T>::AssociatorImpl
 {
 public:
-    std::vector<MFLib::SingleChannel::Event> mEvents;
+    //MFLib::DBSCAN mDBSCAN;
+    MFLib::SingleChannel::AssociatorParameters mParameters;
+    std::vector<MFLib::SingleChannel::Detection<T>> mDetections;
+    bool mInitialized = false;
 };
 
 /// Constructor
-Associator::Associator() :
+template<class T>
+Associator<T>::Associator() :
     pImpl(std::make_unique<AssociatorImpl> ())
 {
 }
 
 /// Copy assignment operator
-Associator& Associator::operator=(const Associator &associator)
+template<class T>
+Associator<T>& Associator<T>::operator=(const Associator &associator)
 {
     if (&associator == this){return *this;}
     pImpl = std::make_unique<AssociatorImpl> (*associator.pImpl);
@@ -68,7 +50,8 @@ Associator& Associator::operator=(const Associator &associator)
 }
 
 /// Move assignment operator
-Associator& Associator::operator=(Associator &&associator) noexcept
+template<class T>
+Associator<T>& Associator<T>::operator=(Associator &&associator) noexcept
 {
     if (&associator == this){return *this;}
     pImpl= std::move(associator.pImpl);
@@ -76,18 +59,64 @@ Associator& Associator::operator=(Associator &&associator) noexcept
 }
 
 /// Destructor
-Associator::~Associator() = default;
+template<class T>
+Associator<T>::~Associator() = default;
+
+/// Releases memory on the class and resets it
+template<class T>
+void Associator<T>::clear() noexcept
+{
+    pImpl->mParameters.clear();
+    pImpl->mDetections.clear();
+    pImpl->mInitialized = false;
+}
+
+/// Determines if the class is intitialized
+template<class T>
+bool Associator<T>::isInitialized() const noexcept
+{
+    return pImpl->mInitialized;
+}
 
 /// 
-void Associator::associate()
+template<class T>
+void Associator<T>::associate()
 {
-    pImpl->mEvents.clear();
+    if (!isInitialized()){throw std::runtime_error("Class is not intialized\n");}
+    // Sort the detections based on event IDs
+    std::sort(
+#ifdef USE_PSTL
+              std::execution::par,
+#endif
+              pImpl->mDetections.begin(), pImpl->mDetections.end(),
+              [] (const MFLib::SingleChannel::Detection<> &a,
+                  const MFLib::SingleChannel::Detection<> &b)
+              {
+                  return a.getTemplateIdentifier().second <
+                         b.getTemplateIdentifier().second;
+              });
+    // Get the unique event IDs
+    std::vector<uint64_t> evids;
+    evids.reserve(allDetections.size());
+    for (const auto &det : allDetections)
+    {
+        evids.push_back(det.getTemplateIdentifier().second);
+    }
+    auto uniqueEvids = evids;
+#ifdef USE_PSTL
+    auto it = std::unique(std::execution::par,
+                          uniqueEvids.begin(), uniqueEvids.end());
+#else
+    auto it = std::unique(uniqueEvids.begin(), uniqueEvids.end());
+#endif
+    uniqueEvids.resize(std::distance(uniqueEvids.begin(), it));
     // Loop over the associated picks
-    
+    MFLib::DBSCAN dbscan;
 }
 
 /// Gets the number of associated events
-int Associator::getNumberOfEvents() const noexcept
+template<class T>
+int Associator<T>::getNumberOfEvents() const noexcept
 {
     return static_cast<int> (pImpl->mEvents.size());
 }

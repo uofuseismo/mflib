@@ -78,6 +78,19 @@ public:
      * @result The origin time tolerance in seconds.
      */
     double getOriginTimeTolerance() const noexcept;
+
+    /*!
+     * @brief Sets the minimum number of picks required to form an event.
+     * @param[in] minPicks  The minimum number of picks required to
+     *                      form an event.
+     * @throws std::invalid_argument if this is not positive.
+     */
+    void setMinimumNumberOfPicksInEvent(int minPicks);
+    /*!
+     * @brief Gets the minimum number of picks required to form an event.
+     * @result The minimum number of picks requied to form an event.
+     */ 
+    int getMinimumNumberOfPicksInEvent() const noexcept;
 private:
     class AssociatorParametersImpl;
     std::unique_ptr<AssociatorParametersImpl> pImpl;
