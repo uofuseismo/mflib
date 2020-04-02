@@ -20,12 +20,14 @@ find_path(DAAL_INCLUDE_DIR
 find_library(DAAL_CORE_LIBRARY
              NAMES ${CORE}
              PATHS /opt/intel/daal/lib/intel64
+                   /opt/intel/daal/lib
                    $ENV{DAAL_ROOT}/lib/intel64
                    $ENV{DAAL_ROOT}/lib/
                    $ENV{DAAL_LIB_DIR})
 find_library(DAAL_SEQUENTIAL_LIBRARY
              NAMES ${SEQUENTIAL}
              PATHS /opt/intel/daal/lib/intel64
+                   /opt/intel/daal/lib
                    $ENV{DAAL_ROOT}/lib/intel64
                    $ENV{DAAL_ROOT}/lib/
                    $ENV{DAAL_LIB_DIR})
