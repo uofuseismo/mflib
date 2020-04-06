@@ -85,6 +85,7 @@ set(SRC
     src/networkStationPhase.cpp
     src/singleChannel/associator.cpp
     src/singleChannel/associatorParameters.cpp
+    src/singleChannel/detectionTimeInterpolationParameters.cpp
     src/singleChannel/detectorParameters.cpp
     src/singleChannel/detector.cpp
     src/singleChannel/detection.cpp

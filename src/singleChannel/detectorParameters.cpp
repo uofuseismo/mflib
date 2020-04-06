@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include "mflib/singleChannel/detectorParameters.hpp"
+#include "mflib/singleChannel/detectionTimeInterpolationParameters.hpp"
 
 #define DEFAULT_THRESHOLD 0.7
 #define DEFAULT_MAXIMUM_POLICY MFLib::MaximumMatchedFilterPolicy::MAXIMUM
@@ -13,6 +14,7 @@ using namespace MFLib::SingleChannel;
 class DetectorParameters::DetectorParametersImpl
 {
 public:
+    DetectionTimeInterpolationParameters mDetectionTimeInterpParameters;
     double mThreshold = DEFAULT_THRESHOLD;
     MaximumMatchedFilterPolicy mMaxPolicy = DEFAULT_MAXIMUM_POLICY;
     MatchedFilteredSignalDetectorPolicy mMatchedFilteredSignalDetectorPolicy
@@ -64,6 +66,7 @@ DetectorParameters::~DetectorParameters() = default;
 /// Resets the class
 void DetectorParameters::clear() noexcept
 {
+    pImpl->mDetectionTimeInterpParameters.clear();
     pImpl->mThreshold = DEFAULT_THRESHOLD;
     pImpl->mMaxPolicy = DEFAULT_MAXIMUM_POLICY;
     pImpl->mMinSampleDistance = DEFAULT_MIN_SAMPLE_DISTANCE;
@@ -142,6 +145,19 @@ void DetectorParameters::disableSaveDetectedWaveform() noexcept
 bool DetectorParameters::wantDetectedWaveform() const noexcept
 {
     return pImpl->mWantDetectedWaveform;
+}
+
+/// Interpolation time parameters
+void DetectorParameters::setDetectionTimeInterpolationParameters(
+        const DetectionTimeInterpolationParameters &interpParameters) noexcept
+{
+    pImpl->mDetectionTimeInterpParameters = interpParameters;
+}
+
+DetectionTimeInterpolationParameters&
+    DetectorParameters::getDetectionTimeInterpolationParameters() const noexcept
+{
+    return pImpl->mDetectionTimeInterpParameters;
 }
 
 /// Get/set the amplitudes

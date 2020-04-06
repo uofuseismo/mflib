@@ -45,6 +45,14 @@ PYBIND11_MODULE(pymflib, m)
         .value("diliation", MFLib::Polarity::DILATATION,
                "The polarity corresopnds to the dilitational (unshaded) quadrant of the beachball and is probably downwards on the seismogram.");
 
+    pybind11::enum_<MFLib::DetectionTimeInterpolationType> (m, "DetectionTimeInterpolationType")
+        .value("quadratic", MFLib::DetectionTimeInterpolationType::QUADRATIC,
+               "A quadratic polynomial will be fit to the correlation values.  The polynomial will be optimized for an interpolated detection time.  This is fast and relatively accurate.")
+        .value("lanczos", MFLib::DetectionTimeInterpolationType::LANCZOS,
+               "A truncated sinc (Lanczos) interpolation will be applied to the correlation values.  This is slow but can be more accurate than the quadrtic method.")
+        .value("none", MFLib::DetectionTimeInterpolationType::NONE,
+               "No detection time interpolation will be performed and the interpolated detection time will equal the observed detection time.");
+
     pybind11::module scModule = m.def_submodule("SingleChannel");
 
     PBMFLib::SingleChannel::initializeMatchedFilterParameters(scModule);

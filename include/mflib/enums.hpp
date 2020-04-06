@@ -76,9 +76,9 @@ enum class MatchedFilteredSignalDetectorPolicy
 };
 
 /*!
- * @brief Defines the interpolation policy for refining detections.
+ * @brief Defines the interpolation type for refining detection times.
  */
-enum class DetectionInterpolationPolicy
+enum class DetectionTimeInterpolationType
 {
     LANCZOS = 0,   /*! Performs sinc interpolation (using a Lanczos window) on
                        fine interval then selects a maxima.  This appears to

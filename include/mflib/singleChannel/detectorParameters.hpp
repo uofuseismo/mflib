@@ -1,6 +1,7 @@
 #ifndef MFLIB_SINGLECHANNEL_DETECTORPARAMETERS_HPP
 #define MFLIB_SINGLECHANNEL_DETECTORPARAMETERS_HPP
 #include <memory>
+#include "mflib/singleChannel/detectionTimeInterpolationParameters.hpp"
 #include "mflib/enums.hpp"
 namespace MFLib
 {
@@ -135,8 +136,17 @@ public:
     getMatchedFilteredSignalDetectorPolicy() const noexcept;
     /*! @} */
     /*!
-     * @brief Defines the detection time interpolation strategy.
+     * @brief Defines the detection time interpolation parameters.
+     * @param[in] interpParameters  The detection time interpolation parameters.
      */
+    void setDetectionTimeInterpolationParameters(
+        const DetectionTimeInterpolationParameters &interpParameters) noexcept;
+    /*!
+     * @brief Gets the detection time interpolation parameters.
+     * @result The parameters used in interpolation the detection time.
+     */
+    DetectionTimeInterpolationParameters&
+        getDetectionTimeInterpolationParameters() const noexcept;
 
     /*! @name Output Parameters
      * @{

@@ -88,9 +88,9 @@ T quadraticRefinement(const int n,
 } 
 
 #pragma omp declare simd
-template<class T> T sinc(const T x)
+template<class T> T sinc(const T x,
+                         const T tol = std::numeric_limits<T>::epsilon()*100)
 {
-    const T tol = std::numeric_limits<T>::epsilon()*100;
     T result = 1;
     if (std::abs(x) > tol)
     {
@@ -446,6 +446,13 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
     {
         channelBased = true;
     }
+    // TODO: Read these from parameters
+    auto interpTimeParameters
+        = pImpl->mParameters.getDetectionTimeInterpolationParameters();
+    auto detectionInterpolationTimeType = interpTimeParameters.getType();
+    int lanczosAlpha = interpTimeParameters.getLanczosAlpha();
+    int lanczosNRefine
+        = interpTimeParameters.getLanczosNumberOfInterpolationPoints();
     // Set workspace
     auto nbytes = sizeof(T)*static_cast<size_t> (detectionLength);
     auto det = static_cast<T *> (MKL_calloc(nbytes, 1, 64));
@@ -581,18 +588,25 @@ void Detector<T>::detect(const MFLib::SingleChannel::MatchedFilter<T> &mf)
             detection.setDetectionTime(detectionTime);
             // Compute the interpolated onset time
             //auto mfPtr = mf.getMatchedFilterSignalPointer(it);
-            /*
-            auto shift = quadraticRefinement(detectionLength,
-                                             mfPtr,
-                                             peakIndex,
-                                             dt,
-                                             pImpl->mUseAbsoluteValue);
-            */
-            // printf("%lf, %d, %lf\n", detectionTime, it, shift);
-            // TODO 51 and 100 should be parameters
-            auto shift = lanczosRefinement(detectionLength, mfPtr,
-                                           peakIndex, dt,
-                                           pImpl->mUseAbsoluteValue, 51, 100);
+            double shift = 0;
+            if (detectionInterpolationTimeType ==
+                MFLib::DetectionTimeInterpolationType::QUADRATIC)
+            {
+                shift = quadraticRefinement(detectionLength,
+                                            mfPtr,
+                                            peakIndex,
+                                            dt,
+                                            pImpl->mUseAbsoluteValue);
+            }
+            else if (detectionInterpolationTimeType == 
+                     MFLib::DetectionTimeInterpolationType::LANCZOS)
+            {
+                shift = lanczosRefinement(detectionLength, mfPtr,
+                                          peakIndex, dt,
+                                          pImpl->mUseAbsoluteValue,
+                                          lanczosAlpha,
+                                          lanczosNRefine);
+            }
             auto intDetTime = detectionTime + shift;
             detection.setDetectionTime(detectionTime);
             detection.setInterpolatedDetectionTime(intDetTime);
