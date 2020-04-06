@@ -26,18 +26,45 @@ std::vector<double> createTemplateSignal(
     const double decay,
     const double phaseShift);
 
+TEST(singleChannelDetection, interpParameters)
+{
+    DetectionTimeInterpolationParameters parms;
+    int nalpha = 21;
+    int npts = 50;
+    EXPECT_EQ(parms.getType(),
+              MFLib::DetectionTimeInterpolationType::QUADRATIC);
+
+    parms.enableLanczos();
+    parms.setLanczosAlpha(nalpha);
+    parms.setLanczosNumberOfInterpolationPoints(npts);
+    EXPECT_EQ(parms.getType(),
+              MFLib::DetectionTimeInterpolationType::LANCZOS);
+    EXPECT_EQ(parms.getLanczosAlpha(), nalpha);
+    EXPECT_EQ(parms.getLanczosNumberOfInterpolationPoints(), npts);
+
+    DetectionTimeInterpolationParameters parmsCopy(parms);
+    EXPECT_EQ(parmsCopy.getType(),
+              MFLib::DetectionTimeInterpolationType::LANCZOS);
+    EXPECT_EQ(parmsCopy.getLanczosAlpha(), nalpha);
+    EXPECT_EQ(parmsCopy.getLanczosNumberOfInterpolationPoints(), npts);
+ 
+}
+
 TEST(singleChannelDetection, detectorParameters)
 {
     DetectorParameters parms;
+    DetectionTimeInterpolationParameters interpParms;
+    interpParms.disable();
     int minSamples = 50;
     double thresh = 0.8;
     auto policy = MFLib::MaximumMatchedFilterPolicy::ABSOLUTE_MAXIMUM; 
     EXPECT_NO_THROW(parms.setMinimumDetectionSpacing(minSamples));
     EXPECT_NO_THROW(parms.setDetectionThreshold(thresh));
     EXPECT_NO_THROW(parms.setMaximaPolicy(policy));
+    parms.setDetectionTimeInterpolationParameters(interpParms);
     auto detPolicy = MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE;
     parms.setMatchedFilteredSignalDetectorPolicy(detPolicy);
- 
+
     parms.disableSaveDetectedWaveform();
     EXPECT_FALSE(parms.wantDetectedWaveform());
     parms.enableSaveDetectedWaveform();
@@ -51,6 +78,9 @@ TEST(singleChannelDetection, detectorParameters)
     EXPECT_EQ(parms.getMaximaPolicy(), policy);
     EXPECT_TRUE(parms.wantDetectedWaveform());
     EXPECT_EQ(parms.getMatchedFilteredSignalDetectorPolicy(), detPolicy);
+    auto interpParmsBack = parms.getDetectionTimeInterpolationParameters();
+    EXPECT_EQ(interpParmsBack.getType(),
+              MFLib::DetectionTimeInterpolationType::NONE);    
 
     DetectorParameters parmsCopy(parms);
     EXPECT_EQ(parmsCopy.getMinimumDetectionSpacing(), minSamples);
@@ -62,6 +92,9 @@ TEST(singleChannelDetection, detectorParameters)
               parms.wantAmplitudeScalingFactor());
     EXPECT_EQ(parmsCopy.getMatchedFilteredSignalDetectorPolicy(),
               parms.getMatchedFilteredSignalDetectorPolicy()); 
+    interpParmsBack = parmsCopy.getDetectionTimeInterpolationParameters();
+    EXPECT_EQ(interpParmsBack.getType(),
+              MFLib::DetectionTimeInterpolationType::NONE);
 }
 
 TEST(singleChannelDetection, detector)
@@ -185,6 +218,9 @@ fclose(fout);
     mf.apply();
     // Now compute the detections
     DetectorParameters detParms;
+    DetectionTimeInterpolationParameters interpParms;
+    interpParms.enableLanczos();
+    detParms.setDetectionTimeInterpolationParameters(interpParms);
     detParms.setMinimumDetectionSpacing(minSpacing);
     detParms.setMatchedFilteredSignalDetectorPolicy(
         MFLib::MatchedFilteredSignalDetectorPolicy::REDUCED);
