@@ -406,6 +406,24 @@ def test_single_channel_detector_parameters():
            pymflib.MatchedFilteredSignalDetectorPolicy.single, 'copy mfs detector policy failed'
     assert not parms_copy.want_amplitude_scaling_factor(), 'copy get the det amp failed'
 
+def test_single_channel_associator_parameters():
+    print("Single channel associator parameters test...")
+    parms = pymflib.SingleChannel.AssociatorParameters()
+    min_to_cluster = 8
+    time_eps = 0.5
+    parms.set_origin_time_tolerance(time_eps)
+    parms.set_minimum_number_of_picks_in_event(min_to_cluster)
+    parms.enable_correlation_coefficient_weighting()
+
+    assert parms.get_origin_time_tolerance() == time_eps, 'ot failed'
+    assert parms.get_minimum_number_of_picks_in_event() == min_to_cluster, 'min cluster failed'
+    assert parms.use_correlation_coefficient_weighting(), 'toggle weight failed'
+
+    parms_copy = parms
+    assert parms_copy.get_origin_time_tolerance() == time_eps, 'ot failed copy'
+    assert parms_copy.get_minimum_number_of_picks_in_event() == min_to_cluster, 'min cluster failed copy'
+    assert parms_copy.use_correlation_coefficient_weighting(), 'toggle weight failed copy'
+
 if __name__ == "__main__":
     test_waveform_template()
     test_matched_filter_parameters()
@@ -414,3 +432,4 @@ if __name__ == "__main__":
     test_single_channel_relative_magnitude()
     test_single_channel_detection()
     test_single_channel_detector_parameters()
+    test_single_channel_associator_parameters()
