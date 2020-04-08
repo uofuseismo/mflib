@@ -10,6 +10,7 @@
 #include "singleChannel/pyDetection.hpp"
 #include "singleChannel/pyDetectorParameters.hpp"
 #include "singleChannel/pyDetector.hpp"
+#include "singleChannel/pyAssociator.hpp"
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(pymflib, m)
@@ -62,7 +63,7 @@ PYBIND11_MODULE(pymflib, m)
     PBMFLib::SingleChannel::initializeDetectorParameters(scModule);
     PBMFLib::SingleChannel::initializeDetector(scModule);
     PBMFLib::SingleChannel::initializeAssociatorParameters(scModule);
-    //PBMFLib::SingleChannel::initializeAssociatorParameters(scModule);
+    PBMFLib::SingleChannel::initializeAssociator(scModule);
 
     pybind11::module mcModule = m.def_submodule("MultiChannel");
     PBMFLib::initializeMultiChannelMatchedFilterParameters(mcModule);

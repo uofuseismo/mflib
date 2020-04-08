@@ -126,6 +126,7 @@ if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE
                python/waveformTemplate.cpp
                python/networkStationPhase.cpp
+               python/singleChannel/associator.cpp
                python/singleChannel/associatorParameters.cpp
                python/singleChannel/detection.cpp 
                python/singleChannel/detector.cpp

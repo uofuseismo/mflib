@@ -48,6 +48,20 @@ Associator<T>::Associator() :
 {
 }
 
+/// Copy c'tor
+template<class T>
+Associator<T>::Associator(const Associator &associator)
+{
+    *this = associator;
+}
+
+/// Move c'tor
+template<class T>
+Associator<T>::Associator(Associator &&associator) noexcept
+{
+    *this = std::move(associator);
+}
+
 /// Copy assignment operator
 template<class T>
 Associator<T>& Associator<T>::operator=(const Associator &associator)
