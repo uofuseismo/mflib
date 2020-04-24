@@ -514,7 +514,7 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
         std::string sx(cPtr, cPtr+x.size()*sizeof(double));
         */
         // Polarity
-        int polarity = polarity = static_cast<int> (p.getPolarity());
+        int polarity = static_cast<int> (p.getPolarity());
         return pybind11::make_tuple(haveXC, xc,
                                     haveID, network, station, channel, location, phase, waveid,
                                     haveDetTime, detTime,
