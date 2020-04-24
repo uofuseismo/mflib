@@ -50,6 +50,8 @@ public:
     //                                         pybind11::array::forcecast> &x);
     pybind11::array_t<double> getDetectedSignal() const;
     bool haveDetectedSignal() const noexcept;
+    void setDetectedSignalAsVector(const std::vector<T> &x);
+    void getDetectedSignalAsVector(std::vector<T> &x) const;
     /// Onset time
     void setDetectionTime(double time);
     double getDetectionTime() const;
@@ -67,6 +69,7 @@ public:
     double getInterpolatedPhaseOnsetTime() const;
     bool haveInterpolatedPhaseOnsetTime() const noexcept;
     /// Amplitude sclaing factor
+    void setAmplitudeScalingFactor(double value, MFLib::RelativeMagnitudeType type);
     double getMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;
     double getAmplitudeScalingFactor(MFLib::RelativeMagnitudeType type) const;
     bool haveAmplitudeScalingFactor() const noexcept;

@@ -143,6 +143,12 @@ pybind11::array_t<double> Detection<double>::getDetectedSignal() const
     return y;
 }
 
+template<class T>
+void Detection<T>::setDetectedSignalAsVector(const std::vector<T> &x)
+{
+    mDetection->setDetectedSignal(x.size(), x.data());
+}
+
 template<>
 pybind11::array_t<double> Detection<float>::getDetectedSignal() const
 {
@@ -154,6 +160,15 @@ pybind11::array_t<double> Detection<float>::getDetectedSignal() const
     #pragma omp simd
     for (int i=0; i<npts; ++i){yptr[i] = static_cast<double> (temp[i]);}
     return y;
+}
+
+template<class T>
+void Detection<T>::getDetectedSignalAsVector(std::vector<T> &x) const
+{
+    auto npts = mDetection->getDetectedSignalLength();
+    x.resize(npts);
+    auto xPtr = x.data();
+    mDetection->getDetectedSignal(npts, &xPtr);
 }
 
 template<class T>
@@ -281,6 +296,19 @@ double Detection<T>::getMagnitudePerturbation(
 }
 
 template<class T>
+void Detection<T>::setAmplitudeScalingFactor(
+    const double value,
+    const MFLib::RelativeMagnitudeType type)
+{
+    if (value <= 0)
+    {
+        throw std::invalid_argument("Scaling factor = " + std::to_string(value)
+                                  + " must be positive\n");
+    }
+    mDetection->setAmplitudeScalingFactor(value, type);
+}
+
+template<class T>
 double Detection<T>::getAmplitudeScalingFactor(
     const MFLib::RelativeMagnitudeType type) const
 {
@@ -398,9 +426,12 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
                    &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedPhaseOnsetTime,
                    "Determines if the interpolated phase onset time is set.");
     // Amplitude scaling factor
+    mDetDouble.def("set_amplitude_scaling_factor",
+                   &PBMFLib::SingleChannel::Detection<double>::setAmplitudeScalingFactor,
+                   "Sets the amplitude scaling factor to best the template's amplitude to the detected signal's amplitude.");
     mDetDouble.def("get_amplitude_scaling_factor",
                    &PBMFLib::SingleChannel::Detection<double>::getAmplitudeScalingFactor,
-                   "Gets the amplitude scaling factor to best match the template to the detected signal.");
+                   "Gets the amplitude scaling factor to best match the template's amplitude to the detected signal's amplitude.");
     mDetDouble.def("get_magnitude_perturbation",
                    &PBMFLib::SingleChannel::Detection<double>::getMagnitudePerturbation,
                    "GEts the magnitude perturbation that should be added to the template magnitude to obtain the relative magnitude.");
@@ -418,6 +449,164 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("clear",
                    &PBMFLib::SingleChannel::Detection<double>::clear,
                    "Clears the class and releases memory.");
+
+    /// Makes this class pickleable
+    mDetDouble.def("__getstate__",
+                   [](const PBMFLib::SingleChannel::Detection<double> &p)
+    {
+        // XC
+        bool haveXC = p.haveCorrelationCoefficient();
+        double xc = 0;
+        if (haveXC){xc = p.getCorrelationCoefficient();}
+        // Template identifier
+        bool haveID = p.haveTemplateIdentifier();
+        std::string network = "";
+        std::string station = "";
+        std::string channel = "";
+        std::string location = "";
+        std::string phase = ""; 
+        uint64_t waveid = 0; 
+        if (haveID)
+        {
+            auto id = p.getTemplateIdentifier();
+            network = id.first.getNetwork();
+            station = id.first.getStation();
+            channel = id.first.getChannel();
+            location = id.first.getLocationCode();
+            phase = id.first.getPhase();
+            waveid = id.second; 
+        }
+        // Detection time
+        bool haveDetTime = p.haveDetectionTime();
+        double detTime = 0;
+        if (haveDetTime){detTime = p.getDetectionTime();}
+        // Interpolated detection time
+        bool haveIntDetTime = p.haveInterpolatedDetectionTime();
+        double intDetTime = 0;
+        if (haveIntDetTime){intDetTime = p.getInterpolatedDetectionTime();}
+        // Onset time
+        bool haveOnsetTime = p.havePhaseOnsetTime();
+        double onsetTime = 0;
+        if (haveOnsetTime){onsetTime = p.getPhaseOnsetTime();}
+        // Interpolated phase onset time
+        bool haveIntOnsetTime = p.haveInterpolatedPhaseOnsetTime();
+        double intOnsetTime = 0;
+        if (haveIntOnsetTime){intOnsetTime = p.getInterpolatedPhaseOnsetTime();} 
+        // Amplitude 1, 2...
+        bool haveAmp = p.haveAmplitudeScalingFactor();
+        double amp1 = 0;
+        double amp2 = 0;
+        if (haveAmp)
+        {
+            amp1 = p.getAmplitudeScalingFactor(
+                       MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006);
+        }
+        if (haveAmp)
+        {
+            amp2 = p.getAmplitudeScalingFactor(
+                       MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
+        }
+        /*
+        bool haveSignal = p.haveDetectedSignal();
+        std::vector<double> x(1);
+        if (haveSignal){p.getDetectedSignalAsVector(x);}
+        auto cPtr = reinterpret_cast<char *> (x.data());
+        std::string sx(cPtr, cPtr+x.size()*sizeof(double));
+        */
+        // Polarity
+        int polarity = polarity = static_cast<int> (p.getPolarity());
+        return pybind11::make_tuple(haveXC, xc,
+                                    haveID, network, station, channel, location, phase, waveid,
+                                    haveDetTime, detTime,
+                                    haveIntDetTime, intDetTime,
+                                    haveOnsetTime, onsetTime,
+                                    haveIntOnsetTime, intOnsetTime,
+                                    haveAmp, amp1,
+                                    haveAmp, amp2,
+                                    polarity);
+//                                    haveSignal, sx);
+/*
+        return pybind11::make_tuple(p.getNetwork(),
+                                    p.getStation(),
+                                    p.getChannel(),
+                                    p.getLocationCode(),
+                                    p.getPhase());
+*/
+    });
+    mDetDouble.def("__setstate__",
+                   [](PBMFLib::SingleChannel::Detection<double> &p,
+                      pybind11::tuple t)
+    {
+        if (t.size() != 22)
+        {
+            throw std::runtime_error("Tuple in invalid state\n");
+        }
+        // Call constructor -> memory leak because of new?
+        new (&p) PBMFLib::SingleChannel::Detection<double>();
+
+        bool haveXC = t[0].cast<bool> ();
+        if (haveXC){p.setCorrelationCoefficient(t[1].cast<double> ());}
+
+        bool haveID = t[2].cast<bool> ();
+        if (haveID)
+        {
+            PBMFLib::NetworkStationPhase nsp;
+            nsp.setNetwork(t[3].cast<std::string> ());
+            nsp.setStation(t[4].cast<std::string> ());
+            nsp.setChannel(t[5].cast<std::string> ());
+            nsp.setLocationCode(t[6].cast<std::string> ());
+            nsp.setPhase(t[7].cast<std::string> ());
+            uint64_t waveid = t[8].cast<uint64_t> (); 
+            p.setTemplateIdentifier(std::make_pair(nsp, waveid));
+        }
+
+        bool haveDetTime = t[9].cast<bool> ();
+        if (haveDetTime){p.setDetectionTime(t[10].cast<double> ());}
+
+        bool haveIntDetTime = t[11].cast<bool> ();
+        if (haveIntDetTime)
+        {
+            p.setInterpolatedDetectionTime(t[12].cast<double> ());
+        }
+
+        bool haveOnsetTime = t[13].cast<bool> ();
+        if (haveOnsetTime){p.setPhaseOnsetTime(t[14].cast<double> ());}
+
+        bool haveIntOnsetTime = t[15].cast<bool> ();
+        if (haveIntOnsetTime)
+        {
+            p.setInterpolatedPhaseOnsetTime(t[16].cast<double> ());
+        }
+
+        bool haveAmp1 = t[17].cast<bool> ();
+        if (haveAmp1)
+        {
+            p.setAmplitudeScalingFactor(t[18].cast<double> (),
+                   MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006);
+        }
+        bool haveAmp2 = t[19].cast<bool> ();
+        if (haveAmp2)
+        {
+            p.setAmplitudeScalingFactor(t[20].cast<double> (),
+                   MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
+        }
+
+        auto polarity = static_cast<MFLib::Polarity> (t[21].cast<int> ());
+        p.setPolarity(polarity);
+
+        /*
+        auto haveSignal = t[22].cast<bool> ();
+        if (haveSignal)
+        {
+           std::string cx = t[23].cast<std::string> ();
+           auto xPtr = reinterpret_cast<const double *> (cx.data());
+           auto npts = cx.size()/sizeof(double);
+           std::vector<double> x(xPtr, xPtr+npts);
+printf("%lf, %lf\n", x[0], x[1]);
+           p.setDetectedSignalAsVector(x);
+        }
+        */
+    });
 }
 
 /// Instantiation

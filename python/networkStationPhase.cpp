@@ -165,4 +165,29 @@ void PBMFLib::initializeNetworkStationPhase(pybind11::module &m)
     nsp.def("clear",
             &PBMFLib::NetworkStationPhase::clear,
             "Clears the class's memory and resets the class.");
+    /// Makes this class pickleable
+    nsp.def("__getstate__", [](const PBMFLib::NetworkStationPhase &p)
+    {
+        return pybind11::make_tuple(p.getNetwork(),
+                                    p.getStation(),
+                                    p.getChannel(),
+                                    p.getLocationCode(),
+                                    p.getPhase());
+    });
+    nsp.def("__setstate__", [](PBMFLib::NetworkStationPhase &p,
+                               pybind11::tuple t)
+    {
+        if (t.size() != 5)
+        {
+            throw std::runtime_error("Tuple in invalid state\n");
+        }
+        // Call constructor -> memory leak because of new?
+        new (&p) PBMFLib::NetworkStationPhase();
+
+        p.setNetwork(t[0].cast<std::string> ());
+        p.setStation(t[1].cast<std::string> ());
+        p.setChannel(t[2].cast<std::string> ());
+        p.setLocationCode(t[3].cast<std::string> ());
+        p.setPhase(t[4].cast<std::string> ());
+    });
 }

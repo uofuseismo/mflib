@@ -2,7 +2,37 @@
 import pytest
 import pymflib
 import time
+import pickle
 import numpy as np
+
+def test_network_station_phase():
+    nsp = pymflib.NetworkStationPhase()
+    nsp.set_network("UU")
+    nsp.set_station("ALT")
+    nsp.set_channel("EHN")
+    nsp.set_location_code("01")
+    nsp.set_phase("P")
+
+    assert nsp.get_network() == "UU", 'network failed'
+    assert nsp.get_station() == "ALT",'station failed'
+    assert nsp.get_channel() == "EHN", 'channel failed'
+    assert nsp.get_location_code() == "01", 'location failed'
+    assert nsp.get_phase() == "P",'phase failed'
+
+    nsp_copy = nsp
+    assert nsp_copy.get_network() == "UU", 'copy network failed'
+    assert nsp_copy.get_station() == "ALT",'copy station failed'
+    assert nsp_copy.get_channel() == "EHN", 'copy channel failed'
+    assert nsp_copy.get_location_code() == "01", 'copy location failed'
+    assert nsp_copy.get_phase() == "P",'copy phase failed'
+
+    data = pickle.dumps(nsp, 2)
+    p_nsp = pickle.loads(data)
+    assert p_nsp.get_network() == "UU", 'pickle network failed'
+    assert p_nsp.get_station() == "ALT",'pickle station failed'
+    assert p_nsp.get_channel() == "EHN", 'pickle channel failed'
+    assert p_nsp.get_location_code() == "01", 'pickle location failed'
+    assert p_nsp.get_phase() == "P",'pickle phase failed'
 
 def test_waveform_template():
     """
@@ -300,6 +330,8 @@ def test_single_channel_detection():
     nsp = pymflib.NetworkStationPhase()
     nsp.set_network("UU")
     nsp.set_station("CMU")
+    nsp.set_channel("EHZ")
+    nsp.set_location_code("01")
     nsp.set_phase("P")
     onset_time = 4
     template_id = [nsp, 204]
@@ -307,6 +339,8 @@ def test_single_channel_detection():
     detection_time = 2
     xc_val = 0.3
     det_int_time = 3
+    scale_factor1 = 9
+    scale_factor2 = 10
     phase_int_time = 6
     signal_size = 400
     xt = np.random.uniform( 5, 7, signal_size) 
@@ -318,6 +352,8 @@ def test_single_channel_detection():
     template_back = detection.get_template_identifier()
     assert template_back[0].get_network() == template_id[0].get_network(), 'template id net failed'
     assert template_back[0].get_station() == template_id[0].get_station(), 'template id stat failed'
+    assert template_back[0].get_channel() == template_id[0].get_channel(), 'template id chan failed'
+    assert template_back[0].get_location_code() == template_id[0].get_location_code(), 'template id loc failed'
     assert template_back[0].get_phase() == template_id[0].get_phase(), 'template id phase failed'
     assert template_back[1] == template_id[1], 'template id failed'
 
@@ -346,6 +382,13 @@ def test_single_channel_detection():
     assert detection.have_interpolated_detection_time(), 'interp detection time bool failed'
     assert detection.get_interpolated_detection_time() == det_int_time, 'interp detection time failed'
 
+    assert not detection.have_amplitude_scaling_factor(), 'scale factor bool failed'
+    rmtype = pymflib.RelativeMagnitudeType
+    detection.set_amplitude_scaling_factor(scale_factor1, rmtype.gibbons_ringdal_2006)
+    detection.set_amplitude_scaling_factor(scale_factor2, rmtype.schaff_richards_2014) 
+    assert detection.get_amplitude_scaling_factor(rmtype.gibbons_ringdal_2006) == scale_factor1, 'gr 1 failed'
+    assert detection.get_amplitude_scaling_factor(rmtype.schaff_richards_2014) == scale_factor2, 'sr 1 failed' 
+
     assert not detection.have_detected_signal(), 'detection signal bool not failed'
     detection.set_detected_signal(xt)
     assert detection.have_detected_signal(), 'detected signal bool failed'
@@ -358,6 +401,8 @@ def test_single_channel_detection():
     template_back = det_copy.get_template_identifier()
     assert template_back[0].get_network() == template_id[0].get_network(), 'template id net failed'
     assert template_back[0].get_station() == template_id[0].get_station(), 'template id stat failed'
+    assert template_back[0].get_channel() == template_id[0].get_channel(), 'template id chan failed'
+    assert template_back[0].get_location_code() == template_id[0].get_location_code(), 'template id loc failed'
     assert template_back[0].get_phase() == template_id[0].get_phase(), 'template id phase failed'
     assert template_back[1] == template_id[1], 'template id failed'
     assert det_copy.have_correlation_coefficient(), 'copy xc val bool failed'
@@ -369,10 +414,39 @@ def test_single_channel_detection():
     assert det_copy.have_detection_time(), 'copy detection time bool failed'
     assert det_copy.get_detection_time() == detection_time, 'copy detection time failed'
     assert det_copy.get_interpolated_detection_time() == det_int_time, 'copy int detection time failed'
+    assert det_copy.get_amplitude_scaling_factor(rmtype.gibbons_ringdal_2006) == scale_factor1, 'gr 1 failed'
+    assert det_copy.get_amplitude_scaling_factor(rmtype.schaff_richards_2014) == scale_factor2, 'sr 1 failed'
     xback = det_copy.get_detected_signal()
     assert np.max(np.abs(xback - xt)) < 1.e-14, 'copy detected signal not recovered'
 
     #assert np.max(np.abs(xback - xb)) < 1.e-14, 'detected signal not recovered'
+
+    # Test detection
+    data = pickle.dumps(det_copy, 2)
+    p_det = pickle.loads(data)
+    assert p_det.have_template_identifier(), 'pickle template id bool failed'
+    template_back = p_det.get_template_identifier()
+    assert template_back[0].get_network() == template_id[0].get_network(), 'pickle template id net failed'
+    assert template_back[0].get_station() == template_id[0].get_station(), 'pickle template id stat failed'
+    assert template_back[0].get_channel() == template_id[0].get_channel(), 'pickle template id chan failed'
+    assert template_back[0].get_location_code() == template_id[0].get_location_code(), 'pickle template id loc failed'
+    assert template_back[0].get_phase() == template_id[0].get_phase(), 'pickle template id phase failed'
+    assert template_back[1] == template_id[1], 'pickle template id failed'
+    assert p_det.have_correlation_coefficient(), 'pickle xc val bool failed'
+    assert p_det.get_correlation_coefficient(), 'pickle xc val failed'
+    assert p_det.have_phase_onset_time(), 'pickle onset time bool failed'
+    assert p_det.have_interpolated_phase_onset_time(), 'pickle int time bool failed'
+    assert p_det.get_phase_onset_time() == onset_time, 'pickle phase onset time failed'
+    assert p_det.get_interpolated_phase_onset_time(), 'pickle int phase onset time failed'
+    assert p_det.have_detection_time(), 'pickle detection time bool failed'
+    assert p_det.get_detection_time() == detection_time, 'pickle detection time failed'
+    assert p_det.get_interpolated_detection_time() == det_int_time, 'pickle int detection time failed'
+    assert p_det.get_amplitude_scaling_factor(rmtype.gibbons_ringdal_2006) == scale_factor1, 'pickle gr 1 failed'
+    assert p_det.get_amplitude_scaling_factor(rmtype.schaff_richards_2014) == scale_factor2, 'pickle sr 1 failed'
+    # TODO - I don't know how ot serialize the detected waveform
+    #xback = p_det.get_detected_signal()
+    #print(xback)
+
 
 def test_single_channel_detector_parameters():
     print("Single channel detector parameters test...")
@@ -425,6 +499,7 @@ def test_single_channel_associator_parameters():
     assert parms_copy.use_correlation_coefficient_weighting(), 'toggle weight failed copy'
 
 if __name__ == "__main__":
+    test_network_station_phase()
     test_waveform_template()
     test_matched_filter_parameters()
     test_matched_filtering()
