@@ -56,7 +56,7 @@ public:
     void setDetectionTime(double time);
     double getDetectionTime() const;
     bool haveDetectionTime() const noexcept;
-    /// Onset time
+    /// Inteprolated onset time
     void setInterpolatedDetectionTime(double time);
     double getInterpolatedDetectionTime() const;
     bool haveInterpolatedDetectionTime() const noexcept;
@@ -64,10 +64,14 @@ public:
     void setPhaseOnsetTime(double onsetTime);
     double getPhaseOnsetTime() const;
     bool havePhaseOnsetTime() const noexcept; 
-    /// Phase onset time
+    /// Interpolated phase onset time
     void setInterpolatedPhaseOnsetTime(double onsetTime);
     double getInterpolatedPhaseOnsetTime() const;
     bool haveInterpolatedPhaseOnsetTime() const noexcept;
+    /// Travel time
+    void setTravelTime(double travelTime);
+    double getTravelTime() const;
+    bool haveTravelTime() const noexcept;
     /// Amplitude sclaing factor
     void setAmplitudeScalingFactor(double value, MFLib::RelativeMagnitudeType type);
     double getMagnitudePerturbation(MFLib::RelativeMagnitudeType type) const;

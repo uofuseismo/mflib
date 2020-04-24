@@ -269,6 +269,30 @@ bool Detection<T>::haveInterpolatedPhaseOnsetTime() const noexcept
     return mDetection->haveInterpolatedPhaseOnsetTime();
 }
 
+/// Travel time
+template<class T>
+void Detection<T>::setTravelTime(const double travelTime)
+{
+    if (travelTime < 0)
+    {
+        throw std::invalid_argument("Travel time cannot be negative\n");
+    }
+    mDetection->setTravelTime(travelTime);
+}
+
+template<class T>
+double Detection<T>::getTravelTime() const
+{
+    if (!haveTravelTime()){throw std::runtime_error("Travel time not set\n");}
+    return mDetection->getTravelTime();
+}
+
+template<class T>
+bool Detection<T>::haveTravelTime() const noexcept
+{
+    return mDetection->haveTravelTime();
+}
+
 /// Detection time
 template<class T>
 void Detection<T>::setCorrelationCoefficient(const double xc)
@@ -405,6 +429,16 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
     mDetDouble.def("have_interpolated_detection_time",
                    &PBMFLib::SingleChannel::Detection<double>::haveInterpolatedDetectionTime,
                    "Determines if the interpolated detection time was set.");
+    // Travel time
+    mDetDouble.def("set_travel_time",
+                   &PBMFLib::SingleChannel::Detection<double>::setTravelTime,
+                   "Sets the catalog travel time from the source to the receiver in seconds.");
+    mDetDouble.def("get_travel_time",
+                   &PBMFLib::SingleChannel::Detection<double>::getTravelTime,
+                   "Gets the catalog travel time from the source to the receiveri in seconds.");
+    mDetDouble.def("have_travel_time",
+                   &PBMFLib::SingleChannel::Detection<double>::haveTravelTime,
+                   "True indicates the travel time was set."); 
     // Phase onset time
     mDetDouble.def("get_phase_onset_time",
                    &PBMFLib::SingleChannel::Detection<double>::getPhaseOnsetTime,
@@ -492,6 +526,10 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
         bool haveIntOnsetTime = p.haveInterpolatedPhaseOnsetTime();
         double intOnsetTime = 0;
         if (haveIntOnsetTime){intOnsetTime = p.getInterpolatedPhaseOnsetTime();} 
+        // Travel time
+        bool haveTravelTime = p.haveTravelTime();
+        double travelTime = 0;
+        if (haveTravelTime){travelTime = p.getTravelTime();}
         // Amplitude 1, 2...
         bool haveAmp = p.haveAmplitudeScalingFactor();
         double amp1 = 0;
@@ -521,6 +559,7 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
                                     haveIntDetTime, intDetTime,
                                     haveOnsetTime, onsetTime,
                                     haveIntOnsetTime, intOnsetTime,
+                                    haveTravelTime, travelTime,
                                     haveAmp, amp1,
                                     haveAmp, amp2,
                                     polarity);
@@ -537,7 +576,7 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
                    [](PBMFLib::SingleChannel::Detection<double> &p,
                       pybind11::tuple t)
     {
-        if (t.size() != 22)
+        if (t.size() != 24)
         {
             throw std::runtime_error("Tuple in invalid state\n");
         }
@@ -578,20 +617,26 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
             p.setInterpolatedPhaseOnsetTime(t[16].cast<double> ());
         }
 
-        bool haveAmp1 = t[17].cast<bool> ();
+        bool haveTravelTime = t[17].cast<bool> ();
+        if (haveTravelTime)
+        {
+            p.setTravelTime(t[18].cast<double> ());
+        }
+
+        bool haveAmp1 = t[19].cast<bool> ();
         if (haveAmp1)
         {
-            p.setAmplitudeScalingFactor(t[18].cast<double> (),
+            p.setAmplitudeScalingFactor(t[20].cast<double> (),
                    MFLib::RelativeMagnitudeType::GIBBONS_RINGDAL_2006);
         }
-        bool haveAmp2 = t[19].cast<bool> ();
+        bool haveAmp2 = t[21].cast<bool> ();
         if (haveAmp2)
         {
-            p.setAmplitudeScalingFactor(t[20].cast<double> (),
+            p.setAmplitudeScalingFactor(t[22].cast<double> (),
                    MFLib::RelativeMagnitudeType::SCHAFF_RICHARDS_2014);
         }
 
-        auto polarity = static_cast<MFLib::Polarity> (t[21].cast<int> ());
+        auto polarity = static_cast<MFLib::Polarity> (t[23].cast<int> ());
         p.setPolarity(polarity);
 
         /*

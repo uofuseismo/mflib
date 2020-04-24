@@ -341,6 +341,7 @@ def test_single_channel_detection():
     det_int_time = 3
     scale_factor1 = 9
     scale_factor2 = 10
+    travel_time = 13
     phase_int_time = 6
     signal_size = 400
     xt = np.random.uniform( 5, 7, signal_size) 
@@ -377,10 +378,15 @@ def test_single_channel_detection():
     assert detection.have_detection_time(), 'detection time bool failed'
     assert detection.get_detection_time() == detection_time, 'detection time failed'
 
-    assert not detection.have_interpolated_detection_time(), 'interp detection bool not failed'
+    assert not detection.have_interpolated_detection_time(), 'interp detection not bool failed'
     detection.set_interpolated_detection_time(det_int_time)
     assert detection.have_interpolated_detection_time(), 'interp detection time bool failed'
     assert detection.get_interpolated_detection_time() == det_int_time, 'interp detection time failed'
+
+    assert not detection.have_travel_time(), 'travel time not bool failed'
+    detection.set_travel_time(travel_time)
+    assert detection.have_travel_time(), 'travel time bool failed'
+    assert detection.get_travel_time() == travel_time, 'travel time failed'
 
     assert not detection.have_amplitude_scaling_factor(), 'scale factor bool failed'
     rmtype = pymflib.RelativeMagnitudeType
@@ -414,6 +420,7 @@ def test_single_channel_detection():
     assert det_copy.have_detection_time(), 'copy detection time bool failed'
     assert det_copy.get_detection_time() == detection_time, 'copy detection time failed'
     assert det_copy.get_interpolated_detection_time() == det_int_time, 'copy int detection time failed'
+    assert det_copy.get_travel_time() == travel_time, 'copy travel time failed'
     assert det_copy.get_amplitude_scaling_factor(rmtype.gibbons_ringdal_2006) == scale_factor1, 'gr 1 failed'
     assert det_copy.get_amplitude_scaling_factor(rmtype.schaff_richards_2014) == scale_factor2, 'sr 1 failed'
     xback = det_copy.get_detected_signal()
@@ -441,6 +448,7 @@ def test_single_channel_detection():
     assert p_det.have_detection_time(), 'pickle detection time bool failed'
     assert p_det.get_detection_time() == detection_time, 'pickle detection time failed'
     assert p_det.get_interpolated_detection_time() == det_int_time, 'pickle int detection time failed'
+    assert p_det.get_travel_time() == travel_time, 'pick travel time failed'
     assert p_det.get_amplitude_scaling_factor(rmtype.gibbons_ringdal_2006) == scale_factor1, 'pickle gr 1 failed'
     assert p_det.get_amplitude_scaling_factor(rmtype.schaff_richards_2014) == scale_factor2, 'pickle sr 1 failed'
     # TODO - I don't know how ot serialize the detected waveform
