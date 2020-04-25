@@ -7,6 +7,7 @@
 #include "mflib/networkStationPhase.hpp"
 #include "pyWaveformTemplate.hpp"
 
+/*
 namespace MFLib
 {
 namespace SingleChannel
@@ -14,6 +15,7 @@ namespace SingleChannel
 template<class T> class Detection;
 }
 }
+*/
 
 namespace PBMFLib
 {
@@ -35,6 +37,7 @@ public:
     Detection& operator=(const Detection &det);
     Detection& operator=(const MFLib::SingleChannel::Detection<T> &det);
     Detection& operator=(Detection &&parms) noexcept;
+    Detection& operator=(MFLib::SingleChannel::Detection<T> &&det) noexcept;
     /// Correlation coefficient
     void setCorrelationCoefficient(double xc);
     double getCorrelationCoefficient() const;

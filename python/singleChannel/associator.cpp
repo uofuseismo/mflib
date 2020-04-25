@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
+#include <pybind11/stl.h>
 #include "singleChannel/pyAssociator.hpp"
 #include "singleChannel/pyAssociatorParameters.hpp"
 #include "singleChannel/pyDetector.hpp"
@@ -120,7 +122,7 @@ int Associator<T>::getNumberOfEvents() const noexcept
 
 /// Get the associated detections in an event
 template<class T>
-std::vector<PBMFLib::SingleChannel::Detection<T>> 
+std::vector<PBMFLib::SingleChannel::Detection<T>>
 Associator<T>::getDetectionsInEvent(const int iev) const
 {
     auto nev = getNumberOfEvents();
@@ -137,12 +139,13 @@ Associator<T>::getDetectionsInEvent(const int iev) const
                                   + std::to_string(nev-1) + "]\n");
     }
     auto work = mAssociator->getDetectionsInEvent(iev);
-    result.resize(nev);
-    for (int i=0; i<nev; ++i)
+    result.resize(work.size());
+    for (int i=0; i<static_cast<int> (work.size()); ++i)
     {
         result[i] = work[i];
     }
     return result;
+
 }
 
 /// Initialize the class

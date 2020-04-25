@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <vector>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "singleChannel/pyDetection.hpp"
@@ -37,7 +38,8 @@ Detection<T>::Detection(Detection &&detection) noexcept
 
 /// Copy assignment operator
 template<class T>
-Detection<T>& Detection<T>::operator=(const Detection &det)
+PBMFLib::SingleChannel::Detection<T>& 
+Detection<T>::operator=(const PBMFLib::SingleChannel::Detection<T> &det)
 {
     if (&det == this){return *this;}
     mDetection = std::make_unique<MFLib::SingleChannel::Detection<T>>
@@ -46,7 +48,7 @@ Detection<T>& Detection<T>::operator=(const Detection &det)
 }
 
 template<class T>
-Detection<T>& Detection<T>::operator=(
+PBMFLib::SingleChannel::Detection<T>& Detection<T>::operator=(
     const MFLib::SingleChannel::Detection<T> &det)
 {
     mDetection = std::make_unique<MFLib::SingleChannel::Detection<T>> (det);
@@ -55,10 +57,18 @@ Detection<T>& Detection<T>::operator=(
 
 /// Move assignment operator
 template<class T>
-Detection<T>& Detection<T>::operator=(Detection &&det) noexcept
+Detection<T>& Detection<T>::operator=(Detection<T> &&det) noexcept
 {
     if (&det == this){return *this;}
     mDetection = std::move(det.mDetection);
+    return *this;
+}
+
+template<class T>
+Detection<T>&
+Detection<T>::operator=(MFLib::SingleChannel::Detection<T> &&det) noexcept
+{
+    *mDetection = std::move(det);
     return *this;
 }
 

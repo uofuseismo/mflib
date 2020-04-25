@@ -3,6 +3,7 @@
 #include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include "mflib/singleChannel/associator.hpp"
 
 namespace MFLib
@@ -45,8 +46,10 @@ public:
     /// Gets the number of events
     int getNumberOfEvents() const noexcept;
     /// Gets the detections for ane vent
-    std::vector<Detection<T>> getDetectionsInEvent(int iev) const; 
+    std::vector<PBMFLib::SingleChannel::Detection<T>>
+        getDetectionsInEvent(int iev) const; 
 private:
+    
     std::unique_ptr<MFLib::SingleChannel::Associator<T>> mAssociator;
 };
 void initializeAssociator(pybind11::module &m);;
