@@ -98,7 +98,7 @@ std::pair<int, int> computeWindowLength(const int nb, const int nx)
                 L = lTemp;
             }
         }
-        return std::pair(nfft, L); 
+        return std::pair<int, int> (nfft, L); 
     }
 }
 }
