@@ -6,6 +6,7 @@
 #include "mflib/singleChannel/matchedFilterParameters.hpp"
 #include "mflib/singleChannel/matchedFilter.hpp"
 #include "mflib/matchedFilter.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

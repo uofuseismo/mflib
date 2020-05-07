@@ -14,6 +14,7 @@
 #include "mflib/singleChannel/event.hpp"
 #include "mflib/networkStationPhase.hpp"
 #include "private/dbscan.hpp"
+#include "private/private.hpp"
 #include "private/weightedStatistics.hpp"
 
 using namespace MFLib::SingleChannel;

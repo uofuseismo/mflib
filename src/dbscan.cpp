@@ -32,6 +32,7 @@
 #ifdef __clang__
   #pragma clang diagnostic pop
 #endif
+#include "private/private.hpp"
 #include "private/dbscan.hpp"
 
 using namespace MFLib;

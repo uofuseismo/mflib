@@ -10,6 +10,7 @@
 #include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "mflib/mpi.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib;
 

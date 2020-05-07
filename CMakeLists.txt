@@ -20,10 +20,11 @@ int main () {
 "
   HAVE_STD__MAKE_UNIQUE
 )
-if (${HAVE_STD__MAKE_UNIQUE})
-   message("Using library provided unique_ptr implementation")
-   add_definitions(-DHAVE_STD__MAKE_UNIQUE)
-endif()
+#if (${HAVE_STD__MAKE_UNIQUE})
+#   message("Using library provided unique_ptr implementation")
+#   add_definitions(matchedFilter PUBLIC HAVE_STD__MAKE_UNIQUE=1)
+#   #add_definitions(-DHAVE_STD__MAKE_UNIQUE)
+#endif()
 
 find_package(GTest REQUIRED)
 find_package(MPI)
@@ -121,6 +122,11 @@ if(OpenMP_CXX_FOUND)
    target_link_libraries(matchedFilter PUBLIC OpenMP::OpenMP_CXX)
    #set(OPENMP_CXX_LIB OpenMP::OpenMP_CXX)
    target_include_directories(matchedFilter PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if (${HAVE_STD__MAKE_UNIQUE})
+   message("Using std::unique_ptr implementation")
+   target_compile_definitions(matchedFilter PUBLIC HAVE_STD__MAKE_UNIQUE=1)
+   #add_definitions(-DHAVE_STD__MAKE_UNIQUE)
 endif()
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE

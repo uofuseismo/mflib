@@ -16,6 +16,7 @@
 #include <mkl.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

@@ -7,6 +7,7 @@
 #include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detection.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

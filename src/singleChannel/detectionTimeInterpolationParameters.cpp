@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "mflib/singleChannel/detectionTimeInterpolationParameters.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

@@ -4,6 +4,7 @@
 #include <functional>
 #include <algorithm>
 #include "mflib/networkStationPhase.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib;
 

@@ -16,7 +16,7 @@
 #include <numeric>
 #include <mkl.h>
 #include "private/peakFinder.hpp"
-
+#include "private/private.hpp"
 /// TODO: Implement this as at some point?
 /// https://www.mathworks.com/matlabcentral/fileexchange/25500-peakfinder-x0-sel-thresh-extrema-includeendpoints-interpolate
 #define DEFAULT_THRESH 0.7

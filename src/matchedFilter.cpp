@@ -20,6 +20,7 @@
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilter.hpp"
 #include "mflib/matchedFilterParameters.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib;
 

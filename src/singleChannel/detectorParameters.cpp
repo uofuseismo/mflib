@@ -3,6 +3,7 @@
 #include <string>
 #include "mflib/singleChannel/detectorParameters.hpp"
 #include "mflib/singleChannel/detectionTimeInterpolationParameters.hpp"
+#include "private/private.hpp"
 
 #define DEFAULT_THRESHOLD 0.7
 #define DEFAULT_MAXIMUM_POLICY MFLib::MaximumMatchedFilterPolicy::MAXIMUM

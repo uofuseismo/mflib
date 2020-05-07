@@ -19,6 +19,7 @@
 #include "mflib/singleChannel/matchedFilter.hpp"
 #include "mflib/singleChannel/relativeMagnitude.hpp"
 #include "private/peakFinder.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

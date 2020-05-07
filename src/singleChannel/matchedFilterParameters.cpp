@@ -5,6 +5,7 @@
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/enums.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

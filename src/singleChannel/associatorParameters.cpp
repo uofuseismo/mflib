@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include "mflib/singleChannel/associatorParameters.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib::SingleChannel;
 

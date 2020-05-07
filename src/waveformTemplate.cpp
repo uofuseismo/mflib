@@ -10,6 +10,7 @@
 #include <ipps.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/networkStationPhase.hpp"
+#include "private/private.hpp"
 
 using namespace MFLib;
 
