@@ -246,7 +246,7 @@ void Associator<T>::associate()
         dbscan.cluster();
         auto nDetections = dbscan.getNumberOfClusters();
         if (nDetections < 1){continue;} // No detections 
-        printf("Event %ld created %d events\n", evid, nDetections);
+        printf("Event %llu created %d events\n", evid, nDetections);
         auto labels = dbscan.getLabels();
         // For each cluster extract the indices
         for (int ic=0; ic<nDetections; ++ic)
