@@ -20,7 +20,7 @@ find_path(IPP_INCLUDE_DIR
                 $ENV{IPP_INC_DIR})
 find_library(IPP_IPPS_LIBRARY
              NAMES ${IPPS}
-             PATHS /opt/intel/ipp//lib/intel64
+             PATHS /opt/intel/ipp/lib/intel64
                    $ENV{IPP_ROOT}/lib/intel64
                    $ENV{IPP_ROOT}/lib/
                    $ENV{IPP_LIB_DIR})
