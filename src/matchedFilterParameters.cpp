@@ -75,7 +75,7 @@ std::pair<int, int> computeWindowLength(const int nb, const int nx)
         // throw std::runtime_error("Could not find appropriate padding length\n");
         auto nfft = nextPowerOfTwo(nx);
         auto L =  nfft - (nb - 1); 
-        auto result = std::pair(nfft, L); 
+        auto result = std::pair<int, int>(nfft, L); 
         return result;
     }
     else
