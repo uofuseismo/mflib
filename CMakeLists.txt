@@ -20,6 +20,15 @@ int main () {
 "
   HAVE_STD__MAKE_UNIQUE
 )
+check_cxx_source_compiles("
+#if __has_include(<pstl/algorithm>)
+#include <pstl/algorithm>
+#endif
+int main() {
+}
+"
+  HAVE_SOURCE_FILE_INCLUSION
+)
 #if (${HAVE_STD__MAKE_UNIQUE})
 #   message("Using library provided unique_ptr implementation")
 #   add_definitions(matchedFilter PUBLIC HAVE_STD__MAKE_UNIQUE=1)
@@ -127,6 +136,10 @@ if (${HAVE_STD__MAKE_UNIQUE})
    message("Using std::unique_ptr implementation")
    target_compile_definitions(matchedFilter PUBLIC HAVE_STD__MAKE_UNIQUE=1)
    #add_definitions(-DHAVE_STD__MAKE_UNIQUE)
+endif()
+if (${HAVE_SOURCE_FILE_INCLUSION})
+   message("Compiler supports source file inclusion")
+   target_compile_definitions(matchedFilter PUBLIC HAVE_SOURCE_FILE_INCLUSION=1)
 endif()
 if (MFLIB_WRAP_PYTHON)
    add_library(pymflib MODULE

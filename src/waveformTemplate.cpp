@@ -2,10 +2,12 @@
 #include <cstring>
 #include <string>
 #include <algorithm>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#define USE_PSTL 1
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #define USE_PSTL 1
+ #endif
 #endif
 #include <ipps.h>
 #include "mflib/waveformTemplate.hpp"

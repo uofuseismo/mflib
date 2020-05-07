@@ -7,12 +7,14 @@
 #include <numeric>
 #include <mkl.h>
 #include <mkl_cblas.h>
-//#include <ipps.h>
 #include <fftw/fftw3.h>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#define USE_PSTL 1
+#include <algorithm>
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #define USE_PSTL 1
+ #endif
 #endif
 #ifdef USE_CUDA
 #include <cufft.h>

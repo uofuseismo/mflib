@@ -4,14 +4,15 @@
 #include <string>
 #include <functional>
 #include <vector>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/numeric>
-#include <pstl/execution>
-#define USE_PSTL 1
-#else
-#include <numeric>
 #include <algorithm>
+#include <numeric>
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #include <pstl/numeric>
+  #define USE_PSTL 1
+ #endif
 #endif
 #include <mkl.h>
 #include "mflib/waveformTemplate.hpp"

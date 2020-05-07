@@ -5,15 +5,16 @@
 #include <limits>
 #include <vector>
 #include <functional>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#include <pstl/numeric>
-#define USE_PSTL 1
-#else
 #include <algorithm>
-#endif
 #include <numeric>
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #include <pstl/numeric>
+  #define USE_PSTL 1
+ #endif
+#endif
 #include <mkl.h>
 #include "private/peakFinder.hpp"
 #include "private/private.hpp"

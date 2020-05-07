@@ -5,12 +5,14 @@
 #include <numeric>
 #include <algorithm>
 #include <set>
-#include <mkl.h>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#define USE_PSTL
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #define USE_PSTL 1
+ #endif
 #endif
+#include <mkl.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/networkStationPhase.hpp"
 #include "mflib/singleChannel/detector.hpp"

@@ -3,10 +3,13 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#define USE_PSTL 1
+#ifdef HAVE_SOURCE_FILE_INCLUSION
+ #if __has_include(<pstl/algorithm>)
+  #include <pstl/algorithm>
+  #include <pstl/execution>
+  #include <pstl/numeric>
+  #define USE_PSTL 1
+ #endif
 #endif
 #include "mflib/singleChannel/associator.hpp"
 #include "mflib/singleChannel/associatorParameters.hpp"
