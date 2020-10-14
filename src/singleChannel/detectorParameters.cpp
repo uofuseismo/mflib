@@ -7,7 +7,7 @@
 
 #define DEFAULT_THRESHOLD 0.7
 #define DEFAULT_MAXIMUM_POLICY MFLib::MaximumMatchedFilterPolicy::MAXIMUM
-#define DEFAULT_MF_POLICY MFLib::MatchedFilteredSignalDetectorPolicy::REDUCED
+#define DEFAULT_MF_POLICY MFLib::MatchedFilteredSignalDetectorPolicy::SINGLE
 #define DEFAULT_MIN_SAMPLE_DISTANCE 0
 
 using namespace MFLib::SingleChannel;
