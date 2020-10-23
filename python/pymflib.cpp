@@ -43,7 +43,7 @@ PYBIND11_MODULE(pymflib, m)
                "The polarity is unknown.")
         .value("compression", MFLib::Polarity::COMPRESSION,
                "The polarity corresponds to the compressional (shaded) quadrant of the beachball and is probably upwards on the seismogram.") 
-        .value("diliation", MFLib::Polarity::DILATATION,
+        .value("dilatation", MFLib::Polarity::DILATATION,
                "The polarity corresopnds to the dilitational (unshaded) quadrant of the beachball and is probably downwards on the seismogram.");
 
     pybind11::enum_<MFLib::DetectionTimeInterpolationType> (m, "DetectionTimeInterpolationType")
