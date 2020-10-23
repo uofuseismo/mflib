@@ -1,3 +1,5 @@
+#include <iostream>
+#include <limits>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -70,6 +72,15 @@ void WaveformTemplate::setSignal(
     mWaveformTemplate->setSignal(len, xptr);
 }
 
+void WaveformTemplate::setSignalFromVector(const std::vector<double> &signal)
+{
+    if (signal.empty())
+    {
+        throw std::invalid_argument("x has not point");
+    }
+    mWaveformTemplate->setSignal(signal.size(), signal.data());
+}
+
 pybind11::array_t<double> WaveformTemplate::getSignal() const
 {
     auto npts = mWaveformTemplate->getSignalLength();
@@ -78,6 +89,15 @@ pybind11::array_t<double> WaveformTemplate::getSignal() const
     auto yptr = static_cast<double *> (ybuf.ptr);
     mWaveformTemplate->getSignal(npts, &yptr);
     return y;
+}
+
+std::vector<double> WaveformTemplate::getSignalAsVector() const
+{
+     auto npts = mWaveformTemplate->getSignalLength(); 
+     std::vector<double> y(npts, 0);
+     auto yPtr = y.data();
+     mWaveformTemplate->getSignal(npts, &yPtr);
+     return y;
 }
 
 /// Setters/getters for sampling rate
@@ -255,4 +275,115 @@ void PBMFLib::initializeWaveformTemplate(pybind11::module &m)
     wt.def("clear",
            &PBMFLib::WaveformTemplate::clear,
            "Clears the class's memory and resets the class.");
+    /// Makes this class pickleable
+    wt.def("__getstate__",
+           [](const PBMFLib::WaveformTemplate &wt)
+    {
+        // Template identifier
+        std::string network = "";
+        std::string station = "";
+        std::string channel = "";
+        std::string location = "";
+        std::string phase = "";
+        uint64_t waveid = 0;
+        try
+        {
+            auto id = wt.getIdentifier();
+            network = id.first.getNetwork();
+            station = id.first.getStation();
+            channel = id.first.getChannel();
+            location = id.first.getLocationCode();
+            phase = id.first.getPhase();
+            waveid = id.second;
+        }
+        catch (const std::exception &e)
+        {
+        }
+        double df = 0;
+        double travelTime =-1;
+        double onsetTime =-1;
+        double weight =-1;
+        double magnitude = std::numeric_limits<double>::min();
+        try
+        {
+            df = wt.getSamplingRate();
+            travelTime = wt.getTravelTime();
+            onsetTime = wt.getPhaseOnsetTime();
+            weight = wt.getShiftAndStackWeight(); 
+            magnitude = wt.getMagnitude();
+        }
+        catch (const std::exception &e)
+        {
+        }
+        auto polarity = static_cast<int> (wt.getPolarity());
+        std::string x;
+        try
+        {
+            auto xWork = wt.getSignalAsVector();
+            x.reserve(16*xWork.size());
+            for (size_t i=0; i<xWork.size(); ++i)
+            {
+                 x = x + std::to_string(xWork[i]);
+                 if (i < xWork.size() - 1){x = x + ",";}
+            }
+        }
+        catch (const std::exception &e)
+        {
+        }
+        return pybind11::make_tuple(network, station, channel, location, phase, waveid,
+                                    df, travelTime, onsetTime, weight, magnitude,
+                                    polarity,
+                                    x);
+    });
+    wt.def("__setstate__",
+           [](PBMFLib::WaveformTemplate &p,
+              pybind11::tuple t)
+    {
+        if (t.size() != 13)
+        {
+            std::cerr << "Tuple in invalid state" << std::endl;
+        }
+        // Call c'tor -> memory leak because of new?
+        new (&p) PBMFLib::WaveformTemplate(); 
+
+        PBMFLib::NetworkStationPhase nsp;
+        nsp.setNetwork(t[0].cast<std::string> ());
+        nsp.setStation(t[1].cast<std::string> ());
+        nsp.setChannel(t[2].cast<std::string> ());
+        nsp.setLocationCode(t[3].cast<std::string> ());
+        nsp.setPhase(t[4].cast<std::string> ());
+        uint64_t waveid = t[5].cast<uint64_t> ();
+        p.setIdentifier(std::make_pair(nsp, waveid));
+
+        double df = t[6].cast<double> ();
+        double travelTime = t[7].cast<double> ();
+        double onsetTime = t[8].cast<double> ();
+        double weight = t[9].cast<double> ();
+        double magnitude = t[10].cast<double> ();
+        auto polarity = static_cast<MFLib::Polarity> (t[11].cast<int> ());
+
+        auto csignal = t[12].cast<std::string> ();
+        if (csignal.size() > 0)
+        {
+            std::vector<double> signal;
+            signal.reserve(csignal.size()/8); 
+            std::stringstream ss(csignal);
+            for (double d; ss >> d;)
+            {
+                signal.push_back(d);
+                if (ss.peek() == ','){ss.ignore();}
+            }
+            p.setSignalFromVector(signal);
+ 
+            if (df > 0){p.setSamplingRate(df);}
+            if (travelTime >= 0){p.setTravelTime(travelTime);}
+            if (onsetTime >= 0){p.setPhaseOnsetTime(onsetTime);}
+            if (weight > 0 && weight < 1){p.setShiftAndStackWeight(weight);}
+            if (magnitude > std::numeric_limits<double>::min())
+            {
+                p.setMagnitude(magnitude);
+            }
+            p.setPolarity(polarity);
+         }
+    });
 }
