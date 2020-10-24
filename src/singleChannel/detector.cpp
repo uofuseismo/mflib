@@ -267,7 +267,7 @@ void setCorrelations(
     auto mfPtr = mf.getMatchedFilterSignalPointer(it);
     if (mUseAbsoluteValue)
     {
-        #pragma omp simd aligned(mfPtr, det: 64)
+        #pragma omp simd aligned(det: 64)
         for (int i=0; i<detectionLength; ++i){det[i] = std::abs(mfPtr[i]);}
     }   
     else
