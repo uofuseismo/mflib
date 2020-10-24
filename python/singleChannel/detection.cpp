@@ -478,7 +478,7 @@ void PBMFLib::SingleChannel::initializeDetection(pybind11::module &m)
                    "Gets the amplitude scaling factor to best match the template's amplitude to the detected signal's amplitude.");
     mDetDouble.def("get_magnitude_perturbation",
                    &PBMFLib::SingleChannel::Detection<double>::getMagnitudePerturbation,
-                   "GEts the magnitude perturbation that should be added to the template magnitude to obtain the relative magnitude.");
+                   "Gets the magnitude perturbation that should be added to the template magnitude to obtain the relative magnitude.");
     mDetDouble.def("have_amplitude_scaling_factor",
                    &PBMFLib::SingleChannel::Detection<double>::haveAmplitudeScalingFactor,
                    "Determines if the amplitude scaling factors were computed");
