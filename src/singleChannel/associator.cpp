@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -246,7 +247,9 @@ void Associator<T>::associate()
         dbscan.cluster();
         auto nDetections = dbscan.getNumberOfClusters();
         if (nDetections < 1){continue;} // No detections 
-        printf("Event %llu created %d events\n", evid, nDetections);
+        //printf("Event %llu created %d events\n", evid, nDetections);
+        std::cout << "Event " << evid << " created "
+                  << nDetections << " events" << std::endl;
         auto labels = dbscan.getLabels();
         // For each cluster extract the indices
         for (int ic=0; ic<nDetections; ++ic)
