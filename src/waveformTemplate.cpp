@@ -9,7 +9,7 @@
   #define USE_PSTL 1
  #endif
 #endif
-#include <ipps.h>
+#include <mkl.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/networkStationPhase.hpp"
 #include "private/private.hpp"
@@ -42,7 +42,8 @@ public:
         mSignalLength = tplate.mSignalLength;
         if (mSignalLength > 0)
         {
-            mSignal = ippsMalloc_64f(mSignalLength);
+            mSignal = reinterpret_cast<double *>
+                      (mkl_calloc(mSignalLength*sizeof(double), 1, 64));
 #ifdef USE_PSTL
             std::copy(std::execution::unseq,
                       tplate.mSignal, tplate.mSignal+mSignalLength, mSignal);
@@ -60,7 +61,7 @@ public:
     /// Releases memory
     void clear() noexcept
     {
-        if (mSignal){ippsFree(mSignal);}
+        if (mSignal){mkl_free(mSignal);}
         mSignal = nullptr;
         mSamplingRate = 0;
         mShiftAndStackWeight = 1;
@@ -202,8 +203,9 @@ void WaveformTemplate::setSignal(const int npts,
     }
     pImpl->mPhaseOnsetTime =-1;
     pImpl->mSignalLength = npts;
-    if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
-    pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
+    if (pImpl->mSignal){mkl_free(pImpl->mSignal);}
+    pImpl->mSignal = reinterpret_cast<double *>
+                     (mkl_calloc(pImpl->mSignalLength*sizeof(double), 1, 64));
 #ifdef USE_PSTL
     std::copy(std::execution::unseq, x, x+npts, pImpl->mSignal);
 #else
@@ -221,8 +223,9 @@ void WaveformTemplate::setSignal(const int npts,
     }
     pImpl->mPhaseOnsetTime =-1;
     pImpl->mSignalLength = npts;
-    if (pImpl->mSignal){ippsFree(pImpl->mSignal);}
-    pImpl->mSignal = ippsMalloc_64f(pImpl->mSignalLength);
+    if (pImpl->mSignal){mkl_free(pImpl->mSignal);}
+    pImpl->mSignal = reinterpret_cast<double *>
+                     (mkl_calloc(pImpl->mSignalLength*sizeof(double), 1, 64));
     double *mSignal = pImpl->mSignal; 
     #pragma omp simd aligned(mSignal: 64)
     for (int i=0; i<npts; ++i){mSignal[i] = static_cast<double> (x[i]);}

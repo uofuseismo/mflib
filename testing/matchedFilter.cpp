@@ -1,10 +1,11 @@
+#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <random>
 #include <chrono>
 #include <ctime>
-#include <ipps.h>
+//#include <ipps.h>
 #include "mflib/waveformTemplate.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/matchedFilter.hpp"
@@ -16,17 +17,43 @@ namespace
 
 using namespace MFLib;
 
+template<class T>
+void ippsNormDiff_Inf(const T *__restrict__ yRef,
+                      const T *__restrict__ result,
+                      const int n, T *error)
+{
+    T emax = 0;
+    #pragma omp simd
+    for (int i=0; i<n; ++i)
+    { 
+        emax = std::max(emax, std::abs(result[i] - yRef[i]));
+    }
+    *error = emax;
+}
+
+template<class T>
+void ippsMaxIndx(const T *__restrict__ stack, const int n, T *xmax, int *imax)
+{
+    *imax = static_cast<int>
+            (std::distance(stack, std::max_element(stack, stack + n)));
+    *xmax = stack[*imax]; 
+}
+
 /*
 void matchedFilter(const int nb, const double b[],
                    const int nx, const double x[],
                    double y[]);
-*/
 void dumbXC(const int nb, const double b[],
             const int nx, const double x[],
             double xc[]);
 void dumbXC(const int nb, const float b[],
             const int nx, const float x[],
             float xc[]);
+*/
+template<typename T>
+void naivePearsonCorrelation(const int nb, const T *__restrict__ b,
+                             const int nx, const T *__restrict__ x,
+                             T *result);
 
 TEST(matchedFilter, basicTestDouble)
 {
@@ -64,8 +91,8 @@ TEST(matchedFilter, basicTestDouble)
     // Create a reference
     std::vector<double> yRef(signalSize, 0), yRef2(signalSize, 0);
     //matchedFilter(nb, b.data(), signalSize, x.data(), yRef.data());
-    dumbXC(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
-    dumbXC(nb, b2.data(), signalSize, x2.data(), yRef2.data());
+    naivePearsonCorrelation(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
+    naivePearsonCorrelation(nb, b2.data(), signalSize, x2.data(), yRef2.data());
     // Set the templates
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);
@@ -96,7 +123,7 @@ TEST(matchedFilter, basicTestDouble)
     EXPECT_TRUE(mf.haveMatchedFilteredSignals());
     std::vector<double> result;
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
-    ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("%e\n", error);
 
@@ -118,22 +145,22 @@ TEST(matchedFilter, basicTestDouble)
     EXPECT_EQ(mf.getNumberOfTemplates(), 4);
     EXPECT_NO_THROW(mf.apply());
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
-    ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
-    ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
-    ippsNormDiff_Inf_64f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
-    ippsNormDiff_Inf_64f(yRef2.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 1.e-13);
     //printf("e %e\n", error);
 
@@ -178,8 +205,8 @@ TEST(matchedFilter, basicTestFloat)
     // Create a reference
     std::vector<float> yRef(signalSize, 0), yRef2(signalSize, 0); 
     //matchedFilter(nb, b.data(), signalSize, x.data(), yRef.data());
-    dumbXC(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
-    dumbXC(nb, b2.data(), signalSize, x2.data(), yRef2.data());
+    naivePearsonCorrelation(nb, b.data(),  signalSize, x.data(),  yRef.data()); 
+    naivePearsonCorrelation(nb, b2.data(), signalSize, x2.data(), yRef2.data());
     // Set the templates
     options.setMatchedFilterImplementation(
         MatchedFilterImplementation::AUTO);
@@ -206,7 +233,7 @@ TEST(matchedFilter, basicTestFloat)
     std::vector<float> result;
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
     float error;
-    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 2.e-6);
 
     // Try again with four templates
@@ -224,22 +251,22 @@ TEST(matchedFilter, basicTestFloat)
     EXPECT_EQ(mf.getNumberOfTemplates(), 4); 
     EXPECT_NO_THROW(mf.apply());
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(0));
-    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(1));
-    ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(2));
-    ippsNormDiff_Inf_32f(yRef.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 2.e-6);
     //printf("e %e\n", error);
 
     EXPECT_NO_THROW(result = mf.getMatchedFilteredSignal(3));
-    ippsNormDiff_Inf_32f(yRef2.data(), result.data(), result.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), result.data(), result.size(), &error);
     EXPECT_LT(error, 2.e-6);
 }
 
@@ -369,9 +396,9 @@ printf("%d, %d, %d\n", templateSize+nextra1, templateSize+nextra2, templateSize+
     dumbXC(t2.size(), t2.data(), signalSize, signal2.data(), yRef2.data());
     dumbXC(t3.size(), t3.data(), signalSize, signal3.data(), yRef3.data());
 */
-    dumbXC(templateSize+nextra1, t1.data(), signalSize, signal1.data(), yRef1.data());
-    dumbXC(templateSize+nextra2, t2.data(), signalSize, signal2.data(), yRef2.data());
-    dumbXC(templateSize+nextra3, t3.data(), signalSize, signal3.data(), yRef3.data());
+    naivePearsonCorrelation(templateSize+nextra1, t1.data(), signalSize, signal1.data(), yRef1.data());
+    naivePearsonCorrelation(templateSize+nextra2, t2.data(), signalSize, signal2.data(), yRef2.data());
+    naivePearsonCorrelation(templateSize+nextra3, t3.data(), signalSize, signal3.data(), yRef3.data());
 /*
 xcFile = fopen("mfs.txt", "w");
 for (int i=0; i<pc1.size(); ++i)
@@ -383,11 +410,11 @@ fclose(xcFile);
 
     double error = 0;
 /*
-    ippsNormDiff_Inf_64f(yRef1.data()+100, pc1.data(), pc1.size(), &error);
+    ippsNormDiff_Inf(yRef1.data()+100, pc1.data(), pc1.size(), &error);
 printf("%e\n", error);
-    ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), pc2.data(), pc2.size(), &error);
 printf("%e\n", error);
-    ippsNormDiff_Inf_64f(yRef3.data()+50, pc3.data(), pc3.size(), &error);
+    ippsNormDiff_Inf(yRef3.data()+50, pc3.data(), pc3.size(), &error);
 printf("%e\n", error);
 for (int i=pc1.size()-50; i<pc1.size(); ++i)
 {
@@ -395,13 +422,13 @@ printf("%d %lf, %lf, %lf\n", i, yRef1[i], pc1[i], yRef1[i] - pc1[i]);
 }
 */
 
-    ippsNormDiff_Inf_64f(yRef1.data(), pc1.data(), pc1.size(), &error);
+    ippsNormDiff_Inf(yRef1.data(), pc1.data(), pc1.size(), &error);
     EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
-    ippsNormDiff_Inf_64f(yRef2.data(), pc2.data(), pc2.size(), &error);
+    ippsNormDiff_Inf(yRef2.data(), pc2.data(), pc2.size(), &error);
     EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
-    ippsNormDiff_Inf_64f(yRef3.data(), pc3.data(), pc3.size(), &error);
+    ippsNormDiff_Inf(yRef3.data(), pc3.data(), pc3.size(), &error);
     EXPECT_LE(error, 1.e-11);
 printf("%e\n", error);
 //getchar();
@@ -410,7 +437,7 @@ printf("%e\n", error);
     auto stack = mf.shiftAndStack();
     double xmax;
     int imax = 0;
-    ippsMaxIndx_64f(stack.data(), stack.size(), &xmax, &imax);
+    ippsMaxIndx(stack.data(), stack.size(), &xmax, &imax);
     auto tori = imax/df;
     EXPECT_NEAR(xmax, 1.0, 1.e-3); // With weighting 3 perfect stacks sum to 1
     EXPECT_NEAR(tori, originTime, 1/df/2);  // Within a sample
@@ -578,6 +605,46 @@ void matchedFilter(const int nb, const double b[], // Template
 }
 */
 
+template<typename T>
+void naivePearsonCorrelation(const int nb, const T *__restrict__ b,
+                             const int nx, const T *__restrict__ x,
+                             T *__restrict__ xc)
+{
+    // Allocate workspace and initialize result
+    const T zero = 0;
+    std::vector<T> btemp(nb);
+    std::vector<T> xtemp(nb);
+    std::fill(xc, xc + nx - nb + 1, zero); ////std::vector<T> xc(std::max(0, nx-nb+1), zero);
+    // Detrend b
+    T bmean = std::accumulate(b, b+nb, zero)/static_cast<T> (nb);
+    std::transform(b, b+nb, btemp.begin(),
+                   [&](auto value){return value - bmean;});
+                   //std::bind2nd(std::minus<T>(), bmean));
+    // Compute the L2 norm of the template
+    T Eb = std::inner_product(btemp.begin(), btemp.end(),
+                              btemp.begin(), zero);
+    Eb = std::sqrt(Eb);
+    for (int i=0; i<nx-nb+1; ++i)
+    {
+        // Detrend the signal in this window
+        T xmean = std::accumulate(x+i, x+i+nb, zero)/static_cast<T> (nb);
+        std::transform(x+i, x+i+nb, xtemp.begin(),
+                       [&](auto value){return value - xmean;});
+                       //std::bind2nd(std::minus<T>(), xmean));
+        // Compute the L2 norm of the signal
+        T Ex = std::inner_product(xtemp.begin(), xtemp.end(),
+                                  xtemp.begin(), zero);
+        Ex = std::sqrt(Ex);
+        Ex = std::max(std::numeric_limits<T>::epsilon(), Ex);
+        // Compute the inner product in the numerator then normalize
+        xc[i] = std::inner_product(btemp.begin(), btemp.end(),
+                                   xtemp.begin(), zero);
+        xc[i] = xc[i]/(Eb*Ex);
+    }
+    //return xc;
+}
+
+/*
 /// Implementation
 void dumbXC(const int nb, const double b[],
             const int nx, const double x[],
@@ -629,6 +696,7 @@ void dumbXC(const int nb, const float b[],
     ippsFree(btemp);
     ippsFree(xtemp);
 }
+*/
 
 /*
 #include "advisor-annotate.h"
