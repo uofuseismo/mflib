@@ -1,6 +1,7 @@
 #ifndef MFLIB_SINGLECHANNEL_ASSOCIATOR_HPP
 #define MFLIB_SINGLECHANNEL_ASSOCIATOR_HPP
 #include <memory>
+#include <vector>
 namespace MFLib
 {
 namespace SingleChannel
