@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
+#include <stdexcept>
 #include <array>
 #include <limits>
 #include "mflib/waveformTemplate.hpp"
