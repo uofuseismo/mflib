@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+#include <stdexcept>
 #include <vector>
 #include <array>
 #include "mflib/networkStationPhase.hpp"
