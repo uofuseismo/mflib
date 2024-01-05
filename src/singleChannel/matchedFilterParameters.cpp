@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <stdexcept>
 #include "mflib/singleChannel/matchedFilterParameters.hpp"
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/waveformTemplate.hpp"
