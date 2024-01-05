@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <stdexcept>
 #include "mflib/singleChannel/event.hpp"
 #include "private/private.hpp"
 
