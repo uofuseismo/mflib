@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <stdexcept>
 #include <vector>
 #include "mflib/matchedFilterParameters.hpp"
 #include "mflib/singleChannel/matchedFilterParameters.hpp"
