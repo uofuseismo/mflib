@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <stdexcept>
 #include <algorithm>
 #ifdef HAVE_SOURCE_FILE_INCLUSION
  #if __has_include(<pstl/algorithm>)
