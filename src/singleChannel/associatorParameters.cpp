@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 #include <string>
 #include "mflib/singleChannel/associatorParameters.hpp"
 #include "private/private.hpp"
