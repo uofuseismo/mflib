@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <stdexcept>
 #include "mflib/singleChannel/detectorParameters.hpp"
 #include "mflib/singleChannel/detectionTimeInterpolationParameters.hpp"
 #include "private/private.hpp"
