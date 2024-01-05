@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <stdexcept>
 #include <algorithm>
 #include <numeric>
 #ifdef HAVE_SOURCE_FILE_INCLUSION
